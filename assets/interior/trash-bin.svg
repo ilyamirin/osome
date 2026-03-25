@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" role="img" aria-labelledby="title-bin">
+  <title id="title-bin">Trash bin emoji style</title>
+  <defs>
+    <linearGradient id="binBody" x1="34" y1="28" x2="84" y2="136" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#697b87" />
+      <stop offset="1" stop-color="#2c373d" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="60" cy="137" rx="34" ry="9" fill="#1d262c" opacity="0.12" />
+  <path
+    d="M30 42c0-9 7-16 16-16h28c9 0 16 7 16 16v58c0 13-10 23-23 23H53c-13 0-23-10-23-23z"
+    fill="url(#binBody)"
+    stroke="#1d262c"
+    stroke-width="5"
+    stroke-linejoin="round"
+  />
+  <rect x="25" y="24" width="70" height="14" rx="7" fill="#7e8f98" stroke="#1d262c" stroke-width="5" />
+  <path d="M46 60v41M60 60v41M74 60v41" stroke="#fff8ef" stroke-width="5" stroke-linecap="round" opacity="0.35" />
+  <path d="M45 18h30" stroke="#ff9355" stroke-width="6" stroke-linecap="round" />
+  <path d="M40 29h30" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.3" />
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-labelledby="title-rack">
+  <title id="title-rack">Storage rack emoji style</title>
+  <defs>
+    <linearGradient id="rackWood" x1="24" y1="16" x2="212" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d59157" />
+      <stop offset="1" stop-color="#8b5734" />
+    </linearGradient>
+  </defs>
+  <ellipse cx="120" cy="163" rx="92" ry="10" fill="#1d262c" opacity="0.12" />
+  <rect x="30" y="18" width="180" height="134" rx="20" fill="url(#rackWood)" stroke="#714a31" stroke-width="6" />
+  <g stroke="#714a31" stroke-width="5">
+    <path d="M90 18v134" />
+    <path d="M150 18v134" />
+    <path d="M30 61h180" />
+    <path d="M30 105h180" />
+  </g>
+  <g stroke="#714a31" stroke-width="3" stroke-linejoin="round">
+    <rect x="42" y="30" width="34" height="20" rx="7" fill="#f2d4ae" />
+    <rect x="100" y="29" width="41" height="22" rx="7" fill="#dca16b" />
+    <rect x="163" y="28" width="30" height="24" rx="7" fill="#f5dfc2" />
+    <rect x="44" y="73" width="28" height="21" rx="7" fill="#d99762" />
+    <rect x="98" y="72" width="45" height="23" rx="7" fill="#f0d0a8" />
+    <rect x="162" y="74" width="32" height="20" rx="7" fill="#deab7a" />
+    <rect x="41" y="116" width="36" height="22" rx="7" fill="#f5dfc2" />
+    <rect x="105" y="117" width="29" height="20" rx="7" fill="#eed3b3" />
+    <rect x="157" y="115" width="42" height="24" rx="7" fill="#c47e4a" />
+  </g>
+  <circle cx="184" cy="40" r="6" fill="#2f7fd6" />
+  <path d="M44 28h78" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.28" />
+</svg>
