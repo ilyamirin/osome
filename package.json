@@ -1,0 +1,27 @@
+{
+  "name": "osome",
+  "version": "1.0.0",
+  "description": "Browser game prototype for the Osome pickup point queue.",
+  "main": "game.js",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "secrets:check": "node ./scripts/check-secrets.mjs",
+    "hooks:install": "git config core.hooksPath .githooks"
+  },
+  "keywords": [
+    "game",
+    "browser",
+    "osome"
+  ],
+  "author": "Ilya",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1"
+  }
+}

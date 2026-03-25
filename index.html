@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Osome: ПВЗ Очередь</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="ambient ambient-left"></div>
+      <div class="ambient ambient-right"></div>
+
+      <main class="game-layout">
+        <section class="hero-panel" id="start-screen">
+          <p class="eyebrow">Feel Osome!</p>
+          <h1>ПВЗ: Очередь</h1>
+          <p class="hero-copy">
+            Обслуживай поток заказов, держи комбо живым и не дай очереди заблокировать смену.
+          </p>
+
+          <div class="hero-features">
+            <span>4×5 очередь</span>
+            <span>WASD + touch</span>
+            <span>Гиммики и комбо</span>
+          </div>
+
+          <button class="primary-action" id="start-button">Начать смену</button>
+
+          <div class="legend-panel">
+            <div class="legend-item food">
+              <span class="legend-icon">🍎</span>
+              <span>Еда · W</span>
+            </div>
+            <div class="legend-item tech">
+              <span class="legend-icon">🔌</span>
+              <span>Электроника · A</span>
+            </div>
+            <div class="legend-item wear">
+              <span class="legend-icon">👕</span>
+              <span>Одежда · S</span>
+            </div>
+            <div class="legend-item home">
+              <span class="legend-icon">🏠</span>
+              <span>Дом · D</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="game-panel hidden" id="game-screen">
+          <header class="hud">
+            <div class="stat-card">
+              <span class="stat-label">Очки</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="stat-card combo-card">
+              <span class="stat-label">Комбо</span>
+              <strong id="combo">x1</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Время</span>
+              <strong id="time">0:00</strong>
+            </div>
+            <button class="sound-toggle" id="music-toggle" type="button">Музыка: Вкл</button>
+          </header>
+
+          <section class="tension-panel">
+            <div class="tension-copy">
+              <span>Шкала напряжения</span>
+              <strong id="gimmick-label">Спокойная смена</strong>
+            </div>
+            <div class="tension-track">
+              <div class="tension-fill" id="tension-fill"></div>
+            </div>
+          </section>
+
+          <section class="status-ribbon">
+            <div class="status-pill" id="bonus-pill">Без бонусов</div>
+            <div class="status-pill" id="queue-pill">Зона доступа: 1 ряд</div>
+          </section>
+
+          <section class="board-panel">
+            <div class="board-header">
+              <span>Очередь клиентов</span>
+              <span class="access-tip">Подсвеченные ряды доступны для выдачи</span>
+            </div>
+            <div class="board-grid" id="board"></div>
+            <div class="counter-line">
+              <div class="counter-avatar">◎</div>
+              <div class="counter-copy">
+                <strong>Стойка Osome</strong>
+                <span>Следи за нижним рядом и держи ритм.</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="controls-panel">
+            <button class="control-button food" data-order="food" type="button">
+              <span>🍎</span>
+              <small>W</small>
+            </button>
+            <button class="control-button tech" data-order="tech" type="button">
+              <span>🔌</span>
+              <small>A</small>
+            </button>
+            <button class="control-button wear" data-order="wear" type="button">
+              <span>👕</span>
+              <small>S</small>
+            </button>
+            <button class="control-button home" data-order="home" type="button">
+              <span>🏠</span>
+              <small>D</small>
+            </button>
+          </section>
+        </section>
+      </main>
+
+      <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+      <section class="overlay hidden" id="game-over-overlay">
+        <div class="overlay-card">
+          <p class="eyebrow">Смена окончена</p>
+          <h2>Очередь переполнилась</h2>
+          <div class="results-grid">
+            <div>
+              <span>Очки</span>
+              <strong id="result-score">0</strong>
+            </div>
+            <div>
+              <span>Клиентов</span>
+              <strong id="result-served">0</strong>
+            </div>
+            <div>
+              <span>Макс. комбо</span>
+              <strong id="result-max-combo">0</strong>
+            </div>
+            <div>
+              <span>Время</span>
+              <strong id="result-time">0:00</strong>
+            </div>
+          </div>
+          <div class="overlay-actions">
+            <button class="primary-action" id="restart-button">Играть ещё</button>
+            <button class="secondary-action" id="menu-button">В меню</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
