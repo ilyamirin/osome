@@ -1,3 +1,5 @@
+const BALANCE = globalThis.OSOME_BALANCE;
+
 const ORDER_TYPES = {
   food: { icon: "🍎", label: "Еда", className: "food" },
   tech: { icon: "🔌", label: "Электроника", className: "tech" },
@@ -5,17 +7,7 @@ const ORDER_TYPES = {
   home: { icon: "🏠", label: "Дом", className: "home" },
 };
 
-const PHASES = [
-  { until: 45_000, spawn: 1_800, tensionMultiplier: 1, gimmicks: [] },
-  { until: 120_000, spawn: 1_550, tensionMultiplier: 1, gimmicks: ["glitch", "quarrel"] },
-  { until: 210_000, spawn: 1_280, tensionMultiplier: 1, gimmicks: ["glitch", "quarrel", "rush"] },
-  {
-    until: Infinity,
-    spawn: 1_020,
-    tensionMultiplier: 1.2,
-    gimmicks: ["glitch", "quarrel", "rush"],
-  },
-];
+const PHASES = BALANCE.phases;
 
 const CUSTOMER_QUOTES = {
   food: ["Сэндвич и я полетел.", "Еда без задержек, пожалуйста.", "У меня тут перекус на минуту."],
@@ -36,6 +28,24 @@ const ACCENT_TONES = {
   wear: "#b6588f",
   home: "#e18b35",
 };
+
+const FX_ASSETS = Object.freeze({
+  success: "./assets/audio/confirmation_002.ogg",
+  miss: "./assets/audio/error_005.ogg",
+  bonus: "./assets/audio/bonus_levelup.mp3",
+  alert: "./assets/audio/question_002.ogg",
+  spawn: "./assets/audio/open_001.ogg",
+  fail: "./assets/audio/fail_gameover.mp3",
+});
+
+const FX_GAIN = Object.freeze({
+  success: 0.48,
+  miss: 0.45,
+  bonus: 0.42,
+  alert: 0.46,
+  spawn: 0.28,
+  fail: 0.32,
+});
 
 const DOM = {
   gameScreen: document.querySelector("#game-screen"),
@@ -112,6 +122,8 @@ const audioState = {
   musicTimer: 0,
   musicStep: 0,
   unlocked: false,
+  soundBuffers: new Map(),
+  loadingPromise: null,
 };
 
 function createEmptyBoard() {
@@ -160,7 +172,7 @@ function resetRoundState() {
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
-  state.currentOrder = getRandomOrder();
+  state.currentOrder = null;
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.activeSpeechLabel = "";
@@ -216,6 +228,7 @@ function startGame() {
   DOM.introOverlay.classList.add("hidden");
   DOM.gimmickLabel.textContent = "Спокойная смена";
   spawnClient();
+  syncCurrentOrder(true);
   render();
   requestAnimationFrame(loop);
 }
@@ -251,6 +264,75 @@ function getRandomOrder() {
   return sample(Object.keys(ORDER_TYPES));
 }
 
+function getTypeStats() {
+  const stats = new Map();
+
+  for (let row = 0; row < 5; row += 1) {
+    for (let col = 0; col < 4; col += 1) {
+      const client = state.board[row][col];
+      if (!client) {
+        continue;
+      }
+
+      const existing = stats.get(client.type);
+      if (existing) {
+        existing.count += 1;
+        existing.nearestRow = Math.min(existing.nearestRow, row);
+      } else {
+        stats.set(client.type, { type: client.type, count: 1, nearestRow: row });
+      }
+    }
+  }
+
+  return [...stats.values()];
+}
+
+function pickWeightedType(candidates) {
+  const total = candidates.reduce((sum, candidate) => sum + candidate.weight, 0);
+  if (total <= 0) {
+    return sample(candidates).type;
+  }
+
+  let target = Math.random() * total;
+  for (const candidate of candidates) {
+    target -= candidate.weight;
+    if (target <= 0) {
+      return candidate.type;
+    }
+  }
+
+  return candidates[candidates.length - 1].type;
+}
+
+function chooseCurrentOrder(previousOrder) {
+  const stats = getTypeStats();
+  if (stats.length === 0) {
+    return null;
+  }
+
+  const phase = getPhase();
+  const weighted = stats.map((stat) => {
+    const countWeight = Math.pow(stat.count, phase.orderFrequencyExponent);
+    const frontRatio = (4 - stat.nearestRow) / 4;
+    const frontWeight = 1 + phase.frontWeightBias * frontRatio;
+    const repeatWeight = stat.type === previousOrder ? BALANCE.orderSelection.sameTypePenalty : 1;
+
+    return {
+      ...stat,
+      weight: Math.max(0.01, countWeight * frontWeight * repeatWeight),
+    };
+  });
+
+  return pickWeightedType(weighted);
+}
+
+function syncCurrentOrder(forceChange = false) {
+  const hasCurrentOrder = getTypeStats().some((stat) => stat.type === state.currentOrder);
+  if (forceChange || !state.currentOrder || !hasCurrentOrder) {
+    state.currentOrder = chooseCurrentOrder(state.currentOrder);
+  }
+}
+
 function getPhase() {
   return PHASES.find((phase) => state.sessionMs < phase.until) || PHASES[PHASES.length - 1];
 }
@@ -272,6 +354,7 @@ function spawnClient() {
   state.board[4][targetCol] = createClient(getRandomOrder());
   collapseColumn(targetCol);
   updateAccessTimers();
+  syncCurrentOrder();
   playFx("spawn");
   return true;
 }
@@ -359,7 +442,7 @@ function registerMiss(targetClient, row, col) {
   state.combo = 0;
   state.firstFivePerfect = false;
   state.perfectRow = null;
-  state.speedups.push(now + 5_000);
+  state.speedups.push(now + BALANCE.tension.missSpeedupDurationMs);
 
   if (state.consecutiveErrors >= 3) {
     state.antiStressReady = true;
@@ -402,8 +485,7 @@ function serveClient(row, col, fromQuarrel) {
   }
 
   state.score += points;
-  state.slowdowns.push(now + 3_000);
-  state.currentOrder = getRandomOrder();
+  state.slowdowns.push(now + BALANCE.tension.successSlowdownDurationMs);
 
   if (state.combo >= 5 && now >= state.flowUntil) {
     state.flowUntil = now + 10_000;
@@ -420,10 +502,11 @@ function serveClient(row, col, fromQuarrel) {
   state.board[row][col] = null;
   collapseColumn(col);
   updateAccessTimers();
+  syncCurrentOrder(true);
 
   if (state.gimmick === "glitch") {
     state.glitchStreak += 1;
-    if (state.glitchStreak >= 3) {
+    if (state.glitchStreak >= BALANCE.gimmicks.glitch.clearStreakNeeded) {
       finishGimmick("Сканер восстановлен.");
     }
   }
@@ -483,8 +566,11 @@ function updateTension(dt, now) {
   state.speedups = state.speedups.filter((endsAt) => endsAt > now);
 
   const rate = Math.max(
-    0.015,
-    (0.05 - state.slowdowns.length * 0.01 + state.speedups.length * 0.02) * phase.tensionMultiplier
+    BALANCE.tension.minFillRate,
+    (BALANCE.tension.baseFillRate -
+      state.slowdowns.length * BALANCE.tension.successSlowdown +
+      state.speedups.length * BALANCE.tension.missSpeedup) *
+      phase.tensionMultiplier
   );
 
   if (phase.gimmicks.length === 0) {
@@ -504,31 +590,31 @@ function triggerGimmick(now) {
   const gimmick = sample(pool);
 
   state.tension = 0;
-  state.calmUntil = now + 5_000;
+  state.calmUntil = now + BALANCE.tension.calmDurationMs;
   state.gimmick = gimmick;
   state.glitchStreak = 0;
   state.quarrelCells = [];
 
   if (gimmick === "glitch") {
-    state.gimmickUntil = now + 8_000;
+    state.gimmickUntil = now + BALANCE.gimmicks.glitch.durationMs;
     DOM.gimmickLabel.textContent = "Глюк сканера";
     pushToast("Глюк сканера: верх очереди читается хуже.");
   } else if (gimmick === "quarrel") {
     const activated = createQuarrel(now);
     if (!activated) {
       state.gimmick = "rush";
-      state.gimmickUntil = now + 10_000;
+      state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
       state.rushUntil = state.gimmickUntil;
       DOM.gimmickLabel.textContent = "Час пик";
       pushToast("Час пик: поток клиентов ускорился.");
     } else {
-      state.gimmickUntil = now + 6_000;
-      state.quarrelSpreadAt = now + 3_000;
+      state.gimmickUntil = now + BALANCE.gimmicks.quarrel.durationMs;
+      state.quarrelSpreadAt = now + BALANCE.gimmicks.quarrel.spreadDelayMs;
       DOM.gimmickLabel.textContent = "Клиенты ругаются";
       pushToast("Ссора: заблокированные клетки можно снять любой выдачей.");
     }
   } else {
-    state.gimmickUntil = now + 10_000;
+    state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
     state.rushUntil = state.gimmickUntil;
     DOM.gimmickLabel.textContent = "Час пик";
     pushToast("Час пик: поток клиентов ускорился.");
@@ -572,7 +658,7 @@ function createQuarrel(now) {
   }
 
   state.quarrelCells = sample(candidates);
-  state.quarrelSpreadAt = now + 3_000;
+  state.quarrelSpreadAt = now + BALANCE.gimmicks.quarrel.spreadDelayMs;
   return true;
 }
 
@@ -607,7 +693,7 @@ function clearQuarrel() {
 function updateSpawn(dt, now) {
   const phase = getPhase();
   const activeRush = now < state.rushUntil;
-  const interval = activeRush ? phase.spawn / 2 : phase.spawn;
+  const interval = activeRush ? phase.spawn / BALANCE.gimmicks.rush.spawnDivider : phase.spawn;
 
   state.spawnAccumulator += dt * 1_000;
   while (state.spawnAccumulator >= interval && state.running) {
@@ -942,15 +1028,56 @@ function vibrate(pattern) {
 }
 
 function unlockAudio() {
-  if (audioState.unlocked) {
-    return;
-  }
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) {
     return;
   }
-  audioState.ctx = new AudioContext();
+
+  if (!audioState.ctx) {
+    audioState.ctx = new AudioContext();
+  }
+
   audioState.unlocked = true;
+  if (audioState.ctx.state === "suspended") {
+    void audioState.ctx.resume();
+  }
+  if (!audioState.loadingPromise) {
+    audioState.loadingPromise = loadAudioAssets();
+  }
+}
+
+async function loadAudioAssets() {
+  const ctx = audioState.ctx;
+  if (!ctx) {
+    return;
+  }
+
+  await Promise.all(
+    Object.entries(FX_ASSETS).map(async ([kind, url]) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await decodeAudioBuffer(ctx, arrayBuffer);
+        audioState.soundBuffers.set(kind, audioBuffer);
+      } catch (error) {
+        console.warn(`Could not load sound "${kind}" from ${url}.`, error);
+      }
+    })
+  );
+}
+
+function decodeAudioBuffer(ctx, arrayBuffer) {
+  const copy = arrayBuffer.slice(0);
+  if (ctx.decodeAudioData.length === 1) {
+    return ctx.decodeAudioData(copy);
+  }
+
+  return new Promise((resolve, reject) => {
+    ctx.decodeAudioData(copy, resolve, reject);
+  });
 }
 
 function playFx(kind) {
@@ -959,6 +1086,26 @@ function playFx(kind) {
   }
 
   const ctx = audioState.ctx;
+  const buffer = audioState.soundBuffers.get(kind);
+  if (buffer) {
+    const source = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    source.buffer = buffer;
+    gain.gain.value = FX_GAIN[kind] || 0.35;
+    source.connect(gain).connect(ctx.destination);
+    source.start();
+    return;
+  }
+
+  playSynthFx(kind);
+}
+
+function playSynthFx(kind) {
+  const ctx = audioState.ctx;
+  if (!ctx) {
+    return;
+  }
+
   const now = ctx.currentTime;
   const config = {
     success: [880, 0.08, "triangle", 0.04],
