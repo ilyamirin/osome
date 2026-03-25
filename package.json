@@ -8,7 +8,9 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "secrets:check": "node ./scripts/check-secrets.mjs",
-    "hooks:install": "git config core.hooksPath .githooks"
+    "hooks:install": "git config core.hooksPath .githooks",
+    "balance:simulate": "node ./scripts/simulate-balance.cjs",
+    "balance:search": "node ./scripts/simulate-balance.cjs search"
   },
   "keywords": [
     "game",
