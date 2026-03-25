@@ -51,7 +51,6 @@ const DOM = {
   gimmickLabel: document.querySelector("#gimmick-label"),
   bonusPill: document.querySelector("#bonus-pill"),
   queuePill: document.querySelector("#queue-pill"),
-  calloutCopy: document.querySelector("#callout-copy"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -685,26 +684,7 @@ function render() {
     `;
   });
 
-  renderCallout(now);
   renderToasts();
-}
-
-function renderCallout(now) {
-  if (state.awaitingStart) {
-    DOM.calloutCopy.textContent =
-      "«Точка Osome готова. Нажми любую клавишу или тапни по сцене, чтобы запустить смену»";
-    return;
-  }
-
-  const accessible = getAccessibleClients();
-  const main = accessible[0];
-  if (!main) {
-    DOM.calloutCopy.textContent = "«Очередь на секунду выровнялась. Следующий клиент уже идет.»";
-    return;
-  }
-
-  const angry = now < main.client.angryUntil;
-  DOM.calloutCopy.textContent = `«${getBubbleText(main.client, main.row, main.col, angry)}»`;
 }
 
 function getBubbleText(client, row, col, angry) {
