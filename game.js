@@ -51,6 +51,9 @@ const DOM = {
   gimmickLabel: document.querySelector("#gimmick-label"),
   bonusPill: document.querySelector("#bonus-pill"),
   queuePill: document.querySelector("#queue-pill"),
+  sceneDialogue: document.querySelector("#scene-dialogue"),
+  sceneDialogueLabel: document.querySelector("#scene-dialogue-label"),
+  sceneDialogueText: document.querySelector("#scene-dialogue-text"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -91,6 +94,10 @@ const state = {
   quarrelSpreadAt: 0,
   quarrelCells: [],
   rushUntil: 0,
+  activeSpeakerId: null,
+  activeSpeechText: "",
+  activeSpeechLabel: "",
+  speechSwitchAt: 0,
   lastFrame: 0,
   lastId: 1,
 };
@@ -149,6 +156,10 @@ function resetRoundState() {
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
+  state.activeSpeakerId = null;
+  state.activeSpeechText = "";
+  state.activeSpeechLabel = "";
+  state.speechSwitchAt = 0;
   state.lastFrame = 0;
 }
 
@@ -181,6 +192,10 @@ function setStandby() {
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
+  state.activeSpeakerId = null;
+  state.activeSpeechText = "Нажми любую клавишу или тапни по сцене, чтобы открыть смену.";
+  state.activeSpeechLabel = "Оператор";
+  state.speechSwitchAt = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   DOM.introOverlay.classList.remove("hidden");
@@ -321,9 +336,14 @@ function serviceInput(order) {
 }
 
 function registerMiss() {
+  const now = performance.now();
   const accessible = getAccessibleClients();
   if (accessible.length > 0) {
-    accessible[0].client.angryUntil = performance.now() + 900;
+    accessible[0].client.angryUntil = now + 900;
+    state.activeSpeakerId = accessible[0].client.id;
+    state.activeSpeechText = sample(CUSTOMER_QUOTES.angry);
+    state.activeSpeechLabel = getSpeechLabel(accessible[0].row, accessible[0].col, true, false);
+    state.speechSwitchAt = now + 2_000;
   }
 
   state.totalErrors += 1;
@@ -331,7 +351,7 @@ function registerMiss() {
   state.combo = 0;
   state.firstFivePerfect = false;
   state.perfectRow = null;
-  state.speedups.push(performance.now() + 5_000);
+  state.speedups.push(now + 5_000);
 
   if (state.consecutiveErrors >= 3) {
     state.antiStressReady = true;
@@ -617,12 +637,15 @@ function loop(timestamp) {
 
 function render() {
   const now = performance.now();
+  updateActiveSpeech(now);
 
   DOM.score.textContent = formatNumber(state.score);
   DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   DOM.time.textContent = formatTime(state.sessionMs);
   DOM.tensionFill.style.width = `${Math.round(state.tension * 100)}%`;
-  DOM.queuePill.textContent = `Зона доступа: ${state.accessRows} ${pluralRows(state.accessRows)}`;
+  DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
+  DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
+  DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
 
   const statuses = [];
   if (now < state.flowUntil) {
@@ -648,6 +671,9 @@ function render() {
     if (isQuarrelCell(row, col)) {
       cell.classList.add("quarrel");
     }
+    if (client && client.id === state.activeSpeakerId) {
+      cell.classList.add("speaker-active");
+    }
 
     if (!client) {
       cell.innerHTML = isQuarrelCell(row, col) ? '<span class="spark">⚡</span>' : "";
@@ -657,12 +683,10 @@ function render() {
     const type = ORDER_TYPES[client.type];
     const shouldGlitch = state.gimmick === "glitch" && row >= state.accessRows;
     const angry = now < client.angryUntil;
-    const bubble = getBubbleText(client, row, col, angry);
 
     cell.innerHTML = `
       ${isQuarrelCell(row, col) ? '<span class="spark">⚡</span>' : ""}
       <div class="cell-inner ${shouldGlitch ? "glitch" : ""}">
-        ${bubble ? `<div class="speech-bubble">${escapeHtml(bubble)}</div>` : ""}
         <div class="customer-shadow"></div>
         <div
           class="customer-figure ${angry ? "angry" : ""}"
@@ -684,20 +708,147 @@ function render() {
     `;
   });
 
+  positionSceneDialogue();
   renderToasts();
 }
 
-function getBubbleText(client, row, col, angry) {
+function positionSceneDialogue() {
+  if (state.awaitingStart) {
+    DOM.sceneDialogue.classList.remove("is-below");
+    DOM.sceneDialogue.style.left = "50%";
+    DOM.sceneDialogue.style.top = "24px";
+    DOM.sceneDialogue.style.transform = "translateX(-50%)";
+    return;
+  }
+
+  const activeCell = boardCells.find((cell) => cell.classList.contains("speaker-active"));
+  if (!activeCell) {
+    DOM.sceneDialogue.classList.remove("is-below");
+    DOM.sceneDialogue.style.left = "50%";
+    DOM.sceneDialogue.style.top = "24px";
+    DOM.sceneDialogue.style.transform = "translateX(-50%)";
+    return;
+  }
+
+  const stageRect = DOM.stageSurface.getBoundingClientRect();
+  const cellRect = activeCell.getBoundingClientRect();
+
+  DOM.sceneDialogue.classList.remove("is-below");
+  DOM.sceneDialogue.style.transform = "none";
+  DOM.sceneDialogue.style.left = "0px";
+  DOM.sceneDialogue.style.top = "0px";
+
+  const bubbleRect = DOM.sceneDialogue.getBoundingClientRect();
+  const bubbleWidth = bubbleRect.width;
+  const bubbleHeight = bubbleRect.height;
+  const padding = 14;
+  const cellCenterX = cellRect.left - stageRect.left + cellRect.width / 2;
+  const clampedLeft = clamp(
+    cellCenterX - bubbleWidth / 2,
+    padding,
+    stageRect.width - bubbleWidth - padding
+  );
+  const preferredTop = cellRect.top - stageRect.top - bubbleHeight - 12;
+  const minTop = 20;
+  const fitsAbove = preferredTop >= minTop;
+  const finalTop = fitsAbove ? preferredTop : cellRect.bottom - stageRect.top + 12;
+
+  DOM.sceneDialogue.style.left = `${clampedLeft}px`;
+  DOM.sceneDialogue.style.top = `${finalTop}px`;
+  if (!fitsAbove) {
+    DOM.sceneDialogue.classList.add("is-below");
+  }
+}
+
+function updateActiveSpeech(now) {
+  if (state.awaitingStart) {
+    state.activeSpeakerId = null;
+    state.activeSpeechLabel = "Оператор";
+    state.activeSpeechText = "Нажми любую клавишу или тапни по сцене, чтобы открыть смену.";
+    return;
+  }
+
+  const candidates = getSpeechCandidates();
+  if (candidates.length === 0) {
+    state.activeSpeakerId = null;
+    state.activeSpeechLabel = "Зал";
+    state.activeSpeechText = "Следующий клиент уже подходит к стойке.";
+    return;
+  }
+
+  const activeStillVisible = candidates.find(
+    (candidate) => candidate.client.id === state.activeSpeakerId
+  );
+  if (activeStillVisible && now < state.speechSwitchAt) {
+    return;
+  }
+
+  const currentIndex = candidates.findIndex(
+    (candidate) => candidate.client.id === state.activeSpeakerId
+  );
+  const nextCandidate =
+    currentIndex >= 0 && candidates.length > 1
+      ? candidates[(currentIndex + 1) % candidates.length]
+      : candidates[0];
+
+  const angry = now < nextCandidate.client.angryUntil;
+  const quarrel = isQuarrelCell(nextCandidate.row, nextCandidate.col);
+  state.activeSpeakerId = nextCandidate.client.id;
+  state.activeSpeechLabel = getSpeechLabel(nextCandidate.row, nextCandidate.col, angry, quarrel);
+  state.activeSpeechText = getSpeechText(nextCandidate.client, angry, quarrel);
+  state.speechSwitchAt = now + 2_000;
+}
+
+function getSpeechCandidates() {
+  const candidates = [];
+  for (let row = 0; row < 5; row += 1) {
+    for (let col = 0; col < 4; col += 1) {
+      const client = state.board[row][col];
+      if (!client) {
+        continue;
+      }
+      const angry = performance.now() < client.angryUntil;
+      const quarrel = isQuarrelCell(row, col);
+      const priority =
+        (quarrel ? 100 : 0) + (angry ? 80 : 0) + (row < state.accessRows ? 40 : 0) + (4 - row);
+      candidates.push({ client, row, col, priority });
+    }
+  }
+
+  candidates.sort((left, right) => {
+    if (right.priority !== left.priority) {
+      return right.priority - left.priority;
+    }
+    if (left.row !== right.row) {
+      return left.row - right.row;
+    }
+    return left.col - right.col;
+  });
+
+  return candidates;
+}
+
+function getSpeechLabel(row, col, angry, quarrel) {
+  if (quarrel) {
+    return `Спор в линии ${col + 1}`;
+  }
+  if (angry) {
+    return row < state.accessRows ? "Клиент у стойки" : `Недовольный клиент ${col + 1}`;
+  }
+  if (row < state.accessRows) {
+    return "Клиент у стойки";
+  }
+  return `Очередь ${col + 1}`;
+}
+
+function getSpeechText(client, angry, quarrel) {
   if (angry) {
     return sample(CUSTOMER_QUOTES.angry);
   }
-  if (isQuarrelCell(row, col)) {
+  if (quarrel) {
     return sample(CUSTOMER_QUOTES.quarrel);
   }
-  if (row < state.accessRows) {
-    return client.quote;
-  }
-  return "";
+  return client.quote;
 }
 
 function pushToast(text) {
@@ -750,6 +901,10 @@ function pressButton(order) {
 
 function sample(items) {
   return items[Math.floor(Math.random() * items.length)];
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function escapeHtml(value) {
