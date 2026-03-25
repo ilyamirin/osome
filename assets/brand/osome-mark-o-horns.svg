@@ -1,21 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title-horns">
+  <title id="title-horns">Osome horned O mark</title>
   <defs>
-    <linearGradient id="accent-favicon" x1="18" y1="8" x2="46" y2="56" gradientUnits="userSpaceOnUse">
+    <linearGradient id="horn-accent" x1="18" y1="8" x2="46" y2="56" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#ff9355" />
       <stop offset="1" stop-color="#f05a4f" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="18" fill="#fff7ee" />
   <path
     d="M24 13.5l-3.5-8 8 5.3z"
-    fill="url(#accent-favicon)"
+    fill="url(#horn-accent)"
     stroke="#213039"
     stroke-linejoin="round"
     stroke-width="2"
   />
   <path
     d="M40 13.5l3.5-8-8 5.3z"
-    fill="url(#accent-favicon)"
+    fill="url(#horn-accent)"
     stroke="#213039"
     stroke-linejoin="round"
     stroke-width="2"

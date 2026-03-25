@@ -144,12 +144,17 @@ button {
   display: grid;
   place-items: center;
   border-radius: 20px;
-  background: linear-gradient(145deg, #f57f3d, #ef5a4d);
-  color: white;
-  font-family: var(--font-head);
-  font-size: 2rem;
-  font-weight: 700;
-  box-shadow: 0 16px 28px rgba(239, 90, 77, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(245, 236, 223, 0.92));
+  border: 1px solid rgba(33, 48, 57, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 16px 28px rgba(33, 48, 57, 0.12);
+}
+
+.brand-mark img {
+  width: 52px;
+  height: 52px;
+  display: block;
 }
 
 .brand-card h1,
@@ -544,16 +549,44 @@ button {
   right: 8px;
   bottom: 8px;
   z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 9px;
-  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 15px;
   color: white;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  box-shadow: 0 10px 18px rgba(29, 38, 44, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 12px 20px rgba(29, 38, 44, 0.14);
+}
+
+.order-symbol {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+.type-icon {
+  transform-origin: center;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.06));
+}
+
+.order-symbol.food-symbol {
+  transform: scale(1.1) translateY(1px);
+}
+
+.order-symbol.tech-symbol {
+  transform: scale(0.98);
+}
+
+.order-symbol.wear-symbol {
+  transform: scale(1.06) translateY(1px);
+}
+
+.order-symbol.home-symbol {
+  transform: scale(1.08);
 }
 
 .order-badge.food {
@@ -663,39 +696,70 @@ button {
 }
 
 .active-order-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  place-items: center;
   width: fit-content;
-  max-width: 100%;
-  padding: 10px 12px;
-  border-radius: 16px;
+  min-width: 84px;
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
   background: rgba(29, 38, 44, 0.08);
-  font-weight: 800;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 16px 30px rgba(29, 38, 44, 0.12);
 }
 
 .active-order-badge.food {
-  background: rgba(77, 169, 90, 0.18);
+  background: linear-gradient(145deg, #58b965, #469a52);
 }
 
 .active-order-badge.tech {
-  background: rgba(47, 127, 214, 0.18);
+  background: linear-gradient(145deg, #4291ea, #2f7fd6);
 }
 
 .active-order-badge.wear {
-  background: rgba(182, 88, 143, 0.18);
+  background: linear-gradient(145deg, #c96aa1, #b6588f);
 }
 
 .active-order-badge.home {
-  background: rgba(225, 139, 53, 0.2);
+  background: linear-gradient(145deg, #f09b45, #dd8131);
 }
 
 .active-order-icon {
-  font-size: 1.2rem;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
 }
 
-.active-order-name {
-  font-size: 0.98rem;
+.active-order-symbol {
+  display: block;
+  width: 44px;
+  height: 44px;
+}
+
+.active-order-symbol.food-symbol {
+  transform: scale(1.12) translateY(1px);
+}
+
+.active-order-symbol.tech-symbol {
+  transform: scale(1);
+}
+
+.active-order-symbol.wear-symbol {
+  transform: scale(1.08) translateY(1px);
+}
+
+.active-order-symbol.home-symbol {
+  transform: scale(1.1);
+}
+
+.active-order-placeholder {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(29, 38, 44, 0.3);
+  border-radius: 999px;
 }
 
 .counter-set {
