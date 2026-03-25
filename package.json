@@ -17,8 +17,8 @@
     "browser",
     "osome"
   ],
-  "author": "Ilya",
-  "license": "ISC",
+  "author": "Ilya Mirin",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
