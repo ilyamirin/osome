@@ -13,62 +13,40 @@
       <div class="ambient ambient-right"></div>
 
       <main class="game-layout">
-        <section class="hero-panel" id="start-screen">
-          <p class="eyebrow">Feel Osome!</p>
-          <h1>ПВЗ: Очередь</h1>
-          <p class="hero-copy">
-            Обслуживай поток заказов, держи комбо живым и не дай очереди заблокировать смену.
-          </p>
-
-          <div class="hero-features">
-            <span>4×5 очередь</span>
-            <span>WASD + touch</span>
-            <span>Гиммики и комбо</span>
-          </div>
-
-          <button class="primary-action" id="start-button">Начать смену</button>
-
-          <div class="legend-panel">
-            <div class="legend-item food">
-              <span class="legend-icon">🍎</span>
-              <span>Еда · W</span>
-            </div>
-            <div class="legend-item tech">
-              <span class="legend-icon">🔌</span>
-              <span>Электроника · A</span>
-            </div>
-            <div class="legend-item wear">
-              <span class="legend-icon">👕</span>
-              <span>Одежда · S</span>
-            </div>
-            <div class="legend-item home">
-              <span class="legend-icon">🏠</span>
-              <span>Дом · D</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="game-panel hidden" id="game-screen">
+        <section class="game-panel" id="game-screen">
           <header class="hud">
-            <div class="stat-card">
-              <span class="stat-label">Очки</span>
-              <strong id="score">0</strong>
+            <div class="brand-card">
+              <div class="brand-mark">O</div>
+              <div>
+                <p class="eyebrow">Feel Osome!</p>
+                <h1>ПВЗ: Очередь</h1>
+              </div>
             </div>
-            <div class="stat-card combo-card">
-              <span class="stat-label">Комбо</span>
-              <strong id="combo">x1</strong>
+
+            <div class="hud-metrics">
+              <div class="stat-card">
+                <span class="stat-label">Очки</span>
+                <strong id="score">0</strong>
+              </div>
+              <div class="stat-card combo-card">
+                <span class="stat-label">Комбо</span>
+                <strong id="combo">x1</strong>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Время</span>
+                <strong id="time">0:00</strong>
+              </div>
+              <button class="sound-toggle" id="music-toggle" type="button">Музыка: Вкл</button>
             </div>
-            <div class="stat-card">
-              <span class="stat-label">Время</span>
-              <strong id="time">0:00</strong>
-            </div>
-            <button class="sound-toggle" id="music-toggle" type="button">Музыка: Вкл</button>
           </header>
 
           <section class="tension-panel">
             <div class="tension-copy">
-              <span>Шкала напряжения</span>
-              <strong id="gimmick-label">Спокойная смена</strong>
+              <div>
+                <span>Шкала напряжения</span>
+                <strong id="gimmick-label">Готово к открытию смены</strong>
+              </div>
+              <div class="tension-meta">Чем чище выдачи, тем спокойнее зал</div>
             </div>
             <div class="tension-track">
               <div class="tension-fill" id="tension-fill"></div>
@@ -80,38 +58,138 @@
             <div class="status-pill" id="queue-pill">Зона доступа: 1 ряд</div>
           </section>
 
-          <section class="board-panel">
-            <div class="board-header">
-              <span>Очередь клиентов</span>
-              <span class="access-tip">Подсвеченные ряды доступны для выдачи</span>
-            </div>
-            <div class="board-grid" id="board"></div>
-            <div class="counter-line">
-              <div class="counter-avatar">◎</div>
-              <div class="counter-copy">
-                <strong>Стойка Osome</strong>
-                <span>Следи за нижним рядом и держи ритм.</span>
+          <section class="play-area">
+            <aside class="brief-panel">
+              <div class="brief-card">
+                <span class="brief-label">Схема локации</span>
+                <p>
+                  Вид сверху: вход сверху, четыре дорожки очереди в центре, стойка выдачи снизу.
+                  Клиенты двигаются к оператору без смены полосы.
+                </p>
               </div>
-            </div>
-          </section>
 
-          <section class="controls-panel">
-            <button class="control-button food" data-order="food" type="button">
-              <span>🍎</span>
-              <small>W</small>
-            </button>
-            <button class="control-button tech" data-order="tech" type="button">
-              <span>🔌</span>
-              <small>A</small>
-            </button>
-            <button class="control-button wear" data-order="wear" type="button">
-              <span>👕</span>
-              <small>S</small>
-            </button>
-            <button class="control-button home" data-order="home" type="button">
-              <span>🏠</span>
-              <small>D</small>
-            </button>
+              <div class="legend-card">
+                <span class="brief-label">Типы заказов</span>
+                <div class="legend-grid">
+                  <div class="legend-item food">
+                    <span class="legend-icon">🍎</span>
+                    <span>Еда · W</span>
+                  </div>
+                  <div class="legend-item tech">
+                    <span class="legend-icon">🔌</span>
+                    <span>Электроника · A</span>
+                  </div>
+                  <div class="legend-item wear">
+                    <span class="legend-icon">👕</span>
+                    <span>Одежда · S</span>
+                  </div>
+                  <div class="legend-item home">
+                    <span class="legend-icon">🏠</span>
+                    <span>Дом · D</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="dialogue-card">
+                <span class="brief-label">Реплика из очереди</span>
+                <p id="callout-copy">
+                  «Точка Osome готова. Нажми любую клавишу или тапни по сцене, чтобы открыть смену».
+                </p>
+              </div>
+            </aside>
+
+            <section class="scene-panel">
+              <div class="facility-stage" id="stage-surface">
+                <div class="service-wall">
+                  <div class="brand-light">
+                    <span>OSOME</span>
+                    <small>pickup point</small>
+                  </div>
+                  <div class="fixtures-row">
+                    <div class="fixture lockers">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <div class="fixture shelf">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                    <div class="fixture posters">
+                      <span>Today</span>
+                      <span>Fast pickup</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="queue-zone">
+                  <div class="floor-signage">
+                    <span>Вход</span>
+                    <span>Очередь</span>
+                    <span>Стойка выдачи</span>
+                  </div>
+
+                  <div class="board-shell">
+                    <div class="lane-strip lane-strip-left"></div>
+                    <div class="lane-strip lane-strip-right"></div>
+                    <div class="board-grid" id="board"></div>
+                  </div>
+
+                  <div class="counter-set">
+                    <div class="operator-top">
+                      <div class="operator-head"></div>
+                      <div class="operator-body"></div>
+                      <div class="operator-hands"></div>
+                      <div class="operator-badge">osome staff</div>
+                    </div>
+
+                    <div class="counter-desk">
+                      <div class="desk-item scanner-unit"></div>
+                      <div class="desk-item terminal-unit"></div>
+                      <div class="desk-item parcel-stack"></div>
+                      <div class="desk-item desk-note">выдача</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="intro-overlay" id="intro-overlay">
+                  <div class="intro-card">
+                    <p class="eyebrow">ПВЗ уже открыт на экране</p>
+                    <h2>Смена стартует прямо на поле</h2>
+                    <p>
+                      Нажми любую клавишу или тапни по сцене. Первый ввод запускает поток, но не
+                      считается выдачей.
+                    </p>
+                    <div class="intro-hints">
+                      <span>Любая клавиша</span>
+                      <span>Тап по экрану</span>
+                      <span>W · A · S · D</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <section class="controls-panel">
+                <button class="control-button food" data-order="food" type="button">
+                  <span>🍎</span>
+                  <small>W</small>
+                </button>
+                <button class="control-button tech" data-order="tech" type="button">
+                  <span>🔌</span>
+                  <small>A</small>
+                </button>
+                <button class="control-button wear" data-order="wear" type="button">
+                  <span>👕</span>
+                  <small>S</small>
+                </button>
+                <button class="control-button home" data-order="home" type="button">
+                  <span>🏠</span>
+                  <small>D</small>
+                </button>
+              </section>
+            </section>
           </section>
         </section>
       </main>
@@ -121,7 +199,7 @@
       <section class="overlay hidden" id="game-over-overlay">
         <div class="overlay-card">
           <p class="eyebrow">Смена окончена</p>
-          <h2>Очередь переполнилась</h2>
+          <h2>Очередь встала у стойки</h2>
           <div class="results-grid">
             <div>
               <span>Очки</span>
@@ -142,7 +220,7 @@
           </div>
           <div class="overlay-actions">
             <button class="primary-action" id="restart-button">Играть ещё</button>
-            <button class="secondary-action" id="menu-button">В меню</button>
+            <button class="secondary-action" id="menu-button">В режим ожидания</button>
           </div>
         </div>
       </section>

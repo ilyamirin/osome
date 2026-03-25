@@ -17,10 +17,30 @@ const PHASES = [
   },
 ];
 
+const CUSTOMER_QUOTES = {
+  food: ["Сэндвич и я полетел.", "Еда без задержек, пожалуйста.", "У меня тут перекус на минуту."],
+  tech: ["Мне бы кабель без драмы.", "Гаджет приехал целым?", "Надеюсь, провод тот самый."],
+  wear: ["Мой худи уже здесь?", "Одежду бы быстро забрать.", "Ткань не потерялась по пути?"],
+  home: ["Лампа приехала, да?", "Заберу для дома и побегу.", "Коробка для кухни у вас?"],
+  angry: ["Это не мой заказ.", "Я уже давно жду.", "Пожалуйста, без путаницы."],
+  quarrel: ["Эй, соблюдайте очередь.", "Мы вообще по одной линии идем?", "Не подрезайте у стойки."],
+};
+
+const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
+const HAIR_TONES = ["#2d2320", "#5b4032", "#21181a", "#7b5b46"];
+const SHIRT_TONES = ["#2f6d8a", "#7a4b84", "#35524f", "#7b5146", "#59637c"];
+const SHOE_TONES = ["#20262a", "#3f332e", "#223445"];
+const ACCENT_TONES = {
+  food: "#4da95a",
+  tech: "#2f7fd6",
+  wear: "#b6588f",
+  home: "#e18b35",
+};
+
 const DOM = {
-  startScreen: document.querySelector("#start-screen"),
   gameScreen: document.querySelector("#game-screen"),
-  startButton: document.querySelector("#start-button"),
+  stageSurface: document.querySelector("#stage-surface"),
+  introOverlay: document.querySelector("#intro-overlay"),
   restartButton: document.querySelector("#restart-button"),
   menuButton: document.querySelector("#menu-button"),
   board: document.querySelector("#board"),
@@ -31,6 +51,7 @@ const DOM = {
   gimmickLabel: document.querySelector("#gimmick-label"),
   bonusPill: document.querySelector("#bonus-pill"),
   queuePill: document.querySelector("#queue-pill"),
+  calloutCopy: document.querySelector("#callout-copy"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -44,7 +65,8 @@ const DOM = {
 const boardCells = [];
 const state = {
   running: false,
-  board: Array.from({ length: 5 }, () => Array(4).fill(null)),
+  awaitingStart: true,
+  board: createEmptyBoard(),
   score: 0,
   served: 0,
   combo: 0,
@@ -82,6 +104,10 @@ const audioState = {
   unlocked: false,
 };
 
+function createEmptyBoard() {
+  return Array.from({ length: 5 }, () => Array(4).fill(null));
+}
+
 function initBoardMarkup() {
   for (let row = 4; row >= 0; row -= 1) {
     for (let col = 0; col < 4; col += 1) {
@@ -95,9 +121,10 @@ function initBoardMarkup() {
   }
 }
 
-function resetState() {
+function resetRoundState() {
   state.running = true;
-  state.board = Array.from({ length: 5 }, () => Array(4).fill(null));
+  state.awaitingStart = false;
+  state.board = createEmptyBoard();
   state.score = 0;
   state.served = 0;
   state.combo = 0;
@@ -126,22 +153,51 @@ function resetState() {
   state.lastFrame = 0;
 }
 
+function setStandby() {
+  state.running = false;
+  state.awaitingStart = true;
+  state.board = createEmptyBoard();
+  state.score = 0;
+  state.served = 0;
+  state.combo = 0;
+  state.maxCombo = 0;
+  state.sessionMs = 0;
+  state.spawnAccumulator = 0;
+  state.tension = 0;
+  state.calmUntil = 0;
+  state.accessRows = 1;
+  state.firstFivePerfect = true;
+  state.totalErrors = 0;
+  state.consecutiveErrors = 0;
+  state.slowdowns = [];
+  state.speedups = [];
+  state.notifications = [];
+  state.perfectRow = null;
+  state.flowUntil = 0;
+  state.fastAccessUntil = 0;
+  state.antiStressReady = false;
+  state.gimmick = null;
+  state.gimmickUntil = 0;
+  state.glitchStreak = 0;
+  state.quarrelSpreadAt = 0;
+  state.quarrelCells = [];
+  state.rushUntil = 0;
+  state.lastFrame = 0;
+  DOM.overlay.classList.add("hidden");
+  DOM.introOverlay.classList.remove("hidden");
+  DOM.gimmickLabel.textContent = "Готово к открытию смены";
+  render();
+}
+
 function startGame() {
   unlockAudio();
-  resetState();
-  DOM.startScreen.classList.add("hidden");
-  DOM.gameScreen.classList.remove("hidden");
+  resetRoundState();
   DOM.overlay.classList.add("hidden");
+  DOM.introOverlay.classList.add("hidden");
+  DOM.gimmickLabel.textContent = "Спокойная смена";
   spawnClient();
   render();
   requestAnimationFrame(loop);
-}
-
-function backToMenu() {
-  state.running = false;
-  DOM.overlay.classList.add("hidden");
-  DOM.gameScreen.classList.add("hidden");
-  DOM.startScreen.classList.remove("hidden");
 }
 
 function endGame() {
@@ -152,7 +208,7 @@ function endGame() {
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
   DOM.gimmickLabel.textContent = "Смена завершена";
-  pushToast("Смена окончена. Очередь заблокировала ПВЗ.");
+  pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
 }
 
@@ -160,14 +216,19 @@ function createClient(type) {
   return {
     id: state.lastId++,
     type,
+    quote: sample(CUSTOMER_QUOTES[type]),
     enteredAccessAt: null,
     angryUntil: 0,
+    skin: sample(SKIN_TONES),
+    hair: sample(HAIR_TONES),
+    shirt: sample(SHIRT_TONES),
+    shoe: sample(SHOE_TONES),
+    accent: ACCENT_TONES[type],
   };
 }
 
 function getRandomOrder() {
-  const keys = Object.keys(ORDER_TYPES);
-  return keys[Math.floor(Math.random() * keys.length)];
+  return sample(Object.keys(ORDER_TYPES));
 }
 
 function getPhase() {
@@ -187,7 +248,7 @@ function spawnClient() {
     return false;
   }
 
-  const targetCol = freeColumns[Math.floor(Math.random() * freeColumns.length)];
+  const targetCol = sample(freeColumns);
   state.board[4][targetCol] = createClient(getRandomOrder());
   collapseColumn(targetCol);
   updateAccessTimers();
@@ -263,7 +324,7 @@ function serviceInput(order) {
 function registerMiss() {
   const accessible = getAccessibleClients();
   if (accessible.length > 0) {
-    accessible[0].client.angryUntil = performance.now() + 500;
+    accessible[0].client.angryUntil = performance.now() + 900;
   }
 
   state.totalErrors += 1;
@@ -272,11 +333,11 @@ function registerMiss() {
   state.firstFivePerfect = false;
   state.perfectRow = null;
   state.speedups.push(performance.now() + 5_000);
+
   if (state.consecutiveErrors >= 3) {
     state.antiStressReady = true;
   }
 
-  DOM.combo.textContent = "x1";
   pushToast("Ошибка выдачи. Комбо сброшено.");
   playFx("miss");
   vibrate([30]);
@@ -378,6 +439,7 @@ function updateBonuses(now) {
     state.accessRows = nextAccessRows;
     updateAccessTimers();
   }
+
   if (now >= state.gimmickUntil && state.gimmick) {
     finishGimmick();
   }
@@ -411,7 +473,7 @@ function updateTension(dt, now) {
 function triggerGimmick(now) {
   const phase = getPhase();
   const pool = phase.gimmicks.length > 0 ? phase.gimmicks : ["rush"];
-  const gimmick = pool[Math.floor(Math.random() * pool.length)];
+  const gimmick = sample(pool);
 
   state.tension = 0;
   state.calmUntil = now + 5_000;
@@ -422,7 +484,7 @@ function triggerGimmick(now) {
   if (gimmick === "glitch") {
     state.gimmickUntil = now + 8_000;
     DOM.gimmickLabel.textContent = "Глюк сканера";
-    pushToast("Глюк сканера: верхние ряды размыты.");
+    pushToast("Глюк сканера: верх очереди читается хуже.");
   } else if (gimmick === "quarrel") {
     const activated = createQuarrel(now);
     if (!activated) {
@@ -435,7 +497,7 @@ function triggerGimmick(now) {
       state.gimmickUntil = now + 6_000;
       state.quarrelSpreadAt = now + 3_000;
       DOM.gimmickLabel.textContent = "Клиенты ругаются";
-      pushToast("Ссора: спорящие клиенты временно блокируют выдачу.");
+      pushToast("Ссора: заблокированные клетки можно снять любой выдачей.");
     }
   } else {
     state.gimmickUntil = now + 10_000;
@@ -459,7 +521,7 @@ function finishGimmick(message) {
   state.glitchStreak = 0;
   state.rushUntil = 0;
   DOM.gimmickLabel.textContent =
-    state.calmUntil > performance.now() ? "Затишье" : "Спокойная смена";
+    state.calmUntil > performance.now() ? "Короткое затишье" : "Спокойная смена";
 }
 
 function createQuarrel(now) {
@@ -481,7 +543,7 @@ function createQuarrel(now) {
     return false;
   }
 
-  state.quarrelCells = candidates[Math.floor(Math.random() * candidates.length)];
+  state.quarrelCells = sample(candidates);
   state.quarrelSpreadAt = now + 3_000;
   return true;
 }
@@ -505,6 +567,7 @@ function spreadQuarrel(now) {
       }
     }
   }
+
   state.quarrelCells = expanded;
   state.quarrelSpreadAt = Infinity;
 }
@@ -554,6 +617,8 @@ function loop(timestamp) {
 }
 
 function render() {
+  const now = performance.now();
+
   DOM.score.textContent = formatNumber(state.score);
   DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   DOM.time.textContent = formatTime(state.sessionMs);
@@ -561,10 +626,10 @@ function render() {
   DOM.queuePill.textContent = `Зона доступа: ${state.accessRows} ${pluralRows(state.accessRows)}`;
 
   const statuses = [];
-  if (performance.now() < state.flowUntil) {
+  if (now < state.flowUntil) {
     statuses.push("Поток +50%");
   }
-  if (performance.now() < state.fastAccessUntil) {
+  if (now < state.fastAccessUntil) {
     statuses.push("Быстрый старт");
   }
   if (state.antiStressReady) {
@@ -592,12 +657,26 @@ function render() {
 
     const type = ORDER_TYPES[client.type];
     const shouldGlitch = state.gimmick === "glitch" && row >= state.accessRows;
-    const angry = performance.now() < client.angryUntil;
+    const angry = now < client.angryUntil;
+    const bubble = getBubbleText(client, row, col, angry);
 
     cell.innerHTML = `
       ${isQuarrelCell(row, col) ? '<span class="spark">⚡</span>' : ""}
       <div class="cell-inner ${shouldGlitch ? "glitch" : ""}">
-        <div class="customer-icon ${angry ? "angry" : ""}">👤</div>
+        ${bubble ? `<div class="speech-bubble">${escapeHtml(bubble)}</div>` : ""}
+        <div class="customer-shadow"></div>
+        <div
+          class="customer-figure ${angry ? "angry" : ""}"
+          style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --accent:${client.accent}; --shoe:${client.shoe};"
+        >
+          <span class="customer-arm arm-left"></span>
+          <span class="customer-arm arm-right"></span>
+          <span class="customer-body"></span>
+          <span class="customer-head"></span>
+          <span class="customer-hair"></span>
+          <span class="customer-bag"></span>
+          <span class="customer-feet"></span>
+        </div>
         <div class="order-badge ${type.className}">
           <span>${type.icon}</span>
           <span>${type.key}</span>
@@ -606,14 +685,46 @@ function render() {
     `;
   });
 
+  renderCallout(now);
   renderToasts();
+}
+
+function renderCallout(now) {
+  if (state.awaitingStart) {
+    DOM.calloutCopy.textContent =
+      "«Точка Osome готова. Нажми любую клавишу или тапни по сцене, чтобы запустить смену»";
+    return;
+  }
+
+  const accessible = getAccessibleClients();
+  const main = accessible[0];
+  if (!main) {
+    DOM.calloutCopy.textContent = "«Очередь на секунду выровнялась. Следующий клиент уже идет.»";
+    return;
+  }
+
+  const angry = now < main.client.angryUntil;
+  DOM.calloutCopy.textContent = `«${getBubbleText(main.client, main.row, main.col, angry)}»`;
+}
+
+function getBubbleText(client, row, col, angry) {
+  if (angry) {
+    return sample(CUSTOMER_QUOTES.angry);
+  }
+  if (isQuarrelCell(row, col)) {
+    return sample(CUSTOMER_QUOTES.quarrel);
+  }
+  if (row < state.accessRows) {
+    return client.quote;
+  }
+  return "";
 }
 
 function pushToast(text) {
   state.notifications.push({
     id: `${Date.now()}-${Math.random()}`,
     text,
-    expiresAt: performance.now() + 2_200,
+    expiresAt: performance.now() + 2_400,
   });
 }
 
@@ -623,7 +734,7 @@ function updateToasts(now) {
 
 function renderToasts() {
   DOM.toastStack.innerHTML = state.notifications
-    .map((toast) => `<div class="toast">${toast.text}</div>`)
+    .map((toast) => `<div class="toast">${escapeHtml(toast.text)}</div>`)
     .join("");
 }
 
@@ -655,6 +766,18 @@ function pressButton(order) {
   }
   button.classList.add("is-pressed");
   window.setTimeout(() => button.classList.remove("is-pressed"), 120);
+}
+
+function sample(items) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function vibrate(pattern) {
@@ -734,23 +857,53 @@ function toggleMusic() {
   DOM.musicToggle.textContent = `Музыка: ${audioState.enabled ? "Вкл" : "Выкл"}`;
 }
 
+function handleSceneTap(event) {
+  if (event.target.closest(".sound-toggle")) {
+    return;
+  }
+  if (event.target.closest(".control-button")) {
+    return;
+  }
+  if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
+    startGame();
+  }
+}
+
 function onKeyDown(event) {
+  if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
+    event.preventDefault();
+    startGame();
+    return;
+  }
+
+  if (!state.running) {
+    return;
+  }
+
   const order = Object.keys(ORDER_TYPES).find((key) => ORDER_TYPES[key].code === event.code);
   if (!order) {
     return;
   }
+
   event.preventDefault();
   serviceInput(order);
 }
 
 initBoardMarkup();
-render();
+setStandby();
 
-DOM.startButton.addEventListener("click", startGame);
 DOM.restartButton.addEventListener("click", startGame);
-DOM.menuButton.addEventListener("click", backToMenu);
+DOM.menuButton.addEventListener("click", setStandby);
 DOM.musicToggle.addEventListener("click", toggleMusic);
+DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
+DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.controlButtons.forEach((button) => {
-  button.addEventListener("click", () => serviceInput(button.dataset.order));
+  button.addEventListener("click", () => {
+    if (state.awaitingStart) {
+      startGame();
+      return;
+    }
+    serviceInput(button.dataset.order);
+  });
 });
 window.addEventListener("keydown", onKeyDown);
