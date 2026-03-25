@@ -1,8 +1,8 @@
 const ORDER_TYPES = {
-  food: { key: "W", code: "KeyW", icon: "🍎", label: "Еда", className: "food" },
-  tech: { key: "A", code: "KeyA", icon: "🔌", label: "Электроника", className: "tech" },
-  wear: { key: "S", code: "KeyS", icon: "👕", label: "Одежда", className: "wear" },
-  home: { key: "D", code: "KeyD", icon: "🏠", label: "Дом", className: "home" },
+  food: { icon: "🍎", label: "Еда", className: "food" },
+  tech: { icon: "🔌", label: "Электроника", className: "tech" },
+  wear: { icon: "👕", label: "Одежда", className: "wear" },
+  home: { icon: "🏠", label: "Дом", className: "home" },
 };
 
 const PHASES = [
@@ -54,6 +54,10 @@ const DOM = {
   sceneDialogue: document.querySelector("#scene-dialogue"),
   sceneDialogueLabel: document.querySelector("#scene-dialogue-label"),
   sceneDialogueText: document.querySelector("#scene-dialogue-text"),
+  activeOrder: document.querySelector("#active-order"),
+  activeOrderBadge: document.querySelector("#active-order-badge"),
+  activeOrderIcon: document.querySelector("#active-order-icon"),
+  activeOrderName: document.querySelector("#active-order-name"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -61,7 +65,6 @@ const DOM = {
   resultTime: document.querySelector("#result-time"),
   musicToggle: document.querySelector("#music-toggle"),
   toastStack: document.querySelector("#toast-stack"),
-  controlButtons: [...document.querySelectorAll(".control-button")],
 };
 
 const boardCells = [];
@@ -94,6 +97,7 @@ const state = {
   quarrelSpreadAt: 0,
   quarrelCells: [],
   rushUntil: 0,
+  currentOrder: null,
   activeSpeakerId: null,
   activeSpeechText: "",
   activeSpeechLabel: "",
@@ -156,6 +160,7 @@ function resetRoundState() {
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
+  state.currentOrder = getRandomOrder();
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.activeSpeechLabel = "";
@@ -192,8 +197,9 @@ function setStandby() {
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
+  state.currentOrder = null;
   state.activeSpeakerId = null;
-  state.activeSpeechText = "Нажми любую клавишу или тапни по сцене, чтобы открыть смену.";
+  state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
   state.activeSpeechLabel = "Оператор";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
@@ -312,37 +318,39 @@ function isQuarrelCell(row, col) {
   return state.quarrelCells.some((cell) => cell.row === row && cell.col === col);
 }
 
-function serviceInput(order) {
+function handleCellTap(row, col) {
   if (!state.running) {
     return;
   }
 
-  pressButton(order);
-
-  const accessible = getAccessibleClients();
-  const quarrelTarget = accessible.find(({ row, col }) => isQuarrelCell(row, col));
-  if (quarrelTarget) {
-    serveClient(quarrelTarget.row, quarrelTarget.col, true);
+  const client = state.board[row]?.[col];
+  if (!client) {
     return;
   }
 
-  const match = accessible.find(({ client }) => client.type === order);
-  if (match) {
-    serveClient(match.row, match.col, false);
+  if (isQuarrelCell(row, col)) {
+    serveClient(row, col, true);
     return;
   }
 
-  registerMiss();
+  if (client.type === state.currentOrder) {
+    serveClient(row, col, false);
+    return;
+  }
+
+  registerMiss(client, row, col);
 }
 
-function registerMiss() {
+function registerMiss(targetClient, row, col) {
   const now = performance.now();
-  const accessible = getAccessibleClients();
-  if (accessible.length > 0) {
-    accessible[0].client.angryUntil = now + 900;
-    state.activeSpeakerId = accessible[0].client.id;
+  const fallback = getAccessibleClients()[0] || null;
+  const selected = targetClient ? { client: targetClient, row, col } : fallback;
+
+  if (selected) {
+    selected.client.angryUntil = now + 900;
+    state.activeSpeakerId = selected.client.id;
     state.activeSpeechText = sample(CUSTOMER_QUOTES.angry);
-    state.activeSpeechLabel = getSpeechLabel(accessible[0].row, accessible[0].col, true, false);
+    state.activeSpeechLabel = getSpeechLabel(selected.row, selected.col, true, false);
     state.speechSwitchAt = now + 2_000;
   }
 
@@ -395,6 +403,7 @@ function serveClient(row, col, fromQuarrel) {
 
   state.score += points;
   state.slowdowns.push(now + 3_000);
+  state.currentOrder = getRandomOrder();
 
   if (state.combo >= 5 && now >= state.flowUntil) {
     state.flowUntil = now + 10_000;
@@ -646,6 +655,7 @@ function render() {
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
   DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
+  renderActiveOrder();
 
   const statuses = [];
   if (now < state.flowUntil) {
@@ -667,6 +677,9 @@ function render() {
     cell.className = "cell";
     if (row < state.accessRows) {
       cell.classList.add("accessible");
+    }
+    if (client) {
+      cell.classList.add("has-customer");
     }
     if (isQuarrelCell(row, col)) {
       cell.classList.add("quarrel");
@@ -702,7 +715,7 @@ function render() {
         </div>
         <div class="order-badge ${type.className}">
           <span>${type.icon}</span>
-          <span>${type.key}</span>
+          <span>${type.label}</span>
         </div>
       </div>
     `;
@@ -764,7 +777,7 @@ function updateActiveSpeech(now) {
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
     state.activeSpeechLabel = "Оператор";
-    state.activeSpeechText = "Нажми любую клавишу или тапни по сцене, чтобы открыть смену.";
+    state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
     return;
   }
 
@@ -869,6 +882,22 @@ function renderToasts() {
     .join("");
 }
 
+function renderActiveOrder() {
+  if (!state.currentOrder) {
+    DOM.activeOrder.dataset.order = "idle";
+    DOM.activeOrderBadge.className = "active-order-badge";
+    DOM.activeOrderIcon.textContent = "◎";
+    DOM.activeOrderName.textContent = "Ждём старт";
+    return;
+  }
+
+  const order = ORDER_TYPES[state.currentOrder];
+  DOM.activeOrder.dataset.order = state.currentOrder;
+  DOM.activeOrderBadge.className = `active-order-badge ${order.className}`;
+  DOM.activeOrderIcon.textContent = order.icon;
+  DOM.activeOrderName.textContent = order.label;
+}
+
 function formatNumber(value) {
   return new Intl.NumberFormat("ru-RU").format(value);
 }
@@ -888,15 +917,6 @@ function pluralRows(value) {
     return "ряда";
   }
   return "рядов";
-}
-
-function pressButton(order) {
-  const button = DOM.controlButtons.find((item) => item.dataset.order === order);
-  if (!button) {
-    return;
-  }
-  button.classList.add("is-pressed");
-  window.setTimeout(() => button.classList.remove("is-pressed"), 120);
 }
 
 function sample(items) {
@@ -996,32 +1016,20 @@ function handleSceneTap(event) {
   if (event.target.closest(".sound-toggle")) {
     return;
   }
-  if (event.target.closest(".control-button")) {
-    return;
-  }
   if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
     startGame();
   }
 }
 
-function onKeyDown(event) {
-  if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
-    event.preventDefault();
-    startGame();
+function onBoardPointerDown(event) {
+  const cell = event.target.closest(".cell");
+  if (!cell) {
     return;
   }
 
-  if (!state.running) {
-    return;
-  }
-
-  const order = Object.keys(ORDER_TYPES).find((key) => ORDER_TYPES[key].code === event.code);
-  if (!order) {
-    return;
-  }
-
-  event.preventDefault();
-  serviceInput(order);
+  const row = Number(cell.dataset.row);
+  const col = Number(cell.dataset.col);
+  handleCellTap(row, col);
 }
 
 initBoardMarkup();
@@ -1032,13 +1040,4 @@ DOM.menuButton.addEventListener("click", setStandby);
 DOM.musicToggle.addEventListener("click", toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
-DOM.controlButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (state.awaitingStart) {
-      startGame();
-      return;
-    }
-    serviceInput(button.dataset.order);
-  });
-});
-window.addEventListener("keydown", onKeyDown);
+DOM.board.addEventListener("pointerdown", onBoardPointerDown);
