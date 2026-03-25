@@ -1,10 +1,10 @@
 const BALANCE = globalThis.OSOME_BALANCE;
 
 const ORDER_TYPES = {
-  food: { icon: "🍎", label: "Еда", className: "food" },
-  tech: { icon: "🔌", label: "Электроника", className: "tech" },
-  wear: { icon: "👕", label: "Одежда", className: "wear" },
-  home: { icon: "🏠", label: "Дом", className: "home" },
+  food: { label: "Еда", className: "food", iconPath: "./assets/icons/food-apple.svg" },
+  tech: { label: "Электроника", className: "tech", iconPath: "./assets/icons/tech-cable.svg" },
+  wear: { label: "Одежда", className: "wear", iconPath: "./assets/icons/wear-shirt.svg" },
+  home: { label: "Дом", className: "home", iconPath: "./assets/icons/home-house.svg" },
 };
 
 const PHASES = BALANCE.phases;
@@ -67,7 +67,6 @@ const DOM = {
   activeOrder: document.querySelector("#active-order"),
   activeOrderBadge: document.querySelector("#active-order-badge"),
   activeOrderIcon: document.querySelector("#active-order-icon"),
-  activeOrderName: document.querySelector("#active-order-name"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -796,12 +795,10 @@ function render() {
           <span class="customer-body"></span>
           <span class="customer-head"></span>
           <span class="customer-hair"></span>
-          <span class="customer-bag"></span>
           <span class="customer-feet"></span>
         </div>
-        <div class="order-badge ${type.className}">
-          <span>${type.icon}</span>
-          <span>${type.label}</span>
+        <div class="order-badge ${type.className}" aria-label="${type.label}">
+          ${renderOrderIcon(type, "order-symbol")}
         </div>
       </div>
     `;
@@ -968,20 +965,25 @@ function renderToasts() {
     .join("");
 }
 
+function renderOrderIcon(order, className) {
+  return `<img class="type-icon ${className} ${order.className}-symbol" src="${order.iconPath}" alt="" aria-hidden="true" />`;
+}
+
 function renderActiveOrder() {
   if (!state.currentOrder) {
     DOM.activeOrder.dataset.order = "idle";
     DOM.activeOrderBadge.className = "active-order-badge";
-    DOM.activeOrderIcon.textContent = "◎";
-    DOM.activeOrderName.textContent = "Ждём старт";
+    DOM.activeOrderBadge.removeAttribute("aria-label");
+    DOM.activeOrderIcon.innerHTML =
+      '<span class="active-order-placeholder" aria-hidden="true"></span>';
     return;
   }
 
   const order = ORDER_TYPES[state.currentOrder];
   DOM.activeOrder.dataset.order = state.currentOrder;
   DOM.activeOrderBadge.className = `active-order-badge ${order.className}`;
-  DOM.activeOrderIcon.textContent = order.icon;
-  DOM.activeOrderName.textContent = order.label;
+  DOM.activeOrderBadge.setAttribute("aria-label", order.label);
+  DOM.activeOrderIcon.innerHTML = renderOrderIcon(order, "active-order-symbol");
 }
 
 function formatNumber(value) {

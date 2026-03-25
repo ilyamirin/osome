@@ -440,9 +440,9 @@ button {
 .customer-shadow {
   position: absolute;
   left: 50%;
-  bottom: 18px;
-  width: 34px;
-  height: 12px;
+  bottom: 14px;
+  width: 42px;
+  height: 14px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: rgba(29, 38, 44, 0.16);
@@ -452,9 +452,9 @@ button {
 .customer-figure {
   position: absolute;
   left: 50%;
-  bottom: 22px;
-  width: 52px;
-  height: 66px;
+  bottom: 14px;
+  width: 64px;
+  height: 82px;
   transform: translateX(-50%);
   animation: customerBob 1.9s ease-in-out infinite;
 }
@@ -467,7 +467,6 @@ button {
 .customer-body,
 .customer-head,
 .customer-hair,
-.customer-bag,
 .customer-feet {
   position: absolute;
   display: block;
@@ -475,9 +474,9 @@ button {
 
 .customer-body {
   left: 50%;
-  bottom: 14px;
-  width: 34px;
-  height: 32px;
+  bottom: 16px;
+  width: 42px;
+  height: 40px;
   transform: translateX(-50%);
   border-radius: 46% 46% 36% 36%;
   background: var(--shirt);
@@ -486,9 +485,9 @@ button {
 
 .customer-head {
   left: 50%;
-  top: 12px;
-  width: 20px;
-  height: 20px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
   transform: translateX(-50%);
   border-radius: 50%;
   background: var(--skin);
@@ -497,9 +496,9 @@ button {
 
 .customer-hair {
   left: 50%;
-  top: 10px;
-  width: 22px;
-  height: 12px;
+  top: 8px;
+  width: 26px;
+  height: 14px;
   transform: translateX(-50%);
   border-radius: 12px 12px 8px 8px;
   background: var(--hair);
@@ -507,38 +506,28 @@ button {
 }
 
 .customer-arm {
-  top: 30px;
-  width: 11px;
-  height: 20px;
+  top: 37px;
+  width: 13px;
+  height: 24px;
   border-radius: 999px;
   background: var(--skin);
 }
 
 .arm-left {
-  left: 7px;
+  left: 5px;
   transform: rotate(22deg);
 }
 
 .arm-right {
-  right: 7px;
+  right: 5px;
   transform: rotate(-22deg);
-}
-
-.customer-bag {
-  right: 2px;
-  top: 32px;
-  width: 14px;
-  height: 18px;
-  border-radius: 5px;
-  background: var(--accent);
-  border: 2px solid rgba(255, 255, 255, 0.58);
 }
 
 .customer-feet {
   left: 50%;
   bottom: 6px;
-  width: 24px;
-  height: 9px;
+  width: 30px;
+  height: 11px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: var(--shoe);
@@ -546,63 +535,43 @@ button {
 
 .order-badge {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
-  z-index: 3;
+  left: 76%;
+  top: -2px;
+  z-index: 4;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 15px;
-  color: white;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 12px 20px rgba(29, 38, 44, 0.14);
+  transform: translateX(-50%);
+  background: transparent;
 }
 
 .order-symbol {
   display: block;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
 }
 
 .type-icon {
   transform-origin: center;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.06));
+  filter: drop-shadow(0 2px 3px rgba(29, 38, 44, 0.2));
 }
 
 .order-symbol.food-symbol {
-  transform: scale(1.1) translateY(1px);
+  transform: scale(1.02) translateY(1px);
 }
 
 .order-symbol.tech-symbol {
-  transform: scale(0.98);
+  transform: scale(1.02) translateY(2px);
 }
 
 .order-symbol.wear-symbol {
-  transform: scale(1.06) translateY(1px);
+  transform: scale(1.04) translateY(2px);
 }
 
 .order-symbol.home-symbol {
-  transform: scale(1.08);
-}
-
-.order-badge.food {
-  background: var(--food);
-}
-
-.order-badge.tech {
-  background: var(--tech);
-}
-
-.order-badge.wear {
-  background: var(--wear);
-}
-
-.order-badge.home {
-  background: var(--home);
+  transform: scale(1.03) translateY(2px);
 }
 
 .glitch .order-badge {
@@ -681,49 +650,22 @@ button {
 .active-order {
   display: grid;
   align-content: center;
-  gap: 8px;
-  padding: 10px 12px;
+  place-items: center;
+  min-height: 96px;
+  padding: 6px 10px;
   background: linear-gradient(145deg, rgba(255, 250, 243, 0.96), rgba(242, 229, 212, 0.92));
   border: 1px solid rgba(113, 74, 49, 0.16);
-}
-
-.active-order-label {
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .active-order-badge {
   display: grid;
   place-items: center;
   width: fit-content;
-  min-width: 84px;
-  min-height: 84px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 24px;
-  background: rgba(29, 38, 44, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 16px 30px rgba(29, 38, 44, 0.12);
-}
-
-.active-order-badge.food {
-  background: linear-gradient(145deg, #58b965, #469a52);
-}
-
-.active-order-badge.tech {
-  background: linear-gradient(145deg, #4291ea, #2f7fd6);
-}
-
-.active-order-badge.wear {
-  background: linear-gradient(145deg, #c96aa1, #b6588f);
-}
-
-.active-order-badge.home {
-  background: linear-gradient(145deg, #f09b45, #dd8131);
+  min-width: 88px;
+  min-height: 88px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .active-order-icon {
@@ -735,29 +677,29 @@ button {
 
 .active-order-symbol {
   display: block;
-  width: 44px;
-  height: 44px;
+  width: 74px;
+  height: 74px;
 }
 
 .active-order-symbol.food-symbol {
-  transform: scale(1.12) translateY(1px);
+  transform: scale(1.04) translateY(1px);
 }
 
 .active-order-symbol.tech-symbol {
-  transform: scale(1);
+  transform: scale(1.03) translateY(2px);
 }
 
 .active-order-symbol.wear-symbol {
-  transform: scale(1.08) translateY(1px);
+  transform: scale(1.05) translateY(2px);
 }
 
 .active-order-symbol.home-symbol {
-  transform: scale(1.1);
+  transform: scale(1.04) translateY(2px);
 }
 
 .active-order-placeholder {
-  width: 28px;
-  height: 28px;
+  width: 42px;
+  height: 42px;
   border: 3px solid rgba(29, 38, 44, 0.3);
   border-radius: 999px;
 }

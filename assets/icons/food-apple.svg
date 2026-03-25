@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="apple-body" x1="18" y1="18" x2="48" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff756b" />
+      <stop offset="1" stop-color="#d8312a" />
+    </linearGradient>
+    <linearGradient id="apple-leaf" x1="33" y1="12" x2="46" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#75d46e" />
+      <stop offset="1" stop-color="#2f9f44" />
+    </linearGradient>
+  </defs>
+  <path d="M31.9 16.4c-2.3 0-4.7.7-6.7 2.1-2-1.4-4.4-2.1-6.8-2.1-6.8 0-11.8 5.6-11.8 13.7 0 10 6.9 22.2 16.2 22.2 2.2 0 4-.8 5.4-1.4 1-.4 1.9-.8 2.6-.8.7 0 1.6.4 2.6.8 1.4.6 3.2 1.4 5.4 1.4 9.3 0 16.2-12.2 16.2-22.2 0-8.1-5-13.7-11.8-13.7-2.5 0-4.8.7-6.8 2.1-1.9-1.4-4.3-2.1-6.5-2.1Z" fill="url(#apple-body)" />
+  <path d="M28.7 10.4c3.9-2 8.8-1.7 12.4.9-4.2 2.9-8.6 3.2-12.4-.9Z" fill="url(#apple-leaf)" />
+  <path d="M31.6 17c-.7-3.2.7-6.3 3.9-8.7 1.3 3.5.5 6.6-3.9 8.7Z" fill="#6d4326" />
+  <path d="M17.8 23.5c-2.6 1.9-4.3 5.1-4.3 9.3 0 7.2 4.7 15.5 10.4 18.4-7.7-.8-13.4-11.9-13.4-21.1 0-5.2 2.7-9 7.3-10.8Z" fill="#ff9d95" opacity=".32" />
+  <ellipse cx="22.7" cy="28.6" rx="4.6" ry="7.2" transform="rotate(24 22.7 28.6)" fill="#fff" opacity=".22" />
+</svg>
