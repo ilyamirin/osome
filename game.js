@@ -909,7 +909,8 @@ function render() {
   DOM.score.textContent = formatNumber(state.score);
   DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   DOM.time.textContent = formatTime(state.sessionMs);
-  DOM.tensionFill.style.width = `${Math.round(state.tension * 100)}%`;
+  DOM.tensionFill.style.width = "100%";
+  DOM.tensionFill.style.height = `${Math.round(state.tension * 100)}%`;
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
   DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
