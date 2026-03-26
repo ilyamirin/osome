@@ -672,6 +672,7 @@ button {
 }
 
 .scene-dialogue {
+  --dialogue-tail-left: 50%;
   position: absolute;
   left: 50%;
   top: 24px;
@@ -690,7 +691,7 @@ button {
 .scene-dialogue::after {
   content: "";
   position: absolute;
-  left: 50%;
+  left: var(--dialogue-tail-left);
   bottom: -12px;
   width: 22px;
   height: 22px;
@@ -698,6 +699,10 @@ button {
   border-right: 1px solid rgba(29, 38, 44, 0.12);
   border-bottom: 1px solid rgba(29, 38, 44, 0.12);
   background: rgba(255, 251, 245, 0.97);
+}
+
+.scene-dialogue.from-terminal .scene-dialogue-label {
+  background: rgba(47, 127, 214, 0.14);
 }
 
 .scene-dialogue.is-below::after {

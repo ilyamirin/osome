@@ -67,6 +67,7 @@ const DOM = {
   activeOrder: document.querySelector("#active-order"),
   activeOrderBadge: document.querySelector("#active-order-badge"),
   activeOrderIcon: document.querySelector("#active-order-icon"),
+  terminalUnit: document.querySelector(".terminal-unit"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -110,6 +111,7 @@ const state = {
   activeSpeakerId: null,
   activeSpeechText: "",
   activeSpeechLabel: "",
+  activeSpeechOrigin: "operator",
   speechSwitchAt: 0,
   lastFrame: 0,
   lastId: 1,
@@ -175,6 +177,7 @@ function resetRoundState() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.activeSpeechLabel = "";
+  state.activeSpeechOrigin = "operator";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
 }
@@ -212,6 +215,7 @@ function setStandby() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
   state.activeSpeechLabel = "Оператор";
+  state.activeSpeechOrigin = "operator";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
@@ -740,6 +744,7 @@ function render() {
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
   DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
+  DOM.sceneDialogue.classList.toggle("from-terminal", state.activeSpeechOrigin === "terminal");
   renderActiveOrder();
 
   const statuses = [];
@@ -810,19 +815,18 @@ function render() {
 
 function positionSceneDialogue() {
   if (state.awaitingStart) {
-    DOM.sceneDialogue.classList.remove("is-below");
-    DOM.sceneDialogue.style.left = "50%";
-    DOM.sceneDialogue.style.top = "24px";
-    DOM.sceneDialogue.style.transform = "translateX(-50%)";
+    positionSceneDialogueDefault();
+    return;
+  }
+
+  if (state.activeSpeechOrigin === "terminal" && DOM.terminalUnit) {
+    positionSceneDialogueAtTerminal();
     return;
   }
 
   const activeCell = boardCells.find((cell) => cell.classList.contains("speaker-active"));
   if (!activeCell) {
-    DOM.sceneDialogue.classList.remove("is-below");
-    DOM.sceneDialogue.style.left = "50%";
-    DOM.sceneDialogue.style.top = "24px";
-    DOM.sceneDialogue.style.transform = "translateX(-50%)";
+    positionSceneDialogueDefault();
     return;
   }
 
@@ -848,12 +852,47 @@ function positionSceneDialogue() {
   const minTop = 20;
   const fitsAbove = preferredTop >= minTop;
   const finalTop = fitsAbove ? preferredTop : cellRect.bottom - stageRect.top + 12;
+  const tailLeft = clamp(cellCenterX - clampedLeft, 28, bubbleWidth - 28);
 
   DOM.sceneDialogue.style.left = `${clampedLeft}px`;
   DOM.sceneDialogue.style.top = `${finalTop}px`;
+  DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", `${tailLeft}px`);
   if (!fitsAbove) {
     DOM.sceneDialogue.classList.add("is-below");
   }
+}
+
+function positionSceneDialogueDefault() {
+  DOM.sceneDialogue.classList.remove("is-below");
+  DOM.sceneDialogue.style.left = "50%";
+  DOM.sceneDialogue.style.top = "24px";
+  DOM.sceneDialogue.style.transform = "translateX(-50%)";
+  DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", "50%");
+}
+
+function positionSceneDialogueAtTerminal() {
+  const stageRect = DOM.stageSurface.getBoundingClientRect();
+  const terminalRect = DOM.terminalUnit.getBoundingClientRect();
+
+  DOM.sceneDialogue.classList.remove("is-below");
+  DOM.sceneDialogue.style.transform = "none";
+  DOM.sceneDialogue.style.left = "0px";
+  DOM.sceneDialogue.style.top = "0px";
+
+  const bubbleRect = DOM.sceneDialogue.getBoundingClientRect();
+  const bubbleWidth = bubbleRect.width;
+  const bubbleHeight = bubbleRect.height;
+  const padding = 14;
+  const terminalCenterX = terminalRect.left - stageRect.left + terminalRect.width / 2;
+  const preferredLeft = terminalCenterX - bubbleWidth * 0.68;
+  const clampedLeft = clamp(preferredLeft, padding, stageRect.width - bubbleWidth - padding);
+  const preferredTop = terminalRect.top - stageRect.top - bubbleHeight - 18;
+  const finalTop = Math.max(20, preferredTop);
+  const tailLeft = clamp(terminalCenterX - clampedLeft, 28, bubbleWidth - 28);
+
+  DOM.sceneDialogue.style.left = `${clampedLeft}px`;
+  DOM.sceneDialogue.style.top = `${finalTop}px`;
+  DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", `${tailLeft}px`);
 }
 
 function updateActiveSpeech(now) {
@@ -861,14 +900,16 @@ function updateActiveSpeech(now) {
     state.activeSpeakerId = null;
     state.activeSpeechLabel = "Оператор";
     state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
+    state.activeSpeechOrigin = "operator";
     return;
   }
 
   const candidates = getSpeechCandidates();
   if (candidates.length === 0) {
     state.activeSpeakerId = null;
-    state.activeSpeechLabel = "Зал";
-    state.activeSpeechText = "Следующий клиент уже подходит к стойке.";
+    state.activeSpeechLabel = "Терминал";
+    state.activeSpeechText = "Следующий клиент подходит к стойке.";
+    state.activeSpeechOrigin = "terminal";
     return;
   }
 
@@ -892,6 +933,7 @@ function updateActiveSpeech(now) {
   state.activeSpeakerId = nextCandidate.client.id;
   state.activeSpeechLabel = getSpeechLabel(nextCandidate.row, nextCandidate.col, angry, quarrel);
   state.activeSpeechText = getSpeechText(nextCandidate.client, angry, quarrel);
+  state.activeSpeechOrigin = "client";
   state.speechSwitchAt = now + 2_000;
 }
 
