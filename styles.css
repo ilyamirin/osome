@@ -666,11 +666,6 @@ button {
   transform: scale(1.03) translateY(2px);
 }
 
-.glitch .order-badge {
-  filter: blur(4px) saturate(0.82);
-  opacity: 0.78;
-}
-
 .scene-dialogue {
   --dialogue-tail-left: 50%;
   position: absolute;

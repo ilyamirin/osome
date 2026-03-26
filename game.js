@@ -10,12 +10,88 @@ const ORDER_TYPES = {
 const PHASES = BALANCE.phases;
 
 const CUSTOMER_QUOTES = {
-  food: ["Сэндвич и я полетел.", "Еда без задержек, пожалуйста.", "У меня тут перекус на минуту."],
-  tech: ["Мне бы кабель без драмы.", "Гаджет приехал целым?", "Надеюсь, провод тот самый."],
-  wear: ["Мой худи уже здесь?", "Одежду бы быстро забрать.", "Ткань не потерялась по пути?"],
-  home: ["Лампа приехала, да?", "Заберу для дома и побегу.", "Коробка для кухни у вас?"],
-  angry: ["Это не мой заказ.", "Я уже давно жду.", "Пожалуйста, без путаницы."],
-  quarrel: ["Эй, соблюдайте очередь.", "Мы вообще по одной линии идем?", "Не подрезайте у стойки."],
+  food: [
+    "Яблоко заберу и сразу побегу.",
+    "Еду бы побыстрее, пожалуйста.",
+    "У меня тут перекус между делом.",
+    "Там что-то съедобное на моё имя.",
+    "Главное не перепутать пакет с едой.",
+    "Беру заказ и обратно на бегу.",
+    "Если это мой перекус, я спасён.",
+    "У меня там яблоко, не задерживайте.",
+    "Это заказ из еды, давайте быстро.",
+    "Я только за едой и сразу обратно.",
+    "Надеюсь, мой пакет не остывал всю дорогу.",
+    "Мне бы мой заказ, пока я не проголодался совсем.",
+  ],
+  tech: [
+    "Ноутбук уже доехал целым?",
+    "Мне бы технику без сюрпризов.",
+    "Там электроника на моё имя.",
+    "Пожалуйста, только не чужой гаджет.",
+    "Если это мой ноутбук, я спасён.",
+    "Мне нужен именно мой заказ, без путаницы.",
+    "С техникой лучше без лишней драмы.",
+    "Я за электроникой, можно быстрее?",
+    "Главное, чтобы коробку не уронили.",
+    "Надеюсь, приехало именно то устройство.",
+    "У меня тут техника, я быстро заберу.",
+    "Сейчас бы получить ноутбук и выдохнуть.",
+  ],
+  wear: [
+    "Кепка уже приехала?",
+    "Я только за вещами и обратно.",
+    "Там одежда на моё имя, да?",
+    "Мне бы мой заказ без долгих поисков.",
+    "Надеюсь, кепку не отправили не туда.",
+    "Заберу вещи и сразу побегу.",
+    "Это мой заказ с одеждой, пожалуйста.",
+    "Можно побыстрее с модной доставкой?",
+    "У меня там что-то из одежды, давайте без путаницы.",
+    "Если приехала кепка, смена уже удалась.",
+    "Мой заказ лёгкий, можно выдать быстро.",
+    "Я ненадолго, просто забрать вещи.",
+  ],
+  home: [
+    "Лампа уже у вас?",
+    "Мне бы заказ для дома и дальше по делам.",
+    "Там что-то домашнее на моё имя.",
+    "Надеюсь, коробка с лампой целая.",
+    "Заберу домой и сразу поеду.",
+    "Это заказ для дома, можно быстрее?",
+    "Если лампа доехала, вечер спасён.",
+    "Мне бы мой домашний заказ без задержки.",
+    "У меня там вещь для дома, да?",
+    "Главное, чтобы ничего не треснуло по пути.",
+    "Я быстро: лампу забрал и ушёл.",
+    "Дома без этого заказа уже всё встало.",
+  ],
+  angry: [
+    "Это точно не мой заказ.",
+    "Я уже слишком долго жду.",
+    "Пожалуйста, без путаницы.",
+    "Мы можем ускориться?",
+    "Я здесь не первый раз стою.",
+    "Мне нужен мой заказ, не чей-то ещё.",
+    "Очередь идёт слишком медленно.",
+    "Я вообще-то уже подходил.",
+    "Давайте без ошибок, пожалуйста.",
+    "Мне бы уже закончить с этим.",
+    "Я правда очень давно жду.",
+    "Если снова не то, будет плохо.",
+  ],
+  quarrel: [
+    "Эй, соблюдайте очередь.",
+    "Мы вообще по одной линии идём?",
+    "Не подрезайте у стойки.",
+    "Кто тут сейчас должен проходить?",
+    "Не лезьте передо мной.",
+    "Я здесь стоял раньше.",
+    "Давайте без скандала, просто по очереди.",
+    "Вы сейчас всю линию стопорите.",
+    "Нет, это было после меня.",
+    "Куда вы двигаетесь, очередь вот здесь.",
+  ],
 };
 
 const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
@@ -103,7 +179,6 @@ const state = {
   antiStressReady: false,
   gimmick: null,
   gimmickUntil: 0,
-  glitchStreak: 0,
   quarrelSpreadAt: 0,
   quarrelCells: [],
   rushUntil: 0,
@@ -111,7 +186,6 @@ const state = {
   activeSpeakerId: null,
   activeSpeechText: "",
   activeSpeechLabel: "",
-  activeSpeechOrigin: "operator",
   speechSwitchAt: 0,
   lastFrame: 0,
   lastId: 1,
@@ -169,7 +243,6 @@ function resetRoundState() {
   state.antiStressReady = false;
   state.gimmick = null;
   state.gimmickUntil = 0;
-  state.glitchStreak = 0;
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
@@ -177,7 +250,6 @@ function resetRoundState() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.activeSpeechLabel = "";
-  state.activeSpeechOrigin = "operator";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
 }
@@ -207,7 +279,6 @@ function setStandby() {
   state.antiStressReady = false;
   state.gimmick = null;
   state.gimmickUntil = 0;
-  state.glitchStreak = 0;
   state.quarrelSpreadAt = 0;
   state.quarrelCells = [];
   state.rushUntil = 0;
@@ -215,7 +286,6 @@ function setStandby() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
   state.activeSpeechLabel = "Оператор";
-  state.activeSpeechOrigin = "operator";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
@@ -507,13 +577,6 @@ function serveClient(row, col, fromQuarrel) {
   updateAccessTimers();
   syncCurrentOrder(true);
 
-  if (state.gimmick === "glitch") {
-    state.glitchStreak += 1;
-    if (state.glitchStreak >= BALANCE.gimmicks.glitch.clearStreakNeeded) {
-      finishGimmick("Сканер восстановлен.");
-    }
-  }
-
   playFx("success");
   vibrate([14]);
   render();
@@ -595,14 +658,9 @@ function triggerGimmick(now) {
   state.tension = 0;
   state.calmUntil = now + BALANCE.tension.calmDurationMs;
   state.gimmick = gimmick;
-  state.glitchStreak = 0;
   state.quarrelCells = [];
 
-  if (gimmick === "glitch") {
-    state.gimmickUntil = now + BALANCE.gimmicks.glitch.durationMs;
-    DOM.gimmickLabel.textContent = "Глюк сканера";
-    pushToast("Глюк сканера: верх очереди читается хуже.");
-  } else if (gimmick === "quarrel") {
+  if (gimmick === "quarrel") {
     const activated = createQuarrel(now);
     if (!activated) {
       state.gimmick = "rush";
@@ -635,7 +693,6 @@ function finishGimmick(message) {
   }
   state.gimmick = null;
   state.gimmickUntil = 0;
-  state.glitchStreak = 0;
   state.rushUntil = 0;
   DOM.gimmickLabel.textContent =
     state.calmUntil > performance.now() ? "Короткое затишье" : "Спокойная смена";
@@ -744,7 +801,7 @@ function render() {
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
   DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
-  DOM.sceneDialogue.classList.toggle("from-terminal", state.activeSpeechOrigin === "terminal");
+  DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
   renderActiveOrder();
 
   const statuses = [];
@@ -784,12 +841,11 @@ function render() {
     }
 
     const type = ORDER_TYPES[client.type];
-    const shouldGlitch = state.gimmick === "glitch" && row >= state.accessRows;
     const angry = now < client.angryUntil;
 
     cell.innerHTML = `
       ${isQuarrelCell(row, col) ? '<span class="spark">⚡</span>' : ""}
-      <div class="cell-inner ${shouldGlitch ? "glitch" : ""}">
+      <div class="cell-inner">
         <div class="customer-shadow"></div>
         <div
           class="customer-figure ${angry ? "angry" : ""}"
@@ -814,13 +870,12 @@ function render() {
 }
 
 function positionSceneDialogue() {
-  if (state.awaitingStart) {
-    positionSceneDialogueDefault();
+  if (!state.activeSpeechText) {
     return;
   }
 
-  if (state.activeSpeechOrigin === "terminal" && DOM.terminalUnit) {
-    positionSceneDialogueAtTerminal();
+  if (state.awaitingStart) {
+    positionSceneDialogueDefault();
     return;
   }
 
@@ -870,46 +925,19 @@ function positionSceneDialogueDefault() {
   DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", "50%");
 }
 
-function positionSceneDialogueAtTerminal() {
-  const stageRect = DOM.stageSurface.getBoundingClientRect();
-  const terminalRect = DOM.terminalUnit.getBoundingClientRect();
-
-  DOM.sceneDialogue.classList.remove("is-below");
-  DOM.sceneDialogue.style.transform = "none";
-  DOM.sceneDialogue.style.left = "0px";
-  DOM.sceneDialogue.style.top = "0px";
-
-  const bubbleRect = DOM.sceneDialogue.getBoundingClientRect();
-  const bubbleWidth = bubbleRect.width;
-  const bubbleHeight = bubbleRect.height;
-  const padding = 14;
-  const terminalCenterX = terminalRect.left - stageRect.left + terminalRect.width / 2;
-  const preferredLeft = terminalCenterX - bubbleWidth * 0.68;
-  const clampedLeft = clamp(preferredLeft, padding, stageRect.width - bubbleWidth - padding);
-  const preferredTop = terminalRect.top - stageRect.top - bubbleHeight - 18;
-  const finalTop = Math.max(20, preferredTop);
-  const tailLeft = clamp(terminalCenterX - clampedLeft, 28, bubbleWidth - 28);
-
-  DOM.sceneDialogue.style.left = `${clampedLeft}px`;
-  DOM.sceneDialogue.style.top = `${finalTop}px`;
-  DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", `${tailLeft}px`);
-}
-
 function updateActiveSpeech(now) {
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
     state.activeSpeechLabel = "Оператор";
     state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
-    state.activeSpeechOrigin = "operator";
     return;
   }
 
   const candidates = getSpeechCandidates();
   if (candidates.length === 0) {
     state.activeSpeakerId = null;
-    state.activeSpeechLabel = "Терминал";
-    state.activeSpeechText = "Следующий клиент подходит к стойке.";
-    state.activeSpeechOrigin = "terminal";
+    state.activeSpeechLabel = "";
+    state.activeSpeechText = "";
     return;
   }
 
@@ -933,7 +961,6 @@ function updateActiveSpeech(now) {
   state.activeSpeakerId = nextCandidate.client.id;
   state.activeSpeechLabel = getSpeechLabel(nextCandidate.row, nextCandidate.col, angry, quarrel);
   state.activeSpeechText = getSpeechText(nextCandidate.client, angry, quarrel);
-  state.activeSpeechOrigin = "client";
   state.speechSwitchAt = now + 2_000;
 }
 
