@@ -667,10 +667,6 @@ button {
   border-top: 1px solid rgba(29, 38, 44, 0.12);
 }
 
-.scene-dialogue-label {
-  display: none;
-}
-
 .scene-dialogue-text {
   margin-top: 0;
   font-family: var(--font-head);

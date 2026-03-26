@@ -250,12 +250,10 @@ const DOM = {
   bonusPill: document.querySelector("#bonus-pill"),
   queuePill: document.querySelector("#queue-pill"),
   sceneDialogue: document.querySelector("#scene-dialogue"),
-  sceneDialogueLabel: document.querySelector("#scene-dialogue-label"),
   sceneDialogueText: document.querySelector("#scene-dialogue-text"),
   activeOrder: document.querySelector("#active-order"),
   activeOrderBadge: document.querySelector("#active-order-badge"),
   activeOrderIcon: document.querySelector("#active-order-icon"),
-  terminalUnit: document.querySelector(".terminal-unit"),
   overlay: document.querySelector("#game-over-overlay"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
@@ -297,7 +295,6 @@ const state = {
   currentOrder: null,
   activeSpeakerId: null,
   activeSpeechText: "",
-  activeSpeechLabel: "",
   speechSwitchAt: 0,
   lastFrame: 0,
   lastId: 1,
@@ -361,7 +358,6 @@ function resetRoundState() {
   state.currentOrder = null;
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
-  state.activeSpeechLabel = "";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
 }
@@ -397,7 +393,6 @@ function setStandby() {
   state.currentOrder = null;
   state.activeSpeakerId = null;
   state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
-  state.activeSpeechLabel = "Оператор";
   state.speechSwitchAt = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
@@ -618,7 +613,6 @@ function registerMiss(targetClient, row, col) {
     selected.client.angryUntil = now + 900;
     state.activeSpeakerId = selected.client.id;
     state.activeSpeechText = sample(CUSTOMER_QUOTES.angry);
-    state.activeSpeechLabel = getSpeechLabel(selected.row, selected.col, true, false);
     state.speechSwitchAt = now + 2_000;
   }
 
@@ -909,10 +903,8 @@ function render() {
   DOM.score.textContent = formatNumber(state.score);
   DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   DOM.time.textContent = formatTime(state.sessionMs);
-  DOM.tensionFill.style.width = "100%";
   DOM.tensionFill.style.height = `${Math.round(state.tension * 100)}%`;
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
-  DOM.sceneDialogueLabel.textContent = state.activeSpeechLabel || "Оператор";
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
   DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
   renderActiveOrder();
@@ -1041,7 +1033,6 @@ function positionSceneDialogueDefault() {
 function updateActiveSpeech(now) {
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
-    state.activeSpeechLabel = "Оператор";
     state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
     return;
   }
@@ -1049,7 +1040,6 @@ function updateActiveSpeech(now) {
   const candidates = getSpeechCandidates();
   if (candidates.length === 0) {
     state.activeSpeakerId = null;
-    state.activeSpeechLabel = "";
     state.activeSpeechText = "";
     return;
   }
@@ -1072,7 +1062,6 @@ function updateActiveSpeech(now) {
   const angry = now < nextCandidate.client.angryUntil;
   const quarrel = isQuarrelCell(nextCandidate.row, nextCandidate.col);
   state.activeSpeakerId = nextCandidate.client.id;
-  state.activeSpeechLabel = getSpeechLabel(nextCandidate.row, nextCandidate.col, angry, quarrel);
   state.activeSpeechText = getSpeechText(nextCandidate.client, angry, quarrel);
   state.speechSwitchAt = now + 2_000;
 }
@@ -1104,19 +1093,6 @@ function getSpeechCandidates() {
   });
 
   return candidates;
-}
-
-function getSpeechLabel(row, col, angry, quarrel) {
-  if (quarrel) {
-    return `Спор в линии ${col + 1}`;
-  }
-  if (angry) {
-    return row < state.accessRows ? "Клиент у стойки" : `Недовольный клиент ${col + 1}`;
-  }
-  if (row < state.accessRows) {
-    return "Клиент у стойки";
-  }
-  return `Очередь ${col + 1}`;
 }
 
 function getSpeechText(client, angry, quarrel) {
