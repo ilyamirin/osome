@@ -38,7 +38,6 @@
                 <span class="stat-label">Время</span>
                 <strong id="time">0:00</strong>
               </div>
-              <button class="sound-toggle" id="music-toggle" type="button">Музыка: Вкл</button>
             </div>
           </header>
 
@@ -63,53 +62,38 @@
                     <div class="board-grid" id="board"></div>
                   </div>
 
-                  <div class="counter-set theatrical-counter">
-                    <div class="scene-tension" aria-live="polite">
-                      <div class="scene-tension-copy">
-                        <span class="scene-tension-label">Напряжение</span>
-                        <strong class="scene-tension-state" id="gimmick-label">
-                          Готово к открытию смены
-                        </strong>
-                      </div>
-                      <div class="scene-tension-track">
-                        <div class="scene-tension-fill" id="tension-fill"></div>
-                      </div>
-                    </div>
-
-                    <div class="cat-mascot" aria-hidden="true">
-                      <span class="cat-aura"></span>
-                      <span class="cat-tail"></span>
-                      <span class="cat-body"></span>
-                      <span class="cat-head"></span>
-                      <span class="cat-ears"></span>
-                      <span class="cat-eyes"></span>
-                      <span class="cat-paws"></span>
-                    </div>
-
-                    <div class="operator-top">
-                      <div class="operator-shadow"></div>
-                      <div class="operator-back"></div>
-                      <div class="operator-neck"></div>
-                      <div class="operator-head"></div>
-                      <div class="operator-hair"></div>
-                      <div class="operator-left-arm"></div>
-                      <div class="operator-right-arm"></div>
-                      <div class="scanner-wand">
-                        <span class="scanner-core"></span>
-                        <span class="scanner-beam"></span>
-                      </div>
-                      <div class="operator-badge">osome staff</div>
-                    </div>
-
+                  <div class="counter-set frontal-counter">
                     <div class="counter-desk">
-                      <div class="desk-item terminal-unit"></div>
+                      <div class="desk-item score-clock">
+                        <div class="cat-mascot" aria-hidden="true">
+                          <span class="cat-aura"></span>
+                          <span class="cat-tail"></span>
+                          <span class="cat-body"></span>
+                          <span class="cat-head"></span>
+                          <span class="cat-ears"></span>
+                          <span class="cat-eyes"></span>
+                          <span class="cat-paws"></span>
+                        </div>
+                        <div class="score-clock-case">
+                          <span class="score-clock-display" id="counter-score">0000</span>
+                        </div>
+                      </div>
                       <div class="desk-item active-order" id="active-order">
                         <div class="active-order-badge" id="active-order-badge">
                           <span class="active-order-icon" id="active-order-icon">◎</span>
                         </div>
                       </div>
-                      <div class="desk-item scanner-unit"></div>
-                      <div class="desk-item parcel-stack"></div>
+                      <button
+                        class="desk-item speaker-toggle is-on"
+                        id="music-toggle"
+                        type="button"
+                        aria-label="Музыка включена"
+                        aria-pressed="true"
+                      >
+                        <span class="speaker-led" aria-hidden="true"></span>
+                        <span class="speaker-notch" aria-hidden="true"></span>
+                        <span class="speaker-grill" aria-hidden="true"></span>
+                      </button>
                     </div>
                   </div>
                 </div>

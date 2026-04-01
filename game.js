@@ -243,10 +243,9 @@ const DOM = {
   menuButton: document.querySelector("#menu-button"),
   board: document.querySelector("#board"),
   score: document.querySelector("#score"),
+  counterScore: document.querySelector("#counter-score"),
   combo: document.querySelector("#combo"),
   time: document.querySelector("#time"),
-  tensionFill: document.querySelector("#tension-fill"),
-  gimmickLabel: document.querySelector("#gimmick-label"),
   bonusPill: document.querySelector("#bonus-pill"),
   queuePill: document.querySelector("#queue-pill"),
   sceneDialogue: document.querySelector("#scene-dialogue"),
@@ -397,7 +396,6 @@ function setStandby() {
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   DOM.introOverlay.classList.remove("hidden");
-  DOM.gimmickLabel.textContent = "Готово к открытию смены";
   render();
 }
 
@@ -406,7 +404,6 @@ function startGame() {
   resetRoundState();
   DOM.overlay.classList.add("hidden");
   DOM.introOverlay.classList.add("hidden");
-  DOM.gimmickLabel.textContent = "Спокойная смена";
   spawnClient();
   syncCurrentOrder(true);
   render();
@@ -420,7 +417,6 @@ function endGame() {
   DOM.resultMaxCombo.textContent = `x${state.maxCombo}`;
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
-  DOM.gimmickLabel.textContent = "Смена завершена";
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
 }
@@ -772,18 +768,15 @@ function triggerGimmick(now) {
       state.gimmick = "rush";
       state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
       state.rushUntil = state.gimmickUntil;
-      DOM.gimmickLabel.textContent = "Час пик";
       pushToast("Час пик: поток клиентов ускорился.");
     } else {
       state.gimmickUntil = now + BALANCE.gimmicks.quarrel.durationMs;
       state.quarrelSpreadAt = now + BALANCE.gimmicks.quarrel.spreadDelayMs;
-      DOM.gimmickLabel.textContent = "Клиенты ругаются";
       pushToast("Ссора: заблокированные клетки можно снять любой выдачей.");
     }
   } else {
     state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
     state.rushUntil = state.gimmickUntil;
-    DOM.gimmickLabel.textContent = "Час пик";
     pushToast("Час пик: поток клиентов ускорился.");
   }
 
@@ -800,8 +793,6 @@ function finishGimmick(message) {
   state.gimmick = null;
   state.gimmickUntil = 0;
   state.rushUntil = 0;
-  DOM.gimmickLabel.textContent =
-    state.calmUntil > performance.now() ? "Короткое затишье" : "Спокойная смена";
 }
 
 function createQuarrel(now) {
@@ -901,9 +892,10 @@ function render() {
   updateActiveSpeech(now);
 
   DOM.score.textContent = formatNumber(state.score);
+  DOM.counterScore.textContent = formatCounterScore(state.score);
+  DOM.counterScore.classList.toggle("is-compact", state.score > 9999);
   DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   DOM.time.textContent = formatTime(state.sessionMs);
-  DOM.tensionFill.style.height = `${Math.round(state.tension * 100)}%`;
   DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
   DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
@@ -972,6 +964,14 @@ function render() {
 
   positionSceneDialogue();
   renderToasts();
+}
+
+function formatCounterScore(value) {
+  const normalized = Math.max(0, Math.floor(value));
+  if (normalized <= 9999) {
+    return String(normalized).padStart(4, "0");
+  }
+  return formatNumber(normalized);
 }
 
 function positionSceneDialogue() {
@@ -1316,11 +1316,21 @@ function updateMusic(now) {
 function toggleMusic() {
   unlockAudio();
   audioState.enabled = !audioState.enabled;
-  DOM.musicToggle.textContent = `Музыка: ${audioState.enabled ? "Вкл" : "Выкл"}`;
+  syncMusicToggle();
+}
+
+function syncMusicToggle() {
+  DOM.musicToggle.classList.toggle("is-on", audioState.enabled);
+  DOM.musicToggle.classList.toggle("is-off", !audioState.enabled);
+  DOM.musicToggle.setAttribute("aria-pressed", String(audioState.enabled));
+  DOM.musicToggle.setAttribute(
+    "aria-label",
+    audioState.enabled ? "Музыка включена" : "Музыка выключена"
+  );
 }
 
 function handleSceneTap(event) {
-  if (event.target.closest(".sound-toggle")) {
+  if (event.target.closest("#music-toggle")) {
     return;
   }
   if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
@@ -1341,6 +1351,7 @@ function onBoardPointerDown(event) {
 
 initBoardMarkup();
 setStandby();
+syncMusicToggle();
 
 DOM.restartButton.addEventListener("click", startGame);
 DOM.menuButton.addEventListener("click", setStandby);
