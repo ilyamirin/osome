@@ -292,6 +292,57 @@ const CAT_QUOTES = {
 const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
 const HAIR_TONES = ["#2d2320", "#5b4032", "#21181a", "#7b5b46"];
 const SHOE_TONES = ["#20262a", "#3f332e", "#223445"];
+const ACCESSORY_TONES = ["#2a3138", "#4a3b34", "#46586a", "#6d5f4d", "#7d563f"];
+const CLIENT_ARCHETYPES = [
+  {
+    bodyType: "slim",
+    posture: "upright",
+    hairType: "short",
+    topType: "shirt",
+    accessory: "backpack",
+    idleType: "calm",
+  },
+  {
+    bodyType: "average",
+    posture: "slouch",
+    hairType: "hood",
+    topType: "hoodie",
+    accessory: "none",
+    idleType: "shift",
+  },
+  {
+    bodyType: "broad",
+    posture: "lean",
+    hairType: "bob",
+    topType: "coat",
+    accessory: "shopper",
+    idleType: "calm",
+  },
+  {
+    bodyType: "broad",
+    posture: "upright",
+    hairType: "short",
+    topType: "coat",
+    accessory: "shopper",
+    idleType: "calm",
+  },
+  {
+    bodyType: "slim",
+    posture: "upright",
+    hairType: "bun",
+    topType: "shirt",
+    accessory: "shopper",
+    idleType: "shift",
+  },
+  {
+    bodyType: "slim",
+    posture: "lean",
+    hairType: "cap",
+    topType: "hoodie",
+    accessory: "backpack",
+    idleType: "fidget",
+  },
+];
 
 const FX_ASSETS = Object.freeze({
   success: "./assets/audio/confirmation_002.ogg",
@@ -519,6 +570,7 @@ function endGame() {
 
 function createClient(type) {
   const order = ORDER_TYPES[type];
+  const archetype = sample(CLIENT_ARCHETYPES);
   return {
     id: state.lastId++,
     type,
@@ -529,6 +581,13 @@ function createClient(type) {
     hair: sample(HAIR_TONES),
     shirt: sample(order.shirtTones),
     shoe: sample(SHOE_TONES),
+    accessoryTone: sample(ACCESSORY_TONES),
+    bodyType: archetype.bodyType,
+    posture: archetype.posture,
+    hairType: archetype.hairType,
+    topType: archetype.topType,
+    accessory: archetype.accessory,
+    idleType: archetype.idleType,
   };
 }
 
@@ -1063,12 +1122,14 @@ function render() {
       <div class="cell-inner">
         <div class="customer-shadow"></div>
         <div
-          class="customer-figure ${angry ? "angry" : ""}"
-          style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --shoe:${client.shoe};"
+          class="customer-figure body-${client.bodyType} posture-${client.posture} top-${client.topType} hair-${client.hairType} accessory-${client.accessory} idle-${client.idleType} ${angry ? "angry" : ""}"
+          style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --shoe:${client.shoe}; --bag:${client.accessoryTone};"
         >
+          <span class="customer-accessory"></span>
           <span class="customer-arm arm-left"></span>
           <span class="customer-arm arm-right"></span>
           <span class="customer-body"></span>
+          <span class="customer-legs"></span>
           <span class="customer-head"></span>
           <span class="customer-hair"></span>
           <span class="customer-feet"></span>
