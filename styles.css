@@ -2041,25 +2041,25 @@ button {
 
 @media (max-width: 760px) {
   :root {
-    --shell-pad-x: 12px;
+    --shell-pad-x: 8px;
     --shell-pad-y: 10px;
-    --panel-pad: 10px;
-    --panel-radius: 28px;
+    --panel-pad: 6px;
+    --panel-radius: 24px;
     --stage-min-h: 520px;
     --queue-gap: 6px;
     --queue-pad-top: 24px;
-    --queue-pad-x: 8px;
+    --queue-pad-x: 4px;
     --queue-pad-bottom: 10px;
-    --board-max-w: 304px;
-    --board-pad: 8px;
-    --board-radius: 22px;
-    --board-gap: 5px;
-    --board-lane-offset: 7px;
-    --board-lane-width: 6px;
-    --cell-radius: 16px;
-    --cell-inner-inset: 6px;
-    --cell-inner-radius: 12px;
-    --customer-scale: 0.72;
+    --board-max-w: 100%;
+    --board-pad: 6px;
+    --board-radius: 18px;
+    --board-gap: 4px;
+    --board-lane-offset: 5px;
+    --board-lane-width: 5px;
+    --cell-radius: 14px;
+    --cell-inner-inset: 5px;
+    --cell-inner-radius: 10px;
+    --customer-scale: 0.66;
     --scene-dialogue-max-w: 252px;
     --scene-dialogue-gap: 8px;
     --scene-dialogue-pad-x: 12px;
@@ -2101,37 +2101,56 @@ button {
     border-radius: var(--panel-radius);
   }
 
-  .hud {
-    align-items: stretch;
-    gap: 12px;
+  .app-shell {
+    padding-top: max(14px, env(safe-area-inset-top));
   }
 
-  .brand-card {
+  .hud {
+    align-items: stretch;
     gap: 8px;
   }
 
+  .brand-card {
+    gap: 6px;
+  }
+
   .brand-mark {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
   }
 
   .brand-mark img {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
   }
 
   .brand-card h1 {
-    font-size: 1.44rem;
+    font-size: 1.26rem;
+    line-height: 0.9;
   }
 
   .eyebrow {
-    font-size: 0.66rem;
+    font-size: 0.56rem;
     letter-spacing: 0.12em;
   }
 
   .play-area {
-    margin-top: 12px;
+    margin-top: 6px;
+  }
+
+  .facility-stage {
+    border-radius: 24px;
+  }
+
+  .queue-zone {
+    justify-items: stretch;
+  }
+
+  .board-shell,
+  .counter-set {
+    width: 100%;
+    max-width: none;
   }
 
   .speaker-toggle {
@@ -2195,11 +2214,107 @@ button {
   }
 
   .customer-shadow {
-    bottom: 12px;
+    left: calc(50% - 6px);
+    bottom: 7px;
+    width: 42px;
+    height: 13px;
   }
 
   .customer-figure {
-    bottom: 12px;
+    left: calc(50% - 6px);
+    bottom: 5px;
+    width: 70px;
+    height: 84px;
+  }
+
+  .customer-body,
+  .customer-head,
+  .customer-hair,
+  .customer-legs,
+  .customer-feet,
+  .customer-detail {
+    left: calc(50% - 2px);
+  }
+
+  .customer-arm.arm-left {
+    left: 10px;
+  }
+
+  .customer-arm.arm-right {
+    right: 10px;
+  }
+
+  .customer-figure.posture-lean .customer-body {
+    transform: translateX(-50%) rotate(2deg);
+  }
+
+  .customer-figure.posture-lean .customer-head {
+    left: 50%;
+    top: 10px;
+  }
+
+  .customer-figure.posture-lean .customer-arm.arm-left {
+    transform: rotate(16deg);
+  }
+
+  .customer-figure.posture-lean .customer-arm.arm-right {
+    transform: rotate(-24deg);
+  }
+
+  .customer-figure.posture-slouch .customer-body {
+    bottom: 21px;
+    transform: translateX(-50%) rotate(-2deg);
+  }
+
+  .customer-figure.posture-slouch .customer-head {
+    left: calc(50% - 1px);
+    top: 12px;
+  }
+
+  .customer-figure.posture-slouch .customer-arm.arm-left {
+    top: 43px;
+  }
+
+  .customer-figure.posture-slouch .customer-arm.arm-right {
+    top: 43px;
+  }
+
+  .customer-figure.accessory-backpack .customer-accessory {
+    left: 14px;
+  }
+
+  .customer-figure.accessory-shopper .customer-accessory {
+    right: 6px;
+  }
+
+  .customer-figure.accessory-phone .customer-accessory {
+    right: 8px;
+  }
+
+  .customer-figure.persona-bureaucrat .customer-body {
+    height: 50px;
+  }
+
+  .customer-figure.persona-neo .customer-body {
+    height: 54px;
+  }
+
+  .customer-figure.persona-punk .customer-hair {
+    width: 33px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-body {
+    width: 54px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-accessory {
+    top: 46px;
+    width: 18px;
+    height: 24px;
+  }
+
+  .customer-figure.persona-gopnik .customer-detail {
+    top: 50px;
   }
 
   .scene-dialogue {
