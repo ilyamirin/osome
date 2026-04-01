@@ -205,83 +205,103 @@ const CUSTOMER_QUOTES = {
 };
 
 const CAT_QUOTES = {
-  standby: ["Тапни по сцене. Дальше будет хуже.", "Открой смену. Я уже разочарован заранее."],
-  intro: [
-    "Смотри на цвет коробки. Ищи такую же рубашку.",
-    "Коробка и рубашка должны совпасть по цвету.",
-    "На стойке цвет. В очереди такой же клиент.",
+  standby: [
+    "Нажимай. Город сам себя не переждёт.",
+    "Открывай смену. Темнота уже внутри.",
+    "Начинай. Хорошие новости закончились до тебя.",
   ],
-  pressure_rising: ["Становится тесно.", "Очередь заводится.", "Нервы пошли в рост."],
+  intro: [
+    "Видишь цвет. Ищи того, кто его надел.",
+    "Коробка врёт меньше людей. Смотри на цвет.",
+    "На стойке ответ. В очереди проблема того же цвета.",
+  ],
+  pressure_rising: ["Воздух кончается.", "Зал начал скрипеть.", "Неприятности проснулись."],
   pressure_high: [
-    "Паника близко. Работай чище.",
-    "Ещё немного, и зал начнёт кипеть.",
-    "Смена накаляется. Не тупи.",
+    "Сейчас начнут ошибаться все. Не присоединяйся.",
+    "Давление выросло. Мозги бы тоже.",
+    "Ещё немного, и эта смена покажет зубы.",
   ],
   pressure_critical: [
-    "Край рядом. Не моргай.",
-    "Ещё рывок, и всё посыпется.",
-    "Вот теперь по-настоящему плохо.",
+    "Вот теперь не до красоты.",
+    "Ещё шаг мимо, и всё рухнет.",
+    "Край близко. Не моргай.",
   ],
   calm: [
     "На миг отпустило.",
     "Тишина. Подозрительная, как всегда.",
     "Редкая передышка. Не привыкай.",
   ],
-  combo_3: ["Появился ритм.", "Вот. Уже похоже на работу.", "Наконец-то собрался."],
-  combo_5: ["Держи темп. Он тебя спасёт.", "Пошёл поток. Не ломай его.", "Хорошо. Дави дальше."],
+  combo_3: ["Уже не стыдно.", "Появился рисунок.", "Наконец работа, а не паника."],
+  combo_5: [
+    "Хорошо. Теперь не испорть.",
+    "Ритм пойман. Держи его мёртвой хваткой.",
+    "Вот так. Очередь начала уважать страх.",
+  ],
   combo_8: [
-    "Красиво. Даже тревожно.",
-    "Вот так и держи линию.",
-    "Слишком хорошо. Мне не нравится.",
+    "Слишком чисто. Подозрительно.",
+    "Красиво. Я бы не привыкал.",
+    "Даже хаос иногда промахивается.",
   ],
   combo_break: [
-    "И всё. Ритм умер.",
-    "Сломал серию. Впечатляюще плохо.",
-    "Комбо кончилось. Как и спокойствие.",
+    "И всё. Сказка сгорела.",
+    "Был ритм. Стал опыт.",
+    "Одним движением убил всё хорошее.",
   ],
-  miss: ["Не тот. Соберись.", "Мимо. И это было заметно.", "Ошибка. Они такое любят."],
+  miss: [
+    "Не тот. Слепота нынче в моде.",
+    "Мимо. Уверенно и бесполезно.",
+    "Ошибка. Клиенты это обожают.",
+  ],
   flow_start: [
-    "Пошёл поток. Режь очередь.",
-    "Темп есть. Пользуйся им.",
-    "Поток открыт. Работай жёстче.",
+    "Пошёл поток. Режь быстро.",
+    "Темп твой. Пока что.",
+    "Хорошо. Работай, пока мир не вспомнил, кто он.",
   ],
   fast_access: [
-    "Передний ряд открыт. Живи быстро.",
-    "Два ряда в доступе. Не растеряйся.",
-    "Хороший старт. Не испорть.",
+    "Ближе стало всё. Кроме покоя.",
+    "Два ряда в руке. Не урони.",
+    "Пространства больше. Шансов ошибиться тоже.",
   ],
   anti_stress_ready: [
-    "Антистресс заряжен. Один шанс у тебя есть.",
-    "Теперь можешь ошибиться чуть менее жалко.",
-    "Подушка безопасности готова. Не злоупотребляй.",
+    "Судьба дала тебе одну поблажку.",
+    "Один бесплатный грех у тебя есть.",
+    "Подушка есть. Полёт всё равно твой.",
   ],
   anti_stress_spent: [
-    "Антистресс сгорел. Дальше сам.",
-    "Запас выдохся. Теперь по-честному.",
-    "Последняя поблажка ушла.",
+    "Всё. Страховка умерла.",
+    "Поблажка кончилась. Дальше по крови.",
+    "Теперь без мягкой посадки.",
   ],
   perfect_row_spotted: [
-    "Редкий узор. Не упусти.",
-    "Идеальный ряд. Такое бывает раз в смуту.",
-    "Линия сложилась. Дожми её.",
+    "Красота. Почти неуместная.",
+    "Редкий порядок в этом цирке.",
+    "Линия сложилась. Не предай её.",
   ],
   perfect_row_done: [
-    "Вот это уже похоже на мастерство.",
-    "Идеальный ряд закрыт. Почти уважаю.",
-    "Чисто. Даже слишком чисто.",
+    "Чисто. Даже противно.",
+    "Вот это уже ремесло.",
+    "На секунду ты был лучше этой смены.",
   ],
-  rush: ["Час пик. Не зевай.", "Толпа пошла волной.", "Сейчас будет мясо. Работай."],
+  rush: [
+    "Час пик. Добро пожаловать в мясорубку.",
+    "Толпа пошла. Думай быстрее.",
+    "Сейчас будет шум. Не становись его частью.",
+  ],
   quarrel: [
-    "Сцепились. Разрули.",
-    "Отлично. Теперь ещё и скандал.",
-    "Очередь нашла новый способ мешать.",
+    "Конечно. Теперь ещё и драма.",
+    "Очередь решила развлечься.",
+    "Сцепились. Люди иначе не умеют.",
   ],
   quarrel_cleared: [
-    "Ссору погасил. На минуту.",
-    "Развёл их. Пока что.",
-    "Удивительно. Кто-то тут взрослый.",
+    "Развёл их. Ненадолго.",
+    "Тишина куплена в кредит.",
+    "Удивительно. Кто-то здесь ещё умеет думать.",
   ],
-  game_over: ["Смена взяла своё.", "Очередь тебя дожала.", "Ночь забрала ещё одного оператора."],
+  game_over: [
+    "Смена закрылась на тебе.",
+    "Ночь победила по очкам.",
+    "Очередь получила то, за чем пришла: тебя.",
+  ],
   gold: [
     "О. Так ты из богатых.",
     "Золото с неба. Низко, но эффективно.",
@@ -293,6 +313,91 @@ const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
 const HAIR_TONES = ["#2d2320", "#5b4032", "#21181a", "#7b5b46"];
 const SHOE_TONES = ["#20262a", "#3f332e", "#223445"];
 const ACCESSORY_TONES = ["#2a3138", "#4a3b34", "#46586a", "#6d5f4d", "#7d563f"];
+const SPECIAL_CLIENT_PROFILES = [
+  {
+    persona: "shurik",
+    bodyType: "slim",
+    posture: "lean",
+    hairType: "short",
+    topType: "shirt",
+    accessory: "backpack",
+    idleType: "shift",
+    hair: "#6f573e",
+    shoe: "#4b3e35",
+    accessoryTone: "#66738a",
+  },
+  {
+    persona: "bureaucrat",
+    bodyType: "average",
+    posture: "upright",
+    hairType: "bun",
+    topType: "coat",
+    accessory: "shopper",
+    idleType: "calm",
+    hair: "#5b4032",
+    shoe: "#3f332e",
+    accessoryTone: "#6d5f4d",
+  },
+  {
+    persona: "neo",
+    bodyType: "slim",
+    posture: "upright",
+    hairType: "short",
+    topType: "coat",
+    accessory: "phone",
+    idleType: "calm",
+    hair: "#191416",
+    shoe: "#191f24",
+    accessoryTone: "#2d3338",
+  },
+  {
+    persona: "gopnik",
+    bodyType: "average",
+    posture: "lean",
+    hairType: "cap",
+    topType: "hoodie",
+    accessory: "none",
+    idleType: "fidget",
+    hair: "#241d1b",
+    shoe: "#1c2328",
+  },
+  {
+    persona: "punk",
+    bodyType: "slim",
+    posture: "lean",
+    hairType: "bob",
+    topType: "coat",
+    accessory: "phone",
+    idleType: "shift",
+    hair: "#1b171d",
+    shoe: "#222d39",
+    accessoryTone: "#485a72",
+  },
+  {
+    persona: "service-aunt",
+    bodyType: "broad",
+    posture: "upright",
+    hairType: "bun",
+    topType: "coat",
+    accessory: "shopper",
+    idleType: "calm",
+    hair: "#6f533f",
+    shoe: "#45362e",
+    accessoryTone: "#8a6145",
+  },
+  {
+    persona: "it-hoodie",
+    bodyType: "slim",
+    posture: "slouch",
+    hairType: "hood",
+    topType: "hoodie",
+    accessory: "backpack",
+    idleType: "fidget",
+    hair: "#21181a",
+    shoe: "#20262a",
+    accessoryTone: "#51667a",
+  },
+];
 const CLIENT_ARCHETYPES = [
   {
     bodyType: "slim",
@@ -570,24 +675,26 @@ function endGame() {
 
 function createClient(type) {
   const order = ORDER_TYPES[type];
-  const archetype = sample(CLIENT_ARCHETYPES);
+  const special = Math.random() < 0.38 ? sample(SPECIAL_CLIENT_PROFILES) : null;
+  const archetype = special || sample(CLIENT_ARCHETYPES);
   return {
     id: state.lastId++,
     type,
     quote: sample(CUSTOMER_QUOTES.generic),
     enteredAccessAt: null,
     angryUntil: 0,
-    skin: sample(SKIN_TONES),
-    hair: sample(HAIR_TONES),
+    skin: special?.skin || sample(SKIN_TONES),
+    hair: special?.hair || sample(HAIR_TONES),
     shirt: sample(order.shirtTones),
-    shoe: sample(SHOE_TONES),
-    accessoryTone: sample(ACCESSORY_TONES),
+    shoe: special?.shoe || sample(SHOE_TONES),
+    accessoryTone: special?.accessoryTone || sample(ACCESSORY_TONES),
     bodyType: archetype.bodyType,
     posture: archetype.posture,
     hairType: archetype.hairType,
     topType: archetype.topType,
     accessory: archetype.accessory,
     idleType: archetype.idleType,
+    persona: archetype.persona || "generic",
   };
 }
 
@@ -1122,7 +1229,7 @@ function render() {
       <div class="cell-inner">
         <div class="customer-shadow"></div>
         <div
-          class="customer-figure body-${client.bodyType} posture-${client.posture} top-${client.topType} hair-${client.hairType} accessory-${client.accessory} idle-${client.idleType} ${angry ? "angry" : ""}"
+          class="customer-figure persona-${client.persona} body-${client.bodyType} posture-${client.posture} top-${client.topType} hair-${client.hairType} accessory-${client.accessory} idle-${client.idleType} ${angry ? "angry" : ""}"
           style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --shoe:${client.shoe}; --bag:${client.accessoryTone};"
         >
           <span class="customer-accessory"></span>
@@ -1132,6 +1239,7 @@ function render() {
           <span class="customer-legs"></span>
           <span class="customer-head"></span>
           <span class="customer-hair"></span>
+          <span class="customer-detail"></span>
           <span class="customer-feet"></span>
         </div>
       </div>
