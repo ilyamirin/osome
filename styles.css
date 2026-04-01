@@ -528,6 +528,7 @@ button {
 .customer-legs,
 .customer-head,
 .customer-hair,
+.customer-detail,
 .customer-feet {
   position: absolute;
   display: block;
@@ -552,6 +553,8 @@ button {
 .customer-hair::after,
 .customer-accessory::before,
 .customer-accessory::after,
+.customer-detail::before,
+.customer-detail::after,
 .customer-legs::before,
 .customer-legs::after {
   content: "";
@@ -637,6 +640,11 @@ button {
 .customer-accessory {
   display: none;
   z-index: 1;
+}
+
+.customer-detail {
+  display: none;
+  z-index: 4;
 }
 
 .customer-figure.body-slim .customer-body {
@@ -908,6 +916,209 @@ button {
   border-radius: 4px;
   background: linear-gradient(180deg, #4f5d6d, #232d37);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.customer-figure.persona-shurik .customer-detail,
+.customer-figure.persona-bureaucrat .customer-detail,
+.customer-figure.persona-it-hoodie .customer-detail {
+  display: block;
+  left: 50%;
+  top: 26px;
+  width: 28px;
+  height: 10px;
+  transform: translateX(-50%);
+}
+
+.customer-figure.persona-shurik .customer-detail::before,
+.customer-figure.persona-shurik .customer-detail::after,
+.customer-figure.persona-bureaucrat .customer-detail::before,
+.customer-figure.persona-bureaucrat .customer-detail::after,
+.customer-figure.persona-it-hoodie .customer-detail::before,
+.customer-figure.persona-it-hoodie .customer-detail::after {
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(63, 49, 37, 0.88);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.customer-figure.persona-shurik .customer-detail::before,
+.customer-figure.persona-bureaucrat .customer-detail::before,
+.customer-figure.persona-it-hoodie .customer-detail::before {
+  left: 0;
+}
+
+.customer-figure.persona-shurik .customer-detail::after,
+.customer-figure.persona-bureaucrat .customer-detail::after,
+.customer-figure.persona-it-hoodie .customer-detail::after {
+  right: 0;
+}
+
+.customer-figure.persona-shurik .customer-detail {
+  background: linear-gradient(
+    90deg,
+    transparent 0 40%,
+    rgba(63, 49, 37, 0.88) 40% 60%,
+    transparent 60% 100%
+  );
+}
+
+.customer-figure.persona-shurik .customer-detail::before,
+.customer-figure.persona-shurik .customer-detail::after {
+  border-radius: 50%;
+}
+
+.customer-figure.persona-bureaucrat .customer-detail {
+  background: linear-gradient(
+    90deg,
+    transparent 0 38%,
+    rgba(58, 47, 38, 0.8) 38% 62%,
+    transparent 62% 100%
+  );
+}
+
+.customer-figure.persona-bureaucrat .customer-detail::before,
+.customer-figure.persona-bureaucrat .customer-detail::after {
+  border-radius: 3px;
+}
+
+.customer-figure.persona-neo .customer-detail {
+  display: block;
+  left: 50%;
+  top: 25px;
+  width: 30px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(51, 59, 68, 0.96), rgba(19, 23, 27, 0.94));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.customer-figure.persona-neo .customer-detail::before,
+.customer-figure.persona-neo .customer-detail::after {
+  top: 1px;
+  width: 11px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(107, 126, 112, 0.92), rgba(62, 83, 69, 0.96));
+}
+
+.customer-figure.persona-neo .customer-detail::before {
+  left: 2px;
+}
+
+.customer-figure.persona-neo .customer-detail::after {
+  right: 2px;
+}
+
+.customer-figure.persona-it-hoodie .customer-detail {
+  background: linear-gradient(
+    90deg,
+    transparent 0 40%,
+    rgba(49, 59, 68, 0.86) 40% 60%,
+    transparent 60% 100%
+  );
+}
+
+.customer-figure.persona-it-hoodie .customer-detail::before,
+.customer-figure.persona-it-hoodie .customer-detail::after {
+  border-radius: 4px;
+  border-color: rgba(49, 59, 68, 0.9);
+}
+
+.customer-figure.persona-punk .customer-detail {
+  display: block;
+  left: 50%;
+  top: 49px;
+  width: 22px;
+  height: 6px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(38, 40, 44, 0.96), rgba(19, 21, 25, 0.96));
+}
+
+.customer-figure.persona-punk .customer-detail::before,
+.customer-figure.persona-punk .customer-detail::after {
+  top: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(205, 206, 210, 0.86);
+}
+
+.customer-figure.persona-punk .customer-detail::before {
+  left: 4px;
+}
+
+.customer-figure.persona-punk .customer-detail::after {
+  right: 4px;
+}
+
+.customer-figure.persona-service-aunt .customer-detail {
+  display: block;
+  left: 50%;
+  top: 45px;
+  width: 26px;
+  height: 18px;
+  transform: translateX(-50%);
+  background:
+    linear-gradient(180deg, rgba(228, 196, 138, 0.92), rgba(184, 124, 78, 0.9)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.customer-figure.persona-gopnik .customer-detail {
+  display: block;
+  left: 50%;
+  top: 52px;
+  width: 24px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(205, 174, 88, 0.92), rgba(161, 126, 46, 0.94));
+}
+
+.customer-figure.persona-gopnik .customer-body::after {
+  left: 8px;
+  right: 8px;
+  top: 9px;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    rgba(248, 244, 236, 0.92) 0 18%,
+    transparent 18% 41%,
+    rgba(248, 244, 236, 0.92) 41% 59%,
+    transparent 59% 82%,
+    rgba(248, 244, 236, 0.92) 82% 100%
+  );
+  opacity: 0.9;
+}
+
+.customer-figure.persona-shurik .customer-body {
+  bottom: 25px;
+}
+
+.customer-figure.persona-bureaucrat .customer-body {
+  height: 54px;
+}
+
+.customer-figure.persona-neo .customer-body {
+  height: 58px;
+}
+
+.customer-figure.persona-punk .customer-hair {
+  width: 36px;
+  transform: translateX(-50%) rotate(-3deg);
+}
+
+.customer-figure.persona-service-aunt .customer-body {
+  width: 58px;
+}
+
+.customer-figure.persona-service-aunt .customer-accessory {
+  top: 48px;
+  width: 20px;
+  height: 26px;
 }
 
 .scene-dialogue {
