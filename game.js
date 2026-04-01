@@ -246,8 +246,6 @@ const DOM = {
   counterScore: document.querySelector("#counter-score"),
   combo: document.querySelector("#combo"),
   time: document.querySelector("#time"),
-  bonusPill: document.querySelector("#bonus-pill"),
-  queuePill: document.querySelector("#queue-pill"),
   sceneDialogue: document.querySelector("#scene-dialogue"),
   sceneDialogueText: document.querySelector("#scene-dialogue-text"),
   activeOrder: document.querySelector("#active-order"),
@@ -895,27 +893,20 @@ function render() {
   const now = performance.now();
   updateActiveSpeech(now);
 
-  DOM.score.textContent = formatNumber(state.score);
+  if (DOM.score) {
+    DOM.score.textContent = formatNumber(state.score);
+  }
   DOM.counterScore.textContent = formatCounterScore(state.score);
   DOM.counterScore.classList.toggle("is-compact", state.score > 9999);
-  DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
-  DOM.time.textContent = formatTime(state.sessionMs);
-  DOM.queuePill.textContent = `Доступ: ${state.accessRows} ${pluralRows(state.accessRows)}`;
+  if (DOM.combo) {
+    DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
+  }
+  if (DOM.time) {
+    DOM.time.textContent = formatTime(state.sessionMs);
+  }
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
   DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
   renderActiveOrder();
-
-  const statuses = [];
-  if (now < state.flowUntil) {
-    statuses.push("Поток +50%");
-  }
-  if (now < state.fastAccessUntil) {
-    statuses.push("Быстрый старт");
-  }
-  if (state.antiStressReady) {
-    statuses.push("Антистресс готов");
-  }
-  DOM.bonusPill.textContent = statuses.length > 0 ? statuses.join(" • ") : "Без бонусов";
 
   boardCells.forEach((cell) => {
     const row = Number(cell.dataset.row);
@@ -1167,16 +1158,6 @@ function formatTime(ms) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-function pluralRows(value) {
-  if (value % 10 === 1 && value % 100 !== 11) {
-    return "ряд";
-  }
-  if ([2, 3, 4].includes(value % 10) && ![12, 13, 14].includes(value % 100)) {
-    return "ряда";
-  }
-  return "рядов";
 }
 
 function sample(items) {
