@@ -545,10 +545,11 @@ const audioState = {
   musicTimer: 0,
   musicStep: 0,
   unlocked: false,
-  primed: false,
+  mediaReady: false,
+  mediaElements: new Map(),
+  activeMediaFx: new Set(),
   soundBuffers: new Map(),
   loadingPromise: null,
-  pendingFx: [],
 };
 
 const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
@@ -1788,28 +1789,46 @@ function vibrate(pattern) {
 
 function unlockAudio() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if ("audioSession" in navigator && navigator.audioSession) {
+    try {
+      navigator.audioSession.type = "playback";
+    } catch (error) {
+      void error;
+    }
+  }
+
   if (!AudioContext) {
+    if (!audioState.loadingPromise) {
+      audioState.loadingPromise = loadAudioAssets();
+    }
     return;
   }
 
   if (!audioState.ctx) {
     audioState.ctx = new AudioContext();
-    audioState.ctx.onstatechange = () => {
-      if (audioState.ctx?.state === "running") {
-        primeAudioContext();
-        flushPendingFx();
-      }
-    };
   }
 
   audioState.unlocked = true;
+  if (audioState.ctx.state === "suspended") {
+    void audioState.ctx.resume().catch(() => {});
+  }
   if (!audioState.loadingPromise) {
     audioState.loadingPromise = loadAudioAssets();
   }
-  void resumeAndPrimeAudio();
 }
 
 async function loadAudioAssets() {
+  if (!audioState.mediaReady && typeof Audio !== "undefined") {
+    Object.entries(FX_ASSETS).forEach(([kind, url]) => {
+      const media = new Audio(url);
+      media.preload = "auto";
+      media.playsInline = true;
+      audioState.mediaElements.set(kind, media);
+      media.load();
+    });
+    audioState.mediaReady = true;
+  }
+
   const ctx = audioState.ctx;
   if (!ctx) {
     return;
@@ -1855,65 +1874,65 @@ function getMusicGainValue() {
   return isMobileAudioContext() ? 0.04 : 0.015;
 }
 
-function queuePendingFx(kind) {
-  if (audioState.pendingFx.length >= 6) {
-    audioState.pendingFx.shift();
-  }
-  audioState.pendingFx.push(kind);
+function shouldUseMediaAudio() {
+  return isMobileAudioContext() && audioState.mediaElements.size > 0;
 }
 
-function primeAudioContext() {
+function cleanupMediaFxInstance(instance) {
+  audioState.activeMediaFx.delete(instance);
+  instance.src = "";
+}
+
+function playMediaFx(kind) {
+  const template = audioState.mediaElements.get(kind);
+  if (!template) {
+    return false;
+  }
+
+  const instance = template.cloneNode(true);
+  instance.preload = "auto";
+  instance.playsInline = true;
+  instance.volume = clamp((FX_GAIN[kind] || 0.35) * 1.7, 0, 1);
+  audioState.activeMediaFx.add(instance);
+
+  const clear = () => {
+    instance.removeEventListener("ended", clear);
+    instance.removeEventListener("error", clear);
+    cleanupMediaFxInstance(instance);
+  };
+
+  instance.addEventListener("ended", clear, { once: true });
+  instance.addEventListener("error", clear, { once: true });
+
+  const playPromise = instance.play();
+  if (playPromise?.catch) {
+    playPromise.catch(() => {
+      cleanupMediaFxInstance(instance);
+      playSynthFx(kind);
+    });
+  }
+
+  return true;
+}
+
+function playFx(kind) {
+  if (!audioState.enabled) {
+    return;
+  }
+
+  if (shouldUseMediaAudio() && playMediaFx(kind)) {
+    return;
+  }
+
+  if (!audioState.ctx) {
+    return;
+  }
+
+  if (audioState.ctx.state !== "running") {
+    void audioState.ctx.resume().catch(() => {});
+  }
+
   const ctx = audioState.ctx;
-  if (!ctx || audioState.primed || ctx.state !== "running") {
-    return;
-  }
-
-  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
-  const source = ctx.createBufferSource();
-  const gain = ctx.createGain();
-  source.buffer = buffer;
-  gain.gain.value = 0.0001;
-  source.connect(gain).connect(ctx.destination);
-  source.start();
-  source.stop(ctx.currentTime + 0.01);
-  audioState.primed = true;
-}
-
-function flushPendingFx() {
-  if (!audioState.enabled || !audioState.ctx || audioState.ctx.state !== "running") {
-    return;
-  }
-
-  const pending = audioState.pendingFx.splice(0);
-  pending.forEach((kind) => {
-    playFx(kind, false);
-  });
-}
-
-async function resumeAndPrimeAudio() {
-  const ctx = audioState.ctx;
-  if (!ctx) {
-    return;
-  }
-
-  if (ctx.state !== "running") {
-    try {
-      await ctx.resume();
-    } catch {
-      return;
-    }
-  }
-
-  primeAudioContext();
-  flushPendingFx();
-}
-
-function playFxNow(kind) {
-  const ctx = audioState.ctx;
-  if (!ctx) {
-    return;
-  }
-
   const buffer = audioState.soundBuffers.get(kind);
   if (buffer) {
     const source = ctx.createBufferSource();
@@ -1926,22 +1945,6 @@ function playFxNow(kind) {
   }
 
   playSynthFx(kind);
-}
-
-function playFx(kind, allowDeferred = true) {
-  if (!audioState.enabled || !audioState.ctx) {
-    return;
-  }
-
-  if (audioState.ctx.state !== "running") {
-    if (allowDeferred) {
-      queuePendingFx(kind);
-      void resumeAndPrimeAudio();
-    }
-    return;
-  }
-
-  playFxNow(kind);
 }
 
 function playSynthFx(kind) {
@@ -2080,16 +2083,7 @@ DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);
 window.addEventListener("touchstart", unlockAudio, { passive: true });
-window.addEventListener("touchend", unlockAudio, { passive: true });
 window.addEventListener("pointerdown", unlockAudio, { passive: true });
-window.addEventListener("click", unlockAudio, { passive: true });
-window.addEventListener("pageshow", unlockAudio);
-window.addEventListener("focus", unlockAudio);
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    unlockAudio();
-  }
-});
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", resetPressedKeys);
