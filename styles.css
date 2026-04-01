@@ -2049,6 +2049,393 @@ button {
   }
 }
 
+@media (min-width: 1280px) and (min-aspect-ratio: 16/10) {
+  :root {
+    --stage-min-h: clamp(620px, calc(100svh - 220px), 780px);
+    --queue-pad-top: clamp(34px, 4.4svh, 52px);
+    --queue-pad-bottom: clamp(12px, 1.8svh, 20px);
+    --board-max-w: clamp(320px, 40svh, 420px);
+    --board-pad: clamp(10px, 1.2svh, 14px);
+    --board-gap: clamp(6px, 0.8svh, 10px);
+    --cell-radius: clamp(16px, 1.8svh, 22px);
+    --cell-inner-inset: clamp(6px, 0.7svh, 8px);
+    --cell-inner-radius: clamp(12px, 1.2svh, 16px);
+    --customer-scale: 1;
+    --scene-dialogue-max-w: clamp(320px, 30svh, 420px);
+    --scene-dialogue-font: clamp(1rem, 0.8svh, 1.18rem);
+    --counter-top-pad: clamp(18px, 2.2svh, 28px);
+    --counter-max-w: clamp(430px, 54svh, 600px);
+    --counter-left-col: clamp(72px, 9svh, 92px);
+    --counter-center-min: clamp(170px, 28svh, 260px);
+    --counter-right-col: clamp(58px, 7svh, 80px);
+    --counter-gap: clamp(8px, 0.9svh, 12px);
+    --counter-min-h: clamp(132px, 17svh, 188px);
+    --counter-pad-top: clamp(14px, 1.6svh, 18px);
+    --counter-pad-x: clamp(10px, 1.2svh, 14px);
+    --counter-pad-bottom: clamp(10px, 1.2svh, 14px);
+    --active-order-min-h: clamp(98px, 12svh, 128px);
+    --active-order-pad-top: clamp(4px, 0.6svh, 8px);
+    --active-order-pad-bottom: clamp(10px, 1.4svh, 16px);
+    --active-order-badge-w: clamp(92px, 12svh, 116px);
+    --active-order-badge-h: clamp(76px, 10svh, 96px);
+    --active-order-symbol-size: clamp(82px, 10svh, 102px);
+    --score-clock-min-h: clamp(88px, 11svh, 116px);
+    --score-clock-case-min-h: clamp(72px, 9svh, 94px);
+    --score-clock-font: clamp(1.16rem, 1.5svh, 1.52rem);
+    --score-clock-font-compact: clamp(0.96rem, 1.2svh, 1.22rem);
+    --speaker-min-h: clamp(78px, 10svh, 102px);
+  }
+
+  .play-area {
+    margin-top: 12px;
+  }
+
+  .facility-stage {
+    min-height: var(--stage-min-h);
+  }
+
+  .customer-shadow {
+    bottom: 7px;
+    width: 38px;
+    height: 11px;
+  }
+
+  .customer-figure {
+    bottom: 6px;
+    width: 62px;
+    height: 76px;
+  }
+
+  .customer-body {
+    bottom: 18px;
+    width: 36px;
+    height: 34px;
+  }
+
+  .customer-legs {
+    bottom: 7px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .customer-legs::before,
+  .customer-legs::after {
+    width: 7px;
+    height: 20px;
+  }
+
+  .customer-legs::before {
+    left: 2px;
+  }
+
+  .customer-legs::after {
+    right: 2px;
+  }
+
+  .customer-head {
+    top: 6px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .customer-hair {
+    top: 5px;
+    width: 24px;
+    height: 12px;
+  }
+
+  .customer-arm {
+    top: 31px;
+    width: 10px;
+    height: 22px;
+  }
+
+  .arm-left {
+    left: 7px;
+  }
+
+  .arm-right {
+    right: 7px;
+  }
+
+  .customer-feet {
+    bottom: 4px;
+    width: 26px;
+    height: 8px;
+  }
+
+  .customer-figure.body-slim .customer-body {
+    width: 32px;
+    height: 32px;
+  }
+
+  .customer-figure.body-slim .customer-legs {
+    width: 18px;
+  }
+
+  .customer-figure.body-average .customer-body {
+    width: 36px;
+  }
+
+  .customer-figure.body-broad .customer-body {
+    width: 40px;
+    height: 36px;
+  }
+
+  .customer-figure.body-broad .customer-legs {
+    width: 24px;
+  }
+
+  .customer-figure.posture-upright .customer-head {
+    top: 6px;
+  }
+
+  .customer-figure.posture-lean .customer-body {
+    transform: translateX(-50%) rotate(3deg);
+  }
+
+  .customer-figure.posture-lean .customer-head {
+    left: calc(50% + 1px);
+    top: 8px;
+  }
+
+  .customer-figure.posture-lean .customer-arm.arm-left {
+    transform: rotate(12deg);
+  }
+
+  .customer-figure.posture-lean .customer-arm.arm-right {
+    transform: rotate(-24deg);
+  }
+
+  .customer-figure.posture-slouch .customer-body {
+    bottom: 17px;
+    transform: translateX(-50%) rotate(-3deg);
+  }
+
+  .customer-figure.posture-slouch .customer-head {
+    top: 10px;
+    left: calc(50% - 1px);
+  }
+
+  .customer-figure.posture-slouch .customer-arm.arm-left,
+  .customer-figure.posture-slouch .customer-arm.arm-right {
+    top: 33px;
+  }
+
+  .customer-figure.top-shirt .customer-body::before {
+    top: 4px;
+    width: 12px;
+    height: 8px;
+  }
+
+  .customer-figure.top-hoodie .customer-body {
+    height: 36px;
+  }
+
+  .customer-figure.top-hoodie .customer-body::before {
+    top: 0;
+    width: 16px;
+    height: 10px;
+    border-width: 3px;
+  }
+
+  .customer-figure.top-coat .customer-body {
+    height: 42px;
+  }
+
+  .customer-figure.top-coat .customer-body::before {
+    top: 2px;
+    width: 14px;
+    height: calc(100% - 5px);
+  }
+
+  .customer-figure.hair-short .customer-hair {
+    width: 22px;
+    height: 11px;
+  }
+
+  .customer-figure.hair-bob .customer-hair {
+    width: 28px;
+    height: 16px;
+  }
+
+  .customer-figure.hair-bob .customer-hair::after {
+    left: 3px;
+    right: 3px;
+    bottom: -4px;
+    height: 6px;
+  }
+
+  .customer-figure.hair-long .customer-hair {
+    width: 28px;
+    height: 14px;
+  }
+
+  .customer-figure.hair-long .customer-hair::after {
+    left: 5px;
+    right: 5px;
+    top: 7px;
+    height: 16px;
+  }
+
+  .customer-figure.hair-bun .customer-hair {
+    width: 24px;
+    height: 12px;
+  }
+
+  .customer-figure.hair-bun .customer-hair::after {
+    top: -5px;
+    width: 10px;
+    height: 10px;
+  }
+
+  .customer-figure.hair-cap .customer-hair {
+    width: 26px;
+    height: 11px;
+  }
+
+  .customer-figure.hair-cap .customer-hair::before {
+    top: -2px;
+    height: 10px;
+  }
+
+  .customer-figure.hair-cap .customer-hair::after {
+    right: -6px;
+    top: 4px;
+    width: 10px;
+    height: 4px;
+  }
+
+  .customer-figure.hair-hood .customer-hair {
+    width: 30px;
+    height: 18px;
+  }
+
+  .customer-figure.hair-hood .customer-hair::after {
+    left: 5px;
+    right: 5px;
+    top: 3px;
+    height: 9px;
+  }
+
+  .customer-figure.accessory-backpack .customer-accessory {
+    left: 9px;
+    top: 30px;
+    width: 14px;
+    height: 22px;
+  }
+
+  .customer-figure.accessory-backpack .customer-accessory::before,
+  .customer-figure.accessory-backpack .customer-accessory::after {
+    top: 3px;
+    width: 4px;
+    height: 14px;
+  }
+
+  .customer-figure.accessory-shopper .customer-accessory {
+    right: 5px;
+    top: 36px;
+    width: 14px;
+    height: 19px;
+  }
+
+  .customer-figure.accessory-shopper .customer-accessory::before {
+    left: 2px;
+    right: 2px;
+    top: -6px;
+    height: 8px;
+  }
+
+  .customer-figure.accessory-phone .customer-accessory {
+    right: 7px;
+    top: 39px;
+    width: 8px;
+    height: 13px;
+  }
+
+  .customer-figure.persona-shurik .customer-detail,
+  .customer-figure.persona-bureaucrat .customer-detail,
+  .customer-figure.persona-it-hoodie .customer-detail {
+    top: 20px;
+    width: 22px;
+    height: 8px;
+  }
+
+  .customer-figure.persona-shurik .customer-detail::before,
+  .customer-figure.persona-shurik .customer-detail::after,
+  .customer-figure.persona-bureaucrat .customer-detail::before,
+  .customer-figure.persona-bureaucrat .customer-detail::after,
+  .customer-figure.persona-it-hoodie .customer-detail::before,
+  .customer-figure.persona-it-hoodie .customer-detail::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .customer-figure.persona-neo .customer-detail {
+    top: 19px;
+    width: 24px;
+    height: 7px;
+  }
+
+  .customer-figure.persona-neo .customer-detail::before,
+  .customer-figure.persona-neo .customer-detail::after {
+    top: 1px;
+    width: 9px;
+    height: 5px;
+  }
+
+  .customer-figure.persona-punk .customer-detail {
+    top: 36px;
+    width: 18px;
+    height: 5px;
+  }
+
+  .customer-figure.persona-punk .customer-detail::before,
+  .customer-figure.persona-punk .customer-detail::after {
+    top: 1px;
+    width: 3px;
+    height: 3px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-detail {
+    top: 34px;
+    width: 20px;
+    height: 14px;
+  }
+
+  .customer-figure.persona-gopnik .customer-detail {
+    top: 40px;
+    width: 20px;
+    height: 7px;
+  }
+
+  .customer-figure.persona-shurik .customer-body {
+    bottom: 19px;
+  }
+
+  .customer-figure.persona-bureaucrat .customer-body {
+    height: 40px;
+  }
+
+  .customer-figure.persona-neo .customer-body {
+    height: 42px;
+  }
+
+  .customer-figure.persona-punk .customer-hair {
+    width: 30px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-body {
+    width: 42px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-accessory {
+    top: 34px;
+    width: 15px;
+    height: 20px;
+  }
+}
+
 @media (max-width: 760px) {
   :root {
     --shell-pad-x: 8px;
