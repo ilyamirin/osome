@@ -2506,13 +2506,6 @@ button {
     transform: scale(0.84);
   }
 
-  .frontal-counter .cat-aura {
-    left: 4px;
-    top: 14px;
-    width: 60px;
-    height: 34px;
-  }
-
   .frontal-counter .cat-tail {
     right: 18px;
     top: 38px;
@@ -2886,14 +2879,6 @@ button {
   .frontal-counter .score-clock-case {
     padding: 10px 8px 8px;
     border-radius: 18px;
-  }
-
-  .frontal-counter .score-clock-case::after {
-    left: 8px;
-    right: 8px;
-    top: 12px;
-    bottom: 8px;
-    border-radius: 9px;
   }
 
   .frontal-counter .score-clock-display {
