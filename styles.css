@@ -1303,19 +1303,6 @@ button {
   pointer-events: none;
 }
 
-.active-order::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 8px;
-  width: 168px;
-  height: 28px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  background: radial-gradient(circle, rgba(60, 39, 25, 0.28), rgba(60, 39, 25, 0));
-  filter: blur(9px);
-}
-
 .active-order-badge {
   position: relative;
   display: grid;
@@ -1435,16 +1422,6 @@ button {
 .cat-mascot span {
   position: absolute;
   display: block;
-}
-
-.cat-aura {
-  left: 10px;
-  top: 20px;
-  width: 72px;
-  height: 42px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(96, 224, 255, 0.34), rgba(96, 224, 255, 0));
-  filter: blur(10px);
 }
 
 .cat-tail {
@@ -1600,24 +1577,6 @@ button {
     0 16px 18px rgba(32, 20, 15, 0.14);
 }
 
-.score-clock-case::after {
-  content: "";
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  top: 18px;
-  bottom: 12px;
-  border-radius: 10px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
-    linear-gradient(180deg, #111214, #0a0b0c 62%, #17181a);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.02),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-  pointer-events: none;
-}
-
 .score-clock-display {
   position: relative;
   z-index: 2;
@@ -1664,19 +1623,6 @@ button {
     transform 140ms ease,
     box-shadow 140ms ease,
     background 140ms ease;
-}
-
-.speaker-toggle::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-    linear-gradient(180deg, rgba(22, 24, 27, 0.96), rgba(34, 37, 41, 0.96));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .speaker-toggle:hover {
@@ -1774,14 +1720,6 @@ button {
   transform-origin: top left;
 }
 
-.frontal-counter .cat-aura {
-  left: 6px;
-  top: 18px;
-  width: 84px;
-  height: 48px;
-  background: radial-gradient(circle, rgba(255, 212, 114, 0.3), rgba(255, 212, 114, 0));
-}
-
 .frontal-counter .cat-tail {
   right: 26px;
   top: 46px;
@@ -1810,31 +1748,9 @@ button {
     0 26px 40px rgba(85, 52, 31, 0.2);
 }
 
-.frontal-counter .counter-desk::after {
-  content: "";
-  position: absolute;
-  inset: 72px 18px 16px;
-  border-radius: 28px 28px 30px 30px;
-  background:
-    linear-gradient(180deg, rgba(143, 92, 59, 0.06), rgba(63, 38, 23, 0.18)),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 243, 228, 0.1),
-    inset 0 -1px 0 rgba(58, 35, 21, 0.18);
-  pointer-events: none;
-}
-
 .frontal-counter .active-order {
   min-height: var(--active-order-min-h);
   padding: var(--active-order-pad-top) 8px var(--active-order-pad-bottom);
-}
-
-.frontal-counter .active-order::after {
-  width: 194px;
-  height: 34px;
-  bottom: 12px;
-  background: radial-gradient(circle, rgba(77, 50, 33, 0.34), rgba(77, 50, 33, 0));
-  filter: blur(10px);
 }
 
 .frontal-counter .active-order-badge {
@@ -2612,34 +2528,34 @@ button {
 
   .customer-shadow {
     left: 50%;
-    bottom: 6px;
-    width: 36px;
-    height: 10px;
+    bottom: 4px;
+    width: 32px;
+    height: 8px;
   }
 
   .customer-figure {
     left: 50%;
-    bottom: 5px;
-    width: 60px;
-    height: 74px;
+    bottom: 2px;
+    width: 54px;
+    height: 62px;
   }
 
   .customer-body {
-    bottom: 16px;
-    width: 34px;
-    height: 31px;
+    bottom: 12px;
+    width: 30px;
+    height: 24px;
   }
 
   .customer-legs {
-    bottom: 6px;
-    width: 18px;
-    height: 18px;
+    bottom: 3px;
+    width: 16px;
+    height: 14px;
   }
 
   .customer-legs::before,
   .customer-legs::after {
-    width: 6px;
-    height: 16px;
+    width: 5px;
+    height: 12px;
   }
 
   .customer-legs::before {
@@ -2651,232 +2567,232 @@ button {
   }
 
   .customer-head {
-    top: 9px;
-    width: 18px;
-    height: 18px;
+    top: 10px;
+    width: 14px;
+    height: 14px;
   }
 
   .customer-hair {
-    top: 8px;
-    width: 20px;
-    height: 10px;
-  }
-
-  .customer-arm {
-    top: 28px;
-    width: 9px;
-    height: 19px;
-  }
-
-  .arm-left {
-    left: 7px;
-  }
-
-  .arm-right {
-    right: 7px;
-  }
-
-  .customer-feet {
-    bottom: 3px;
-    width: 24px;
+    top: 9px;
+    width: 16px;
     height: 7px;
   }
 
+  .customer-arm {
+    top: 22px;
+    width: 7px;
+    height: 14px;
+  }
+
+  .arm-left {
+    left: 8px;
+  }
+
+  .arm-right {
+    right: 8px;
+  }
+
+  .customer-feet {
+    bottom: 1px;
+    width: 18px;
+    height: 5px;
+  }
+
   .customer-figure.body-slim .customer-body {
-    width: 30px;
-    height: 29px;
+    width: 26px;
+    height: 22px;
   }
 
   .customer-figure.body-slim .customer-legs {
-    width: 16px;
+    width: 14px;
   }
 
   .customer-figure.body-average .customer-body {
-    width: 34px;
+    width: 30px;
   }
 
   .customer-figure.body-broad .customer-body {
-    width: 38px;
-    height: 33px;
+    width: 34px;
+    height: 26px;
   }
 
   .customer-figure.body-broad .customer-legs {
-    width: 20px;
+    width: 18px;
   }
 
   .customer-figure.posture-upright .customer-head {
-    top: 9px;
+    top: 10px;
   }
 
   .customer-figure.posture-lean .customer-body {
-    transform: translateX(-50%) rotate(3deg);
+    transform: translateX(-50%) rotate(2deg);
   }
 
   .customer-figure.posture-lean .customer-head {
     left: calc(50% + 1px);
-    top: 10px;
+    top: 11px;
   }
 
   .customer-figure.posture-lean .customer-arm.arm-left {
-    transform: rotate(12deg);
+    transform: rotate(10deg);
   }
 
   .customer-figure.posture-lean .customer-arm.arm-right {
-    transform: rotate(-24deg);
+    transform: rotate(-18deg);
   }
 
   .customer-figure.posture-slouch .customer-body {
-    bottom: 15px;
-    transform: translateX(-50%) rotate(-3deg);
+    bottom: 11px;
+    transform: translateX(-50%) rotate(-2deg);
   }
 
   .customer-figure.posture-slouch .customer-head {
-    top: 11px;
+    top: 12px;
     left: calc(50% - 1px);
   }
 
   .customer-figure.posture-slouch .customer-arm.arm-left,
   .customer-figure.posture-slouch .customer-arm.arm-right {
-    top: 30px;
+    top: 24px;
   }
 
   .customer-figure.top-shirt .customer-body::before {
-    top: 4px;
-    width: 10px;
-    height: 7px;
+    top: 3px;
+    width: 7px;
+    height: 5px;
   }
 
   .customer-figure.top-hoodie .customer-body {
-    height: 33px;
+    height: 26px;
   }
 
   .customer-figure.top-hoodie .customer-body::before {
     top: 0;
-    width: 14px;
-    height: 8px;
-    border-width: 3px;
+    width: 10px;
+    height: 6px;
+    border-width: 2px;
   }
 
   .customer-figure.top-coat .customer-body {
-    height: 38px;
+    height: 30px;
   }
 
   .customer-figure.top-coat .customer-body::before {
     top: 2px;
-    width: 12px;
-    height: calc(100% - 5px);
+    width: 9px;
+    height: calc(100% - 4px);
   }
 
   .customer-figure.hair-short .customer-hair {
-    width: 18px;
-    height: 9px;
+    width: 15px;
+    height: 6px;
   }
 
   .customer-figure.hair-bob .customer-hair {
-    width: 21px;
-    height: 12px;
+    width: 18px;
+    height: 9px;
   }
 
   .customer-figure.hair-bob .customer-hair::after {
     left: 3px;
     right: 3px;
-    bottom: -4px;
-    height: 6px;
+    bottom: -3px;
+    height: 4px;
   }
 
   .customer-figure.hair-long .customer-hair {
-    width: 21px;
-    height: 11px;
-  }
-
-  .customer-figure.hair-long .customer-hair::after {
-    left: 5px;
-    right: 5px;
-    top: 7px;
-    height: 16px;
-  }
-
-  .customer-figure.hair-bun .customer-hair {
-    width: 20px;
-    height: 9px;
-  }
-
-  .customer-figure.hair-bun .customer-hair::after {
-    top: -4px;
-    width: 8px;
+    width: 18px;
     height: 8px;
   }
 
+  .customer-figure.hair-long .customer-hair::after {
+    left: 4px;
+    right: 4px;
+    top: 5px;
+    height: 10px;
+  }
+
+  .customer-figure.hair-bun .customer-hair {
+    width: 16px;
+    height: 6px;
+  }
+
+  .customer-figure.hair-bun .customer-hair::after {
+    top: -3px;
+    width: 6px;
+    height: 6px;
+  }
+
   .customer-figure.hair-cap .customer-hair {
-    width: 20px;
-    height: 9px;
+    width: 16px;
+    height: 6px;
   }
 
   .customer-figure.hair-cap .customer-hair::before {
     top: -2px;
-    height: 8px;
+    height: 6px;
   }
 
   .customer-figure.hair-cap .customer-hair::after {
-    right: -6px;
-    top: 4px;
-    width: 8px;
+    right: -4px;
+    top: 3px;
+    width: 6px;
     height: 3px;
   }
 
   .customer-figure.hair-hood .customer-hair {
-    width: 23px;
-    height: 13px;
+    width: 19px;
+    height: 10px;
   }
 
   .customer-figure.hair-hood .customer-hair::after {
-    left: 5px;
-    right: 5px;
-    top: 3px;
-    height: 7px;
+    left: 4px;
+    right: 4px;
+    top: 2px;
+    height: 5px;
   }
 
   .customer-figure.accessory-backpack .customer-accessory {
-    left: 10px;
-    top: 27px;
-    width: 12px;
-    height: 18px;
+    left: 9px;
+    top: 21px;
+    width: 10px;
+    height: 14px;
   }
 
   .customer-figure.accessory-backpack .customer-accessory::before,
   .customer-figure.accessory-backpack .customer-accessory::after {
-    top: 3px;
-    width: 4px;
-    height: 14px;
+    top: 2px;
+    width: 3px;
+    height: 10px;
   }
 
   .customer-figure.accessory-shopper .customer-accessory {
     right: 6px;
-    top: 32px;
-    width: 12px;
-    height: 16px;
+    top: 25px;
+    width: 10px;
+    height: 12px;
   }
 
   .customer-figure.accessory-shopper .customer-accessory::before {
     left: 2px;
     right: 2px;
-    top: -6px;
-    height: 8px;
+    top: -4px;
+    height: 6px;
   }
 
   .customer-figure.accessory-phone .customer-accessory {
     right: 7px;
-    top: 34px;
-    width: 7px;
-    height: 11px;
+    top: 27px;
+    width: 6px;
+    height: 9px;
   }
 
   .customer-figure.persona-shurik .customer-detail,
   .customer-figure.persona-bureaucrat .customer-detail,
   .customer-figure.persona-it-hoodie .customer-detail {
-    top: 17px;
-    width: 18px;
-    height: 7px;
+    top: 14px;
+    width: 14px;
+    height: 5px;
   }
 
   .customer-figure.persona-shurik .customer-detail::before,
@@ -2885,27 +2801,27 @@ button {
   .customer-figure.persona-bureaucrat .customer-detail::after,
   .customer-figure.persona-it-hoodie .customer-detail::before,
   .customer-figure.persona-it-hoodie .customer-detail::after {
-    width: 8px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
   }
 
   .customer-figure.persona-neo .customer-detail {
-    top: 17px;
-    width: 20px;
-    height: 6px;
+    top: 13px;
+    width: 15px;
+    height: 5px;
   }
 
   .customer-figure.persona-neo .customer-detail::before,
   .customer-figure.persona-neo .customer-detail::after {
     top: 1px;
-    width: 9px;
-    height: 5px;
+    width: 6px;
+    height: 3px;
   }
 
   .customer-figure.persona-punk .customer-detail {
-    top: 31px;
-    width: 16px;
-    height: 5px;
+    top: 24px;
+    width: 12px;
+    height: 4px;
   }
 
   .customer-figure.persona-punk .customer-detail::before,
@@ -2916,41 +2832,41 @@ button {
   }
 
   .customer-figure.persona-service-aunt .customer-detail {
-    top: 29px;
-    width: 18px;
-    height: 12px;
+    top: 23px;
+    width: 14px;
+    height: 9px;
   }
 
   .customer-figure.persona-gopnik .customer-detail {
-    top: 34px;
-    width: 18px;
-    height: 6px;
+    top: 26px;
+    width: 14px;
+    height: 5px;
   }
 
   .customer-figure.persona-shurik .customer-body {
-    bottom: 17px;
+    bottom: 13px;
   }
 
   .customer-figure.persona-bureaucrat .customer-body {
-    height: 36px;
+    height: 28px;
   }
 
   .customer-figure.persona-neo .customer-body {
-    height: 38px;
+    height: 30px;
   }
 
   .customer-figure.persona-punk .customer-hair {
-    width: 22px;
+    width: 18px;
   }
 
   .customer-figure.persona-service-aunt .customer-body {
-    width: 40px;
+    width: 34px;
   }
 
   .customer-figure.persona-service-aunt .customer-accessory {
-    top: 30px;
-    width: 13px;
-    height: 17px;
+    top: 24px;
+    width: 11px;
+    height: 13px;
   }
 
   .scene-dialogue {
