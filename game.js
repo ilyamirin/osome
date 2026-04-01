@@ -532,7 +532,8 @@ const state = {
   catSpeechUntil: 0,
   catSpeechCooldownUntil: 0,
   catSpeechPriority: 0,
-  catLastLine: "",
+  catLastLineByCategory: {},
+  catLineDecks: {},
   catPressureTier: 0,
   lastFrame: 0,
   lastId: 1,
@@ -606,7 +607,8 @@ function resetRoundState() {
   state.catSpeechUntil = 0;
   state.catSpeechCooldownUntil = 0;
   state.catSpeechPriority = 0;
-  state.catLastLine = "";
+  state.catLastLineByCategory = {};
+  state.catLineDecks = {};
   state.catPressureTier = 0;
   state.lastFrame = 0;
 }
@@ -645,6 +647,8 @@ function setStandby() {
   state.activeSpeechPlacement = null;
   state.speechSwitchAt = 0;
   state.catPressureTier = 0;
+  state.catLastLineByCategory = {};
+  state.catLineDecks = {};
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
@@ -1264,20 +1268,36 @@ function formatCounterScore(value) {
   return formatNumber(normalized);
 }
 
-function sampleCatLine(pool) {
+function shuffle(items) {
+  const next = [...items];
+  for (let index = next.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+  }
+  return next;
+}
+
+function sampleCatLine(category, pool) {
   if (!pool || pool.length === 0) {
     return "";
   }
   if (pool.length === 1) {
-    state.catLastLine = pool[0];
+    state.catLastLineByCategory[category] = pool[0];
     return pool[0];
   }
 
-  let line = sample(pool);
-  if (line === state.catLastLine) {
-    line = sample(pool.filter((candidate) => candidate !== state.catLastLine));
+  let deck = state.catLineDecks[category];
+  if (!deck || deck.length === 0) {
+    deck = shuffle(pool);
+    const lastLine = state.catLastLineByCategory[category];
+    if (deck.length > 1 && deck[0] === lastLine) {
+      [deck[0], deck[1]] = [deck[1], deck[0]];
+    }
   }
-  state.catLastLine = line;
+
+  const [line, ...restDeck] = deck;
+  state.catLineDecks[category] = restDeck;
+  state.catLastLineByCategory[category] = line;
   return line;
 }
 
@@ -1299,7 +1319,7 @@ function speakCat(category, options = {}) {
     return false;
   }
 
-  state.catSpeechText = sampleCatLine(pool);
+  state.catSpeechText = sampleCatLine(category, pool);
   state.catSpeechUntil = now + durationMs;
   state.catSpeechCooldownUntil = now + cooldownMs;
   state.catSpeechPriority = priority;
