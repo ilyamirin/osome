@@ -24,6 +24,60 @@
   --radius-lg: 28px;
   --radius-md: 18px;
   --radius-sm: 12px;
+  --shell-pad-x: clamp(12px, 2.6vw, 18px);
+  --shell-pad-y: clamp(14px, 2.6vw, 18px);
+  --panel-pad: clamp(16px, 2.4vw, 28px);
+  --panel-radius: clamp(28px, 3vw, 40px);
+  --stage-min-h: clamp(640px, 82svh, 780px);
+  --stage-radius: clamp(28px, 2.8vw, 34px);
+  --queue-gap: clamp(10px, 1.4vw, 14px);
+  --queue-pad-top: clamp(56px, 8vw, 78px);
+  --queue-pad-x: clamp(12px, 1.8vw, 22px);
+  --queue-pad-bottom: clamp(14px, 1.8vw, 22px);
+  --board-max-w: 580px;
+  --board-pad: clamp(14px, 1.6vw, 18px);
+  --board-radius: clamp(26px, 2.6vw, 32px);
+  --board-gap: clamp(8px, 1vw, 12px);
+  --board-lane-offset: clamp(10px, 1.1vw, 12px);
+  --board-lane-width: clamp(7px, 0.8vw, 9px);
+  --cell-radius: clamp(20px, 2vw, 24px);
+  --cell-inner-inset: clamp(8px, 1vw, 10px);
+  --cell-inner-radius: clamp(16px, 1.6vw, 18px);
+  --customer-scale: 1;
+  --scene-dialogue-max-w: 420px;
+  --scene-dialogue-gap: 24px;
+  --scene-dialogue-pad-x: clamp(14px, 1.4vw, 18px);
+  --scene-dialogue-pad-top: clamp(12px, 1.2vw, 14px);
+  --scene-dialogue-pad-bottom: clamp(14px, 1.3vw, 16px);
+  --scene-dialogue-radius: clamp(20px, 2vw, 24px);
+  --scene-dialogue-font: clamp(1.08rem, 2vw, 1.8rem);
+  --cat-dialogue-width: clamp(156px, 18vw, 190px);
+  --cat-dialogue-top: -36px;
+  --cat-dialogue-pad-x: clamp(10px, 1vw, 12px);
+  --cat-dialogue-pad-top: clamp(8px, 1vw, 10px);
+  --cat-dialogue-pad-bottom: clamp(10px, 1vw, 12px);
+  --cat-dialogue-font: clamp(0.82rem, 0.95vw, 0.94rem);
+  --counter-max-w: 700px;
+  --counter-top-pad: clamp(28px, 4vw, 42px);
+  --counter-left-col: clamp(84px, 10vw, 120px);
+  --counter-center-min: clamp(170px, 30vw, 340px);
+  --counter-right-col: clamp(72px, 8vw, 100px);
+  --counter-gap: clamp(10px, 1.6vw, 18px);
+  --counter-min-h: clamp(184px, 28vw, 230px);
+  --counter-pad-top: clamp(22px, 2vw, 28px);
+  --counter-pad-x: clamp(14px, 2vw, 26px);
+  --counter-pad-bottom: clamp(16px, 2vw, 26px);
+  --active-order-min-h: clamp(132px, 20vw, 176px);
+  --active-order-pad-top: clamp(8px, 1vw, 10px);
+  --active-order-pad-bottom: clamp(22px, 2vw, 30px);
+  --active-order-badge-w: clamp(126px, 17vw, 176px);
+  --active-order-badge-h: clamp(104px, 14vw, 140px);
+  --active-order-symbol-size: clamp(108px, 14vw, 146px);
+  --score-clock-min-h: clamp(122px, 16vw, 152px);
+  --score-clock-case-min-h: clamp(96px, 14vw, 126px);
+  --score-clock-font: clamp(1.56rem, 2.2vw, 2.18rem);
+  --score-clock-font-compact: clamp(1.2rem, 1.7vw, 1.7rem);
+  --speaker-min-h: clamp(96px, 14vw, 126px);
   --font-head: "Space Grotesk", "Avenir Next", "Trebuchet MS", sans-serif;
   --font-body: "Manrope", "Avenir Next", "Trebuchet MS", sans-serif;
 }
@@ -47,6 +101,11 @@ body {
   font-family: var(--font-body);
 }
 
+body.overlay-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 button {
   font: inherit;
 }
@@ -59,7 +118,8 @@ button {
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  padding: max(var(--shell-pad-y), env(safe-area-inset-top)) var(--shell-pad-x)
+    max(var(--shell-pad-y), env(safe-area-inset-bottom));
 }
 
 .ambient {
@@ -102,8 +162,8 @@ button {
 }
 
 .game-panel {
-  padding: clamp(18px, 2.4vw, 28px);
-  border-radius: 40px;
+  padding: var(--panel-pad);
+  border-radius: var(--panel-radius);
 }
 
 .eyebrow,
@@ -353,8 +413,8 @@ button {
 .facility-stage {
   position: relative;
   overflow: hidden;
-  min-height: 780px;
-  border-radius: 34px;
+  min-height: var(--stage-min-h);
+  border-radius: var(--stage-radius);
   border: 1px solid rgba(29, 38, 44, 0.08);
   background: linear-gradient(180deg, #f6efe4 0%, #efe4d4 18%, #eadbc8 18%, #e7d6c2 100%);
 }
@@ -379,17 +439,17 @@ button {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 14px;
+  gap: var(--queue-gap);
   min-height: 100%;
-  padding: 78px 22px 22px;
+  padding: var(--queue-pad-top) var(--queue-pad-x) var(--queue-pad-bottom);
 }
 
 .board-shell {
   position: relative;
-  width: min(100%, 580px);
+  width: min(100%, var(--board-max-w));
   margin: 0 auto;
-  padding: 18px;
-  border-radius: 32px;
+  padding: var(--board-pad);
+  border-radius: var(--board-radius);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.2)),
     repeating-linear-gradient(
@@ -407,31 +467,31 @@ button {
 
 .lane-strip {
   position: absolute;
-  top: 12px;
-  bottom: 12px;
-  width: 9px;
+  top: var(--board-lane-offset);
+  bottom: var(--board-lane-offset);
+  width: var(--board-lane-width);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.1));
 }
 
 .lane-strip-left {
-  left: 10px;
+  left: var(--board-lane-offset);
 }
 
 .lane-strip-right {
-  right: 10px;
+  right: var(--board-lane-offset);
 }
 
 .board-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--board-gap);
 }
 
 .cell {
   position: relative;
   aspect-ratio: 0.92 / 1;
-  border-radius: 24px;
+  border-radius: var(--cell-radius);
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(248, 240, 230, 0.88)),
@@ -447,8 +507,8 @@ button {
 .cell::before {
   content: "";
   position: absolute;
-  inset: 10px;
-  border-radius: 18px;
+  inset: var(--cell-inner-inset);
+  border-radius: var(--cell-inner-radius);
   border: 1px dashed rgba(29, 38, 44, 0.1);
 }
 
@@ -488,10 +548,12 @@ button {
 .customer-shadow {
   position: absolute;
   left: 50%;
-  bottom: 12px;
+  bottom: 14px;
   width: 56px;
   height: 18px;
   transform: translateX(-50%);
+  scale: var(--customer-scale);
+  transform-origin: center;
   border-radius: 999px;
   background: rgba(29, 38, 44, 0.16);
   filter: blur(3px);
@@ -500,10 +562,12 @@ button {
 .customer-figure {
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: 14px;
   width: 84px;
   height: 106px;
   transform: translateX(-50%);
+  scale: var(--customer-scale);
+  transform-origin: bottom center;
 }
 
 .customer-figure.idle-calm {
@@ -860,7 +924,7 @@ button {
 
 .customer-figure.accessory-backpack .customer-accessory {
   display: block;
-  left: 12px;
+  left: 14px;
   top: 40px;
   width: 18px;
   height: 28px;
@@ -888,7 +952,7 @@ button {
 
 .customer-figure.accessory-shopper .customer-accessory {
   display: block;
-  right: 4px;
+  right: 8px;
   top: 50px;
   width: 18px;
   height: 24px;
@@ -909,7 +973,7 @@ button {
 
 .customer-figure.accessory-phone .customer-accessory {
   display: block;
-  right: 10px;
+  right: 12px;
   top: 54px;
   width: 10px;
   height: 16px;
@@ -1127,10 +1191,11 @@ button {
   left: 50%;
   top: 24px;
   z-index: 8;
-  width: min(420px, calc(100% - 48px));
+  width: min(var(--scene-dialogue-max-w), calc(100% - var(--scene-dialogue-gap) * 2));
   transform: translateX(-50%);
-  padding: 14px 18px 16px;
-  border-radius: 24px;
+  padding: var(--scene-dialogue-pad-top) var(--scene-dialogue-pad-x)
+    var(--scene-dialogue-pad-bottom);
+  border-radius: var(--scene-dialogue-radius);
   pointer-events: none;
   border: 1px solid rgba(29, 38, 44, 0.12);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 247, 239, 0.44));
@@ -1165,7 +1230,7 @@ button {
 .scene-dialogue-text {
   margin-top: 0;
   font-family: var(--font-head);
-  font-size: clamp(1.2rem, 2.1vw, 1.8rem);
+  font-size: var(--scene-dialogue-font);
   line-height: 1.2;
   color: var(--ink);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.22);
@@ -1175,10 +1240,10 @@ button {
 .cat-dialogue {
   position: absolute;
   left: calc(100% - 8px);
-  top: -36px;
+  top: var(--cat-dialogue-top);
   z-index: 5;
-  width: 190px;
-  padding: 10px 12px 12px;
+  width: var(--cat-dialogue-width);
+  padding: var(--cat-dialogue-pad-top) var(--cat-dialogue-pad-x) var(--cat-dialogue-pad-bottom);
   border-radius: 16px;
   border: 1px solid rgba(18, 24, 30, 0.12);
   background: linear-gradient(180deg, rgba(31, 38, 44, 0.92), rgba(20, 24, 28, 0.9));
@@ -1205,7 +1270,7 @@ button {
   margin: 0;
   color: rgba(247, 244, 239, 0.96);
   font-family: var(--font-head);
-  font-size: 0.94rem;
+  font-size: var(--cat-dialogue-font);
   line-height: 1.2;
   text-wrap: balance;
 }
@@ -1343,9 +1408,9 @@ button {
 
 .counter-set {
   position: relative;
-  width: min(100%, 700px);
+  width: min(100%, var(--counter-max-w));
   margin: 0 auto;
-  padding-top: 42px;
+  padding-top: var(--counter-top-pad);
 }
 
 .cat-mascot {
@@ -1718,10 +1783,13 @@ button {
 
 .frontal-counter .counter-desk {
   position: relative;
-  grid-template-columns: 120px minmax(340px, 1.9fr) 100px;
-  gap: 18px;
-  min-height: 230px;
-  padding: 28px 26px 26px;
+  grid-template-columns:
+    var(--counter-left-col)
+    minmax(var(--counter-center-min), 1.9fr)
+    var(--counter-right-col);
+  gap: var(--counter-gap);
+  min-height: var(--counter-min-h);
+  padding: var(--counter-pad-top) var(--counter-pad-x) var(--counter-pad-bottom);
   border-radius: 38px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 12%),
@@ -1747,8 +1815,8 @@ button {
 }
 
 .frontal-counter .active-order {
-  min-height: 176px;
-  padding: 10px 8px 30px;
+  min-height: var(--active-order-min-h);
+  padding: var(--active-order-pad-top) 8px var(--active-order-pad-bottom);
 }
 
 .frontal-counter .active-order::after {
@@ -1760,39 +1828,39 @@ button {
 }
 
 .frontal-counter .active-order-badge {
-  width: 176px;
-  height: 140px;
+  width: var(--active-order-badge-w);
+  height: var(--active-order-badge-h);
 }
 
 .frontal-counter .active-order-symbol {
-  width: 146px;
-  height: 146px;
+  width: var(--active-order-symbol-size);
+  height: var(--active-order-symbol-size);
   filter: drop-shadow(0 4px 0 rgba(255, 246, 232, 0.2))
     drop-shadow(0 16px 18px rgba(45, 28, 18, 0.22));
 }
 
 .frontal-counter .score-clock {
-  min-height: 152px;
+  min-height: var(--score-clock-min-h);
 }
 
 .frontal-counter .score-clock-case {
-  min-height: 126px;
+  min-height: var(--score-clock-case-min-h);
   border-radius: 22px;
 }
 
 .frontal-counter .score-clock-display {
   padding-top: 34px;
-  font-size: 2.18rem;
+  font-size: var(--score-clock-font);
   letter-spacing: 0.12em;
 }
 
 .frontal-counter .score-clock-display.is-compact {
-  font-size: 1.7rem;
+  font-size: var(--score-clock-font-compact);
   letter-spacing: 0.05em;
 }
 
 .frontal-counter .speaker-toggle {
-  min-height: 126px;
+  min-height: var(--speaker-min-h);
   border-radius: 28px;
 }
 
@@ -1848,15 +1916,20 @@ button {
   display: grid;
   place-items: center;
   padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
   background: rgba(18, 24, 30, 0.34);
   backdrop-filter: blur(6px);
 }
 
 .overlay-card {
   width: min(100%, 620px);
+  max-height: min(calc(100svh - 40px), 100%);
   padding: 28px;
   border-radius: 34px;
   text-align: center;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .overlay-card h2 {
@@ -1960,196 +2033,263 @@ button {
 }
 
 @media (max-width: 1120px) {
-  .facility-stage {
-    min-height: 720px;
+  :root {
+    --stage-min-h: 720px;
+    --customer-scale: 0.96;
   }
 }
 
 @media (max-width: 760px) {
-  .app-shell {
-    padding-left: 12px;
-    padding-right: 12px;
+  :root {
+    --shell-pad-x: 12px;
+    --shell-pad-y: 10px;
+    --panel-pad: 10px;
+    --panel-radius: 28px;
+    --stage-min-h: 520px;
+    --queue-gap: 6px;
+    --queue-pad-top: 24px;
+    --queue-pad-x: 8px;
+    --queue-pad-bottom: 10px;
+    --board-max-w: 304px;
+    --board-pad: 8px;
+    --board-radius: 22px;
+    --board-gap: 5px;
+    --board-lane-offset: 7px;
+    --board-lane-width: 6px;
+    --cell-radius: 16px;
+    --cell-inner-inset: 6px;
+    --cell-inner-radius: 12px;
+    --customer-scale: 0.72;
+    --scene-dialogue-max-w: 252px;
+    --scene-dialogue-gap: 8px;
+    --scene-dialogue-pad-x: 12px;
+    --scene-dialogue-pad-top: 9px;
+    --scene-dialogue-pad-bottom: 10px;
+    --scene-dialogue-radius: 18px;
+    --scene-dialogue-font: 0.94rem;
+    --cat-dialogue-width: 132px;
+    --cat-dialogue-top: -12px;
+    --cat-dialogue-pad-x: 8px;
+    --cat-dialogue-pad-top: 6px;
+    --cat-dialogue-pad-bottom: 7px;
+    --cat-dialogue-font: 0.72rem;
+    --counter-top-pad: 16px;
+    --counter-max-w: 320px;
+    --counter-left-col: 68px;
+    --counter-center-min: 122px;
+    --counter-right-col: 54px;
+    --counter-gap: 7px;
+    --counter-min-h: 124px;
+    --counter-pad-top: 12px;
+    --counter-pad-x: 8px;
+    --counter-pad-bottom: 10px;
+    --speaker-min-h: 72px;
+    --active-order-min-h: 92px;
+    --active-order-pad-top: 6px;
+    --active-order-pad-bottom: 12px;
+    --active-order-badge-w: 88px;
+    --active-order-badge-h: 72px;
+    --active-order-symbol-size: 74px;
+    --score-clock-min-h: 90px;
+    --score-clock-case-min-h: 70px;
+    --score-clock-font: 1.1rem;
+    --score-clock-font-compact: 0.9rem;
   }
 
   .game-panel,
   .overlay-card {
-    border-radius: 28px;
+    border-radius: var(--panel-radius);
   }
 
   .hud {
     align-items: stretch;
+    gap: 12px;
   }
 
-  .hud-metrics {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .facility-stage {
-    min-height: 660px;
-  }
-
-  .board-shell {
-    width: 100%;
-    padding: 14px;
-  }
-
-  .board-grid {
+  .brand-card {
     gap: 8px;
   }
 
-  .counter-desk {
-    grid-template-columns: 96px minmax(148px, 1fr) 72px;
-    gap: 10px;
-    min-height: 148px;
-    padding: 28px 14px 16px;
+  .brand-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .brand-mark img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-card h1 {
+    font-size: 1.44rem;
+  }
+
+  .eyebrow {
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+  }
+
+  .play-area {
+    margin-top: 12px;
   }
 
   .speaker-toggle {
-    min-height: 92px;
-    border-radius: 20px;
+    border-radius: 18px;
   }
 
   .speaker-led {
-    right: 12px;
-    top: 12px;
-    width: 18px;
-    height: 18px;
+    right: 10px;
+    top: 10px;
+    width: 14px;
+    height: 14px;
   }
 
   .speaker-notch {
-    top: 14px;
-    width: 26px;
-    height: 8px;
+    top: 10px;
+    width: 20px;
+    height: 6px;
   }
 
   .speaker-grill {
-    width: 46px;
-    height: 46px;
-    bottom: 12px;
+    width: 34px;
+    height: 34px;
+    bottom: 8px;
   }
 
   .cat-mascot {
-    left: 10px;
-    top: -16px;
-    width: 78px;
-    height: 64px;
-    transform: scale(0.9);
+    left: 8px;
+    top: -6px;
+    width: 74px;
+    height: 60px;
+    transform: scale(0.84);
     transform-origin: top left;
   }
 
-  .active-order {
-    min-height: 110px;
-    padding: 10px 10px 22px;
-  }
-
-  .active-order-badge {
-    width: 104px;
-    height: 86px;
-  }
-
-  .active-order-symbol {
-    width: 84px;
-    height: 84px;
-  }
-
   .frontal-counter .cat-mascot {
-    left: 8px;
-    top: -22px;
-    width: 86px;
-    height: 68px;
-    transform: scale(0.9);
+    left: 4px;
+    top: -14px;
+    width: 78px;
+    height: 62px;
+    transform: scale(0.84);
   }
 
-  .frontal-counter .counter-desk {
-    grid-template-columns: 84px minmax(170px, 1fr) 72px;
-    gap: 10px;
-    min-height: 184px;
-    padding: 22px 14px 16px;
+  .frontal-counter .cat-aura {
+    left: 4px;
+    top: 14px;
+    width: 60px;
+    height: 34px;
   }
 
-  .frontal-counter .speaker-toggle {
-    min-height: 96px;
+  .frontal-counter .cat-tail {
+    right: 18px;
+    top: 38px;
+    width: 14px;
+    height: 16px;
+    border-width: 4px;
+    transform: rotate(46deg);
   }
 
-  .frontal-counter .active-order {
-    min-height: 132px;
-    padding: 8px 8px 22px;
+  .cell {
+    aspect-ratio: 0.88 / 1;
   }
 
-  .frontal-counter .active-order-badge {
-    width: 126px;
-    height: 104px;
+  .customer-shadow {
+    bottom: 12px;
   }
 
-  .frontal-counter .active-order-symbol {
-    width: 108px;
-    height: 108px;
+  .customer-figure {
+    bottom: 12px;
   }
 
   .scene-dialogue {
-    width: min(340px, calc(100% - 20px));
-    padding: 12px 14px 14px;
+    box-shadow:
+      0 10px 18px rgba(29, 38, 44, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.62);
   }
 
   .scene-dialogue-text {
-    font-size: 1.08rem;
+    line-height: 1.14;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .frontal-counter .score-clock-case {
+    padding: 10px 8px 8px;
+    border-radius: 18px;
+  }
+
+  .frontal-counter .score-clock-case::after {
+    left: 8px;
+    right: 8px;
+    top: 12px;
+    bottom: 8px;
+    border-radius: 9px;
+  }
+
+  .frontal-counter .score-clock-display {
+    padding-top: 22px;
+    letter-spacing: 0.1em;
+  }
+
+  .frontal-counter .score-clock-display.is-compact {
+    letter-spacing: 0.04em;
+  }
+
+  .cat-dialogue {
+    left: calc(100% - 12px);
+    top: -8px;
+    width: 122px;
   }
 
   .author-plaque {
-    grid-template-columns: auto 1fr;
-    align-items: start;
+    display: none;
   }
 
-  .author-plaque-link {
-    grid-column: 1 / -1;
-    justify-self: start;
+  .overlay {
+    place-items: start center;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   }
-}
-.score-clock {
-  min-height: 110px;
-}
 
-.cat-dialogue {
-  left: calc(100% - 14px);
-  top: -24px;
-  width: 156px;
-  padding: 8px 10px 10px;
-}
+  .overlay-card {
+    width: 100%;
+    max-height: calc(100svh - max(24px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    padding: 18px 16px;
+    border-radius: 24px;
+  }
 
-.cat-dialogue-text {
-  font-size: 0.82rem;
-}
+  .overlay-card h2 {
+    font-size: clamp(1.5rem, 7.2vw, 2.2rem);
+  }
 
-.score-clock-case {
-  min-height: 86px;
-  padding: 10px 8px 8px;
-}
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
 
-.score-clock-display {
-  padding-top: 22px;
-  font-size: 1.34rem;
-}
+  .results-grid > div {
+    min-width: 0;
+    padding: 12px 10px;
+  }
 
-.score-clock-display.is-compact {
-  font-size: 1.08rem;
-  letter-spacing: 0.04em;
-}
+  .results-grid strong {
+    font-size: 1.08rem;
+  }
 
-.frontal-counter .score-clock {
-  min-height: 122px;
-}
+  .overlay-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+  }
 
-.frontal-counter .score-clock-case {
-  min-height: 96px;
-}
-
-.frontal-counter .score-clock-display {
-  padding-top: 24px;
-  font-size: 1.56rem;
-}
-
-.frontal-counter .score-clock-display.is-compact {
-  font-size: 1.2rem;
+  .primary-action,
+  .secondary-action {
+    width: 100%;
+    padding: 14px 16px;
+  }
 }

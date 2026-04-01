@@ -644,6 +644,7 @@ function setStandby() {
   state.catPressureTier = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
+  document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.remove("hidden");
   speakCat("standby", { priority: 2, bypassCooldown: true, durationMs: 2600 });
   render();
@@ -653,6 +654,7 @@ function startGame() {
   unlockAudio();
   resetRoundState();
   DOM.overlay.classList.add("hidden");
+  document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.add("hidden");
   spawnClient();
   syncCurrentOrder(true);
@@ -668,6 +670,7 @@ function endGame() {
   DOM.resultMaxCombo.textContent = `x${state.maxCombo}`;
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
+  document.body.classList.add("overlay-open");
   speakCat("game_over", { priority: 6, bypassCooldown: true, durationMs: 2800 });
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
@@ -1616,6 +1619,9 @@ function playFx(kind) {
   if (!audioState.enabled || !audioState.ctx) {
     return;
   }
+  if (audioState.ctx.state === "suspended") {
+    void audioState.ctx.resume();
+  }
 
   const ctx = audioState.ctx;
   const buffer = audioState.soundBuffers.get(kind);
@@ -1702,6 +1708,7 @@ function syncMusicToggle() {
 }
 
 function handleSceneTap(event) {
+  unlockAudio();
   if (event.target.closest("#music-toggle")) {
     return;
   }
@@ -1711,6 +1718,7 @@ function handleSceneTap(event) {
 }
 
 function onBoardPointerDown(event) {
+  unlockAudio();
   const cell = event.target.closest(".cell");
   if (!cell) {
     return;
@@ -1765,6 +1773,8 @@ DOM.musicToggle.addEventListener("click", toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);
+window.addEventListener("touchstart", unlockAudio, { passive: true });
+window.addEventListener("pointerdown", unlockAudio, { passive: true });
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", resetPressedKeys);
