@@ -721,7 +721,7 @@ button {
   align-content: center;
   place-items: center;
   min-height: 128px;
-  padding: 12px 12px 22px;
+  padding: 18px 12px 26px;
   overflow: visible;
   pointer-events: none;
 }
@@ -730,17 +730,31 @@ button {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: 10px;
-  width: 142px;
-  height: 24px;
+  bottom: 12px;
+  width: 154px;
+  height: 20px;
   border-radius: 999px;
   transform: translateX(-50%);
-  background: radial-gradient(circle, rgba(46, 62, 72, 0.26), rgba(46, 62, 72, 0));
-  filter: blur(7px);
+  background:
+    linear-gradient(180deg, rgba(255, 248, 236, 0.32), rgba(255, 248, 236, 0.03)),
+    linear-gradient(180deg, rgba(122, 82, 54, 0.28), rgba(122, 82, 54, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 8px 12px rgba(58, 36, 24, 0.14);
+  opacity: 0.95;
 }
 
 .active-order::after {
-  content: none;
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 168px;
+  height: 28px;
+  border-radius: 999px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(60, 39, 25, 0.28), rgba(60, 39, 25, 0));
+  filter: blur(9px);
 }
 
 .active-order-badge {
@@ -767,7 +781,8 @@ button {
   display: block;
   width: 112px;
   height: 112px;
-  filter: drop-shadow(0 10px 14px rgba(26, 34, 39, 0.2));
+  filter: drop-shadow(0 3px 0 rgba(255, 244, 226, 0.18))
+    drop-shadow(0 12px 14px rgba(40, 26, 18, 0.2));
 }
 
 .active-order-symbol.food-symbol {
@@ -825,15 +840,15 @@ button {
 }
 
 .cat-tail {
-  right: 6px;
-  top: 34px;
-  width: 26px;
-  height: 16px;
-  border-radius: 999px 999px 999px 0;
-  border: 5px solid #20313b;
+  right: 22px;
+  top: 42px;
+  width: 18px;
+  height: 20px;
+  border-radius: 999px 999px 999px 10px;
+  border: 6px solid #20313b;
   border-left: 0;
   border-bottom: 0;
-  transform: rotate(28deg);
+  transform: rotate(42deg);
 }
 
 .cat-body {
@@ -932,11 +947,13 @@ button {
   min-height: 170px;
   padding: 34px 20px 20px;
   border-radius: 34px;
-  background: linear-gradient(180deg, #e1ccb3, #d3b595 44%, #9e6f4d 44%, #7b5034 100%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 11%),
+    linear-gradient(180deg, #ecd8bf 0, #dfc29f 18%, #bc8c64 18%, #9f6b46 68%, #74492f 100%);
   box-shadow:
     inset 0 4px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -18px 22px rgba(73, 45, 28, 0.16),
-    0 20px 30px rgba(84, 52, 29, 0.2);
+    inset 0 -22px 30px rgba(73, 45, 28, 0.2),
+    0 22px 34px rgba(84, 52, 29, 0.2);
   border: 1px solid rgba(113, 74, 49, 0.3);
 }
 
@@ -966,7 +983,8 @@ button {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -14px 18px rgba(0, 0, 0, 0.28),
-    0 14px 18px rgba(32, 20, 15, 0.16);
+    0 4px 0 rgba(88, 58, 39, 0.18),
+    0 16px 18px rgba(32, 20, 15, 0.14);
 }
 
 .score-clock-case::before {
@@ -1051,7 +1069,8 @@ button {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 -16px 20px rgba(0, 0, 0, 0.28),
-    0 16px 20px rgba(32, 20, 15, 0.16);
+    0 4px 0 rgba(88, 58, 39, 0.18),
+    0 16px 20px rgba(32, 20, 15, 0.14);
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
@@ -1186,6 +1205,15 @@ button {
   background: radial-gradient(circle, rgba(255, 212, 114, 0.3), rgba(255, 212, 114, 0));
 }
 
+.frontal-counter .cat-tail {
+  right: 26px;
+  top: 46px;
+  width: 16px;
+  height: 18px;
+  border-width: 5px;
+  transform: rotate(48deg);
+}
+
 .frontal-counter .counter-desk {
   position: relative;
   grid-template-columns: 120px minmax(340px, 1.9fr) 100px;
@@ -1198,57 +1226,77 @@ button {
     linear-gradient(180deg, #f0dfcf 0, #dbb997 18%, #bd8a63 18%, #a36d48 64%, #7f4d34 100%);
   box-shadow:
     inset 0 4px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -24px 26px rgba(74, 44, 27, 0.18),
-    0 24px 38px rgba(85, 52, 31, 0.2);
+    inset 0 -28px 30px rgba(74, 44, 27, 0.22),
+    0 26px 40px rgba(85, 52, 31, 0.2);
 }
 
 .frontal-counter .counter-desk::before {
   content: "";
   position: absolute;
-  left: 26px;
-  right: 26px;
-  top: 14px;
-  height: 12px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(110, 228, 255, 0.2),
-    rgba(255, 214, 128, 0.74) 50%,
-    rgba(110, 228, 255, 0.2)
-  );
-  filter: blur(0.3px);
+  left: 18px;
+  right: 18px;
+  top: 10px;
+  height: 44px;
+  border-radius: 26px 26px 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 244, 0.76), rgba(255, 238, 214, 0.18)),
+    linear-gradient(180deg, rgba(165, 111, 73, 0.18), rgba(165, 111, 73, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -12px 12px rgba(118, 79, 53, 0.12),
+    0 12px 12px rgba(133, 91, 62, 0.08);
+  pointer-events: none;
 }
 
 .frontal-counter .counter-desk::after {
   content: "";
   position: absolute;
-  inset: 76px 18px 20px;
-  border-radius: 28px;
-  border: 1px solid rgba(255, 243, 228, 0.1);
+  inset: 72px 18px 16px;
+  border-radius: 28px 28px 30px 30px;
+  background:
+    linear-gradient(180deg, rgba(143, 92, 59, 0.06), rgba(63, 38, 23, 0.18)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 243, 228, 0.1),
+    inset 0 -1px 0 rgba(58, 35, 21, 0.18);
   pointer-events: none;
 }
 
 .frontal-counter .active-order {
   min-height: 176px;
-  padding: 4px 8px 26px;
+  padding: 10px 8px 30px;
 }
 
 .frontal-counter .active-order::before {
-  width: 174px;
-  height: 28px;
+  width: 178px;
+  height: 24px;
   bottom: 18px;
-  background: radial-gradient(circle, rgba(77, 50, 33, 0.28), rgba(77, 50, 33, 0));
+  background:
+    linear-gradient(180deg, rgba(255, 246, 232, 0.34), rgba(255, 246, 232, 0.05)),
+    linear-gradient(180deg, rgba(128, 85, 53, 0.28), rgba(128, 85, 53, 0.08));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    0 10px 14px rgba(64, 40, 25, 0.16);
+}
+
+.frontal-counter .active-order::after {
+  width: 194px;
+  height: 34px;
+  bottom: 12px;
+  background: radial-gradient(circle, rgba(77, 50, 33, 0.34), rgba(77, 50, 33, 0));
+  filter: blur(10px);
 }
 
 .frontal-counter .active-order-badge {
-  width: 168px;
-  height: 132px;
+  width: 176px;
+  height: 140px;
 }
 
 .frontal-counter .active-order-symbol {
-  width: 134px;
-  height: 134px;
-  filter: drop-shadow(0 14px 16px rgba(45, 28, 18, 0.2));
+  width: 146px;
+  height: 146px;
+  filter: drop-shadow(0 4px 0 rgba(255, 246, 232, 0.2))
+    drop-shadow(0 16px 18px rgba(45, 28, 18, 0.22));
 }
 
 .frontal-counter .score-clock {
@@ -1274,6 +1322,45 @@ button {
 .frontal-counter .speaker-toggle {
   min-height: 126px;
   border-radius: 28px;
+}
+
+.counter-plaque {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  z-index: 1;
+  width: 112px;
+  height: 30px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(104, 63, 40, 0.46), rgba(78, 47, 31, 0.68)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 235, 214, 0.16),
+    inset 0 -1px 0 rgba(53, 30, 18, 0.22),
+    0 6px 10px rgba(49, 29, 19, 0.12);
+  pointer-events: none;
+}
+
+.counter-plaque-mark {
+  position: absolute;
+  inset: 8px 18px;
+  display: block;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(232, 199, 156, 0.72) 0 32%, transparent 33%),
+    linear-gradient(
+      90deg,
+      transparent 0 26%,
+      rgba(232, 199, 156, 0.64) 26% 74%,
+      transparent 74% 100%
+    );
+  opacity: 0.72;
+  mask:
+    radial-gradient(circle at 50% 52%, transparent 0 8px, #000 8px 11px, transparent 11px) center /
+      34px 100% no-repeat,
+    linear-gradient(#000, #000);
 }
 
 .intro-overlay {
@@ -1495,7 +1582,7 @@ button {
 
   .active-order {
     min-height: 110px;
-    padding: 8px 10px 18px;
+    padding: 10px 10px 22px;
   }
 
   .active-order-badge {
@@ -1529,17 +1616,23 @@ button {
 
   .frontal-counter .active-order {
     min-height: 132px;
-    padding: 6px 8px 18px;
+    padding: 8px 8px 22px;
   }
 
   .frontal-counter .active-order-badge {
-    width: 120px;
-    height: 96px;
+    width: 126px;
+    height: 104px;
   }
 
   .frontal-counter .active-order-symbol {
-    width: 98px;
-    height: 98px;
+    width: 108px;
+    height: 108px;
+  }
+
+  .counter-plaque {
+    bottom: 12px;
+    width: 92px;
+    height: 24px;
   }
 
   .scene-dialogue {
