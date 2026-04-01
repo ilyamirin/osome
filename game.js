@@ -450,11 +450,11 @@ const CLIENT_ARCHETYPES = [
 ];
 
 const FX_ASSETS = Object.freeze({
-  success: "./assets/audio/confirmation_002.ogg",
-  miss: "./assets/audio/error_005.ogg",
+  success: "./assets/audio/confirmation_002.mp3",
+  miss: "./assets/audio/error_005.mp3",
   bonus: "./assets/audio/bonus_levelup.mp3",
-  alert: "./assets/audio/question_002.ogg",
-  spawn: "./assets/audio/open_001.ogg",
+  alert: "./assets/audio/question_002.mp3",
+  spawn: "./assets/audio/open_001.mp3",
   fail: "./assets/audio/fail_gameover.mp3",
 });
 
@@ -545,8 +545,10 @@ const audioState = {
   musicTimer: 0,
   musicStep: 0,
   unlocked: false,
+  primed: false,
   soundBuffers: new Map(),
   loadingPromise: null,
+  pendingFx: [],
 };
 
 const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
@@ -1792,15 +1794,19 @@ function unlockAudio() {
 
   if (!audioState.ctx) {
     audioState.ctx = new AudioContext();
+    audioState.ctx.onstatechange = () => {
+      if (audioState.ctx?.state === "running") {
+        primeAudioContext();
+        flushPendingFx();
+      }
+    };
   }
 
   audioState.unlocked = true;
-  if (audioState.ctx.state === "suspended") {
-    void audioState.ctx.resume();
-  }
   if (!audioState.loadingPromise) {
     audioState.loadingPromise = loadAudioAssets();
   }
+  void resumeAndPrimeAudio();
 }
 
 async function loadAudioAssets() {
@@ -1849,26 +1855,65 @@ function getMusicGainValue() {
   return isMobileAudioContext() ? 0.04 : 0.015;
 }
 
-function playFx(kind, allowDeferred = true) {
-  if (!audioState.enabled || !audioState.ctx) {
-    return;
+function queuePendingFx(kind) {
+  if (audioState.pendingFx.length >= 6) {
+    audioState.pendingFx.shift();
   }
+  audioState.pendingFx.push(kind);
+}
 
-  if (audioState.ctx.state !== "running") {
-    if (allowDeferred) {
-      void audioState.ctx
-        .resume()
-        .then(() => {
-          if (audioState.enabled) {
-            playFx(kind, false);
-          }
-        })
-        .catch(() => {});
-    }
-    return;
-  }
-
+function primeAudioContext() {
   const ctx = audioState.ctx;
+  if (!ctx || audioState.primed || ctx.state !== "running") {
+    return;
+  }
+
+  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  gain.gain.value = 0.0001;
+  source.connect(gain).connect(ctx.destination);
+  source.start();
+  source.stop(ctx.currentTime + 0.01);
+  audioState.primed = true;
+}
+
+function flushPendingFx() {
+  if (!audioState.enabled || !audioState.ctx || audioState.ctx.state !== "running") {
+    return;
+  }
+
+  const pending = audioState.pendingFx.splice(0);
+  pending.forEach((kind) => {
+    playFx(kind, false);
+  });
+}
+
+async function resumeAndPrimeAudio() {
+  const ctx = audioState.ctx;
+  if (!ctx) {
+    return;
+  }
+
+  if (ctx.state !== "running") {
+    try {
+      await ctx.resume();
+    } catch {
+      return;
+    }
+  }
+
+  primeAudioContext();
+  flushPendingFx();
+}
+
+function playFxNow(kind) {
+  const ctx = audioState.ctx;
+  if (!ctx) {
+    return;
+  }
+
   const buffer = audioState.soundBuffers.get(kind);
   if (buffer) {
     const source = ctx.createBufferSource();
@@ -1881,6 +1926,22 @@ function playFx(kind, allowDeferred = true) {
   }
 
   playSynthFx(kind);
+}
+
+function playFx(kind, allowDeferred = true) {
+  if (!audioState.enabled || !audioState.ctx) {
+    return;
+  }
+
+  if (audioState.ctx.state !== "running") {
+    if (allowDeferred) {
+      queuePendingFx(kind);
+      void resumeAndPrimeAudio();
+    }
+    return;
+  }
+
+  playFxNow(kind);
 }
 
 function playSynthFx(kind) {
@@ -2019,7 +2080,16 @@ DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);
 window.addEventListener("touchstart", unlockAudio, { passive: true });
+window.addEventListener("touchend", unlockAudio, { passive: true });
 window.addEventListener("pointerdown", unlockAudio, { passive: true });
+window.addEventListener("click", unlockAudio, { passive: true });
+window.addEventListener("pageshow", unlockAudio);
+window.addEventListener("focus", unlockAudio);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    unlockAudio();
+  }
+});
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", resetPressedKeys);
