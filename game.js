@@ -1837,12 +1837,35 @@ function decodeAudioBuffer(ctx, arrayBuffer) {
   });
 }
 
-function playFx(kind) {
+function isMobileAudioContext() {
+  return window.matchMedia("(max-width: 760px), (pointer: coarse)").matches;
+}
+
+function getFxGainMultiplier() {
+  return isMobileAudioContext() ? 1.85 : 1;
+}
+
+function getMusicGainValue() {
+  return isMobileAudioContext() ? 0.04 : 0.015;
+}
+
+function playFx(kind, allowDeferred = true) {
   if (!audioState.enabled || !audioState.ctx) {
     return;
   }
-  if (audioState.ctx.state === "suspended") {
-    void audioState.ctx.resume();
+
+  if (audioState.ctx.state !== "running") {
+    if (allowDeferred) {
+      void audioState.ctx
+        .resume()
+        .then(() => {
+          if (audioState.enabled) {
+            playFx(kind, false);
+          }
+        })
+        .catch(() => {});
+    }
+    return;
   }
 
   const ctx = audioState.ctx;
@@ -1851,7 +1874,7 @@ function playFx(kind) {
     const source = ctx.createBufferSource();
     const gain = ctx.createGain();
     source.buffer = buffer;
-    gain.gain.value = FX_GAIN[kind] || 0.35;
+    gain.gain.value = (FX_GAIN[kind] || 0.35) * getFxGainMultiplier();
     source.connect(gain).connect(ctx.destination);
     source.start();
     return;
@@ -1868,20 +1891,20 @@ function playSynthFx(kind) {
 
   const now = ctx.currentTime;
   const config = {
-    success: [880, 0.08, "triangle", 0.04],
-    miss: [180, 0.12, "sawtooth", 0.04],
-    bonus: [660, 0.14, "triangle", 0.05],
-    alert: [260, 0.18, "square", 0.05],
-    spawn: [520, 0.05, "sine", 0.02],
-    fail: [110, 0.25, "sawtooth", 0.05],
-  }[kind] || [440, 0.1, "sine", 0.03];
+    success: [880, 0.08, "triangle", 0.085],
+    miss: [180, 0.12, "sawtooth", 0.09],
+    bonus: [660, 0.14, "triangle", 0.1],
+    alert: [260, 0.18, "square", 0.09],
+    spawn: [520, 0.06, "sine", 0.06],
+    fail: [110, 0.25, "sawtooth", 0.11],
+  }[kind] || [440, 0.1, "sine", 0.06];
 
   const [frequency, duration, type, gainValue] = config;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = type;
   osc.frequency.value = frequency;
-  gain.gain.setValueAtTime(gainValue, now);
+  gain.gain.setValueAtTime(gainValue * getFxGainMultiplier(), now);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
   osc.connect(gain).connect(ctx.destination);
   osc.start(now);
@@ -1904,7 +1927,7 @@ function updateMusic(now) {
   const gain = ctx.createGain();
   osc.type = "sine";
   osc.frequency.value = frequency;
-  gain.gain.setValueAtTime(0.015, start);
+  gain.gain.setValueAtTime(getMusicGainValue(), start);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
   osc.connect(gain).connect(ctx.destination);
   osc.start(start);

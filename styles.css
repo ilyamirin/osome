@@ -2456,7 +2456,7 @@ button {
     --cell-radius: 14px;
     --cell-inner-inset: 5px;
     --cell-inner-radius: 10px;
-    --customer-scale: 0.66;
+    --customer-scale: 1;
     --scene-dialogue-max-w: 252px;
     --scene-dialogue-gap: 8px;
     --scene-dialogue-pad-x: 12px;
@@ -2611,47 +2611,114 @@ button {
   }
 
   .customer-shadow {
-    left: calc(50% - 6px);
-    bottom: 7px;
-    width: 42px;
-    height: 13px;
+    left: 50%;
+    bottom: 6px;
+    width: 36px;
+    height: 10px;
   }
 
   .customer-figure {
-    left: calc(50% - 6px);
+    left: 50%;
     bottom: 5px;
-    width: 70px;
-    height: 84px;
+    width: 60px;
+    height: 74px;
   }
 
-  .customer-body,
-  .customer-head,
-  .customer-hair,
-  .customer-legs,
-  .customer-feet,
-  .customer-detail {
-    left: calc(50% - 2px);
+  .customer-body {
+    bottom: 16px;
+    width: 34px;
+    height: 31px;
   }
 
-  .customer-arm.arm-left {
-    left: 10px;
+  .customer-legs {
+    bottom: 6px;
+    width: 18px;
+    height: 18px;
   }
 
-  .customer-arm.arm-right {
-    right: 10px;
+  .customer-legs::before,
+  .customer-legs::after {
+    width: 6px;
+    height: 16px;
+  }
+
+  .customer-legs::before {
+    left: 2px;
+  }
+
+  .customer-legs::after {
+    right: 2px;
+  }
+
+  .customer-head {
+    top: 9px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .customer-hair {
+    top: 8px;
+    width: 20px;
+    height: 10px;
+  }
+
+  .customer-arm {
+    top: 28px;
+    width: 9px;
+    height: 19px;
+  }
+
+  .arm-left {
+    left: 7px;
+  }
+
+  .arm-right {
+    right: 7px;
+  }
+
+  .customer-feet {
+    bottom: 3px;
+    width: 24px;
+    height: 7px;
+  }
+
+  .customer-figure.body-slim .customer-body {
+    width: 30px;
+    height: 29px;
+  }
+
+  .customer-figure.body-slim .customer-legs {
+    width: 16px;
+  }
+
+  .customer-figure.body-average .customer-body {
+    width: 34px;
+  }
+
+  .customer-figure.body-broad .customer-body {
+    width: 38px;
+    height: 33px;
+  }
+
+  .customer-figure.body-broad .customer-legs {
+    width: 20px;
+  }
+
+  .customer-figure.posture-upright .customer-head {
+    top: 9px;
   }
 
   .customer-figure.posture-lean .customer-body {
-    transform: translateX(-50%) rotate(2deg);
+    transform: translateX(-50%) rotate(3deg);
   }
 
   .customer-figure.posture-lean .customer-head {
-    left: 50%;
+    left: calc(50% + 1px);
     top: 10px;
   }
 
   .customer-figure.posture-lean .customer-arm.arm-left {
-    transform: rotate(16deg);
+    transform: rotate(12deg);
   }
 
   .customer-figure.posture-lean .customer-arm.arm-right {
@@ -2659,59 +2726,231 @@ button {
   }
 
   .customer-figure.posture-slouch .customer-body {
-    bottom: 21px;
-    transform: translateX(-50%) rotate(-2deg);
+    bottom: 15px;
+    transform: translateX(-50%) rotate(-3deg);
   }
 
   .customer-figure.posture-slouch .customer-head {
+    top: 11px;
     left: calc(50% - 1px);
-    top: 12px;
   }
 
-  .customer-figure.posture-slouch .customer-arm.arm-left {
-    top: 43px;
-  }
-
+  .customer-figure.posture-slouch .customer-arm.arm-left,
   .customer-figure.posture-slouch .customer-arm.arm-right {
-    top: 43px;
+    top: 30px;
+  }
+
+  .customer-figure.top-shirt .customer-body::before {
+    top: 4px;
+    width: 10px;
+    height: 7px;
+  }
+
+  .customer-figure.top-hoodie .customer-body {
+    height: 33px;
+  }
+
+  .customer-figure.top-hoodie .customer-body::before {
+    top: 0;
+    width: 14px;
+    height: 8px;
+    border-width: 3px;
+  }
+
+  .customer-figure.top-coat .customer-body {
+    height: 38px;
+  }
+
+  .customer-figure.top-coat .customer-body::before {
+    top: 2px;
+    width: 12px;
+    height: calc(100% - 5px);
+  }
+
+  .customer-figure.hair-short .customer-hair {
+    width: 18px;
+    height: 9px;
+  }
+
+  .customer-figure.hair-bob .customer-hair {
+    width: 21px;
+    height: 12px;
+  }
+
+  .customer-figure.hair-bob .customer-hair::after {
+    left: 3px;
+    right: 3px;
+    bottom: -4px;
+    height: 6px;
+  }
+
+  .customer-figure.hair-long .customer-hair {
+    width: 21px;
+    height: 11px;
+  }
+
+  .customer-figure.hair-long .customer-hair::after {
+    left: 5px;
+    right: 5px;
+    top: 7px;
+    height: 16px;
+  }
+
+  .customer-figure.hair-bun .customer-hair {
+    width: 20px;
+    height: 9px;
+  }
+
+  .customer-figure.hair-bun .customer-hair::after {
+    top: -4px;
+    width: 8px;
+    height: 8px;
+  }
+
+  .customer-figure.hair-cap .customer-hair {
+    width: 20px;
+    height: 9px;
+  }
+
+  .customer-figure.hair-cap .customer-hair::before {
+    top: -2px;
+    height: 8px;
+  }
+
+  .customer-figure.hair-cap .customer-hair::after {
+    right: -6px;
+    top: 4px;
+    width: 8px;
+    height: 3px;
+  }
+
+  .customer-figure.hair-hood .customer-hair {
+    width: 23px;
+    height: 13px;
+  }
+
+  .customer-figure.hair-hood .customer-hair::after {
+    left: 5px;
+    right: 5px;
+    top: 3px;
+    height: 7px;
   }
 
   .customer-figure.accessory-backpack .customer-accessory {
-    left: 14px;
+    left: 10px;
+    top: 27px;
+    width: 12px;
+    height: 18px;
+  }
+
+  .customer-figure.accessory-backpack .customer-accessory::before,
+  .customer-figure.accessory-backpack .customer-accessory::after {
+    top: 3px;
+    width: 4px;
+    height: 14px;
   }
 
   .customer-figure.accessory-shopper .customer-accessory {
     right: 6px;
+    top: 32px;
+    width: 12px;
+    height: 16px;
+  }
+
+  .customer-figure.accessory-shopper .customer-accessory::before {
+    left: 2px;
+    right: 2px;
+    top: -6px;
+    height: 8px;
   }
 
   .customer-figure.accessory-phone .customer-accessory {
-    right: 8px;
+    right: 7px;
+    top: 34px;
+    width: 7px;
+    height: 11px;
   }
 
-  .customer-figure.persona-bureaucrat .customer-body {
-    height: 50px;
-  }
-
-  .customer-figure.persona-neo .customer-body {
-    height: 54px;
-  }
-
-  .customer-figure.persona-punk .customer-hair {
-    width: 33px;
-  }
-
-  .customer-figure.persona-service-aunt .customer-body {
-    width: 54px;
-  }
-
-  .customer-figure.persona-service-aunt .customer-accessory {
-    top: 46px;
+  .customer-figure.persona-shurik .customer-detail,
+  .customer-figure.persona-bureaucrat .customer-detail,
+  .customer-figure.persona-it-hoodie .customer-detail {
+    top: 17px;
     width: 18px;
-    height: 24px;
+    height: 7px;
+  }
+
+  .customer-figure.persona-shurik .customer-detail::before,
+  .customer-figure.persona-shurik .customer-detail::after,
+  .customer-figure.persona-bureaucrat .customer-detail::before,
+  .customer-figure.persona-bureaucrat .customer-detail::after,
+  .customer-figure.persona-it-hoodie .customer-detail::before,
+  .customer-figure.persona-it-hoodie .customer-detail::after {
+    width: 8px;
+    height: 8px;
+  }
+
+  .customer-figure.persona-neo .customer-detail {
+    top: 17px;
+    width: 20px;
+    height: 6px;
+  }
+
+  .customer-figure.persona-neo .customer-detail::before,
+  .customer-figure.persona-neo .customer-detail::after {
+    top: 1px;
+    width: 9px;
+    height: 5px;
+  }
+
+  .customer-figure.persona-punk .customer-detail {
+    top: 31px;
+    width: 16px;
+    height: 5px;
+  }
+
+  .customer-figure.persona-punk .customer-detail::before,
+  .customer-figure.persona-punk .customer-detail::after {
+    top: 1px;
+    width: 3px;
+    height: 3px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-detail {
+    top: 29px;
+    width: 18px;
+    height: 12px;
   }
 
   .customer-figure.persona-gopnik .customer-detail {
-    top: 50px;
+    top: 34px;
+    width: 18px;
+    height: 6px;
+  }
+
+  .customer-figure.persona-shurik .customer-body {
+    bottom: 17px;
+  }
+
+  .customer-figure.persona-bureaucrat .customer-body {
+    height: 36px;
+  }
+
+  .customer-figure.persona-neo .customer-body {
+    height: 38px;
+  }
+
+  .customer-figure.persona-punk .customer-hair {
+    width: 22px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-body {
+    width: 40px;
+  }
+
+  .customer-figure.persona-service-aunt .customer-accessory {
+    top: 30px;
+    width: 13px;
+    height: 17px;
   }
 
   .scene-dialogue {
@@ -2757,7 +2996,49 @@ button {
   }
 
   .author-plaque {
-    display: none;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 12px;
+    margin-top: 14px;
+    margin-bottom: max(8px, env(safe-area-inset-bottom));
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .author-plaque-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .author-plaque-mark img {
+    width: 34px;
+    height: 34px;
+  }
+
+  .author-plaque strong {
+    font-size: 1rem;
+  }
+
+  .author-plaque-role {
+    font-size: 0.82rem;
+  }
+
+  .author-plaque-license {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
+  .author-plaque-summary {
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+
+  .author-plaque-link {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
 
   .overlay {
