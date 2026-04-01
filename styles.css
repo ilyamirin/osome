@@ -690,24 +690,6 @@ button {
   pointer-events: none;
 }
 
-.active-order::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  width: 154px;
-  height: 20px;
-  border-radius: 999px;
-  transform: translateX(-50%);
-  background:
-    linear-gradient(180deg, rgba(255, 248, 236, 0.32), rgba(255, 248, 236, 0.03)),
-    linear-gradient(180deg, rgba(122, 82, 54, 0.28), rgba(122, 82, 54, 0.08));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 8px 12px rgba(58, 36, 24, 0.14);
-  opacity: 0.95;
-}
-
 .active-order::after {
   content: "";
   position: absolute;
@@ -819,22 +801,6 @@ button {
   height: 116px;
   filter: drop-shadow(0 3px 0 rgba(255, 244, 226, 0.18))
     drop-shadow(0 12px 14px rgba(40, 26, 18, 0.2));
-}
-
-.active-order-placeholder {
-  width: 78px;
-  height: 58px;
-  border-radius: 10px;
-  border: 3px solid rgba(29, 38, 44, 0.18);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0)),
-    linear-gradient(
-      90deg,
-      transparent 0 43%,
-      rgba(255, 255, 255, 0.42) 43% 57%,
-      transparent 57% 100%
-    ),
-    rgba(255, 255, 255, 0.12);
 }
 
 .counter-set {
@@ -1016,30 +982,6 @@ button {
     0 16px 18px rgba(32, 20, 15, 0.14);
 }
 
-.score-clock-case::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.014) 0,
-      rgba(255, 255, 255, 0.014) 2px,
-      transparent 2px,
-      transparent 9px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.01) 0,
-      rgba(255, 255, 255, 0.01) 3px,
-      transparent 3px,
-      transparent 17px
-    );
-  pointer-events: none;
-}
-
 .score-clock-case::after {
   content: "";
   position: absolute;
@@ -1117,18 +1059,6 @@ button {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     inset 0 -1px 0 rgba(255, 255, 255, 0.03);
-}
-
-.speaker-toggle::after {
-  content: "";
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  width: 12px;
-  height: calc(100% - 20px);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01));
-  opacity: 0.34;
 }
 
 .speaker-toggle:hover {
@@ -1259,24 +1189,6 @@ button {
     0 26px 40px rgba(85, 52, 31, 0.2);
 }
 
-.frontal-counter .counter-desk::before {
-  content: "";
-  position: absolute;
-  left: 18px;
-  right: 18px;
-  top: 10px;
-  height: 44px;
-  border-radius: 26px 26px 18px 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 252, 244, 0.76), rgba(255, 238, 214, 0.18)),
-    linear-gradient(180deg, rgba(165, 111, 73, 0.18), rgba(165, 111, 73, 0));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.42),
-    inset 0 -12px 12px rgba(118, 79, 53, 0.12),
-    0 12px 12px rgba(133, 91, 62, 0.08);
-  pointer-events: none;
-}
-
 .frontal-counter .counter-desk::after {
   content: "";
   position: absolute;
@@ -1294,18 +1206,6 @@ button {
 .frontal-counter .active-order {
   min-height: 176px;
   padding: 10px 8px 30px;
-}
-
-.frontal-counter .active-order::before {
-  width: 178px;
-  height: 24px;
-  bottom: 18px;
-  background:
-    linear-gradient(180deg, rgba(255, 246, 232, 0.34), rgba(255, 246, 232, 0.05)),
-    linear-gradient(180deg, rgba(128, 85, 53, 0.28), rgba(128, 85, 53, 0.08));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.26),
-    0 10px 14px rgba(64, 40, 25, 0.16);
 }
 
 .frontal-counter .active-order::after {
@@ -1351,45 +1251,6 @@ button {
 .frontal-counter .speaker-toggle {
   min-height: 126px;
   border-radius: 28px;
-}
-
-.counter-plaque {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  z-index: 1;
-  width: 112px;
-  height: 30px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(104, 63, 40, 0.46), rgba(78, 47, 31, 0.68)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 235, 214, 0.16),
-    inset 0 -1px 0 rgba(53, 30, 18, 0.22),
-    0 6px 10px rgba(49, 29, 19, 0.12);
-  pointer-events: none;
-}
-
-.counter-plaque-mark {
-  position: absolute;
-  inset: 8px 18px;
-  display: block;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(232, 199, 156, 0.72) 0 32%, transparent 33%),
-    linear-gradient(
-      90deg,
-      transparent 0 26%,
-      rgba(232, 199, 156, 0.64) 26% 74%,
-      transparent 74% 100%
-    );
-  opacity: 0.72;
-  mask:
-    radial-gradient(circle at 50% 52%, transparent 0 8px, #000 8px 11px, transparent 11px) center /
-      34px 100% no-repeat,
-    linear-gradient(#000, #000);
 }
 
 .intro-overlay {
@@ -1656,12 +1517,6 @@ button {
   .frontal-counter .active-order-symbol {
     width: 108px;
     height: 108px;
-  }
-
-  .counter-plaque {
-    bottom: 12px;
-    width: 92px;
-    height: 24px;
   }
 
   .scene-dialogue {

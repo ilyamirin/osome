@@ -1344,8 +1344,7 @@ function renderActiveOrder() {
     DOM.activeOrder.dataset.order = "idle";
     DOM.activeOrderBadge.className = "active-order-badge";
     DOM.activeOrderBadge.removeAttribute("aria-label");
-    DOM.activeOrderIcon.innerHTML =
-      '<span class="active-order-placeholder" aria-hidden="true"></span>';
+    DOM.activeOrderIcon.innerHTML = "";
     DOM.activeOrderBadge.style.removeProperty("--box-color");
     return;
   }
