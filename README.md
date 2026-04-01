@@ -10,7 +10,7 @@
 
 ## License
 
-Код проекта распространяется по лицензии `MIT`. Полный текст см. в [LICENSE](/Users/ilyagmirin/PycharmProjects/Osome/LICENSE).
+Код проекта распространяется по лицензии `MIT`. Полный текст см. в [LICENSE](LICENSE).
 
 Важно:
 
@@ -83,7 +83,7 @@
 
 ## Баланс И Сложность
 
-Баланс хранится в [balance-config.js](/Users/ilyagmirin/PycharmProjects/Osome/balance-config.js).
+Баланс хранится в [balance-config.js](balance-config.js).
 
 Ключевые свойства текущего конфига:
 
@@ -149,6 +149,31 @@ http://127.0.0.1:8124/
 
 ```text
 http://localhost:8124/
+```
+
+## GitHub Pages
+
+Проект подходит для `GitHub Pages` без сборки:
+
+- сайт статический;
+- точка входа лежит в корне репозитория: `index.html`;
+- все игровые ассеты подключаются относительными путями;
+- в репозитории есть `.nojekyll`, чтобы Pages не пытался обрабатывать сайт как Jekyll-проект.
+
+Базовый способ публикации:
+
+1. Запушить репозиторий в GitHub.
+2. Открыть `Settings -> Pages`.
+3. В `Build and deployment` выбрать:
+   - `Source`: `Deploy from a branch`
+   - `Branch`: `main`
+   - `Folder`: `/ (root)`
+4. Дождаться публикации.
+
+После этого игра будет доступна по адресу вида:
+
+```text
+https://<username>.github.io/<repo-name>/
 ```
 
 ## Команды
