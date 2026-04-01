@@ -206,6 +206,91 @@ const CUSTOMER_QUOTES = {
   ],
 };
 
+const CAT_QUOTES = {
+  standby: ["Тапни по сцене. Дальше будет хуже.", "Открой смену. Я уже разочарован заранее."],
+  intro: [
+    "Смотри на товар на стойке. Бери совпадение.",
+    "Не гадай. Сопоставляй и выдавай.",
+    "На стойке ответ. В очереди проблема.",
+  ],
+  pressure_rising: ["Становится тесно.", "Очередь заводится.", "Нервы пошли в рост."],
+  pressure_high: [
+    "Паника близко. Работай чище.",
+    "Ещё немного, и зал начнёт кипеть.",
+    "Смена накаляется. Не тупи.",
+  ],
+  pressure_critical: [
+    "Край рядом. Не моргай.",
+    "Ещё рывок, и всё посыпется.",
+    "Вот теперь по-настоящему плохо.",
+  ],
+  calm: [
+    "На миг отпустило.",
+    "Тишина. Подозрительная, как всегда.",
+    "Редкая передышка. Не привыкай.",
+  ],
+  combo_3: ["Появился ритм.", "Вот. Уже похоже на работу.", "Наконец-то собрался."],
+  combo_5: ["Держи темп. Он тебя спасёт.", "Пошёл поток. Не ломай его.", "Хорошо. Дави дальше."],
+  combo_8: [
+    "Красиво. Даже тревожно.",
+    "Вот так и держи линию.",
+    "Слишком хорошо. Мне не нравится.",
+  ],
+  combo_break: [
+    "И всё. Ритм умер.",
+    "Сломал серию. Впечатляюще плохо.",
+    "Комбо кончилось. Как и спокойствие.",
+  ],
+  miss: ["Не тот. Соберись.", "Мимо. И это было заметно.", "Ошибка. Они такое любят."],
+  flow_start: [
+    "Пошёл поток. Режь очередь.",
+    "Темп есть. Пользуйся им.",
+    "Поток открыт. Работай жёстче.",
+  ],
+  fast_access: [
+    "Передний ряд открыт. Живи быстро.",
+    "Два ряда в доступе. Не растеряйся.",
+    "Хороший старт. Не испорть.",
+  ],
+  anti_stress_ready: [
+    "Антистресс заряжен. Один шанс у тебя есть.",
+    "Теперь можешь ошибиться чуть менее жалко.",
+    "Подушка безопасности готова. Не злоупотребляй.",
+  ],
+  anti_stress_spent: [
+    "Антистресс сгорел. Дальше сам.",
+    "Запас выдохся. Теперь по-честному.",
+    "Последняя поблажка ушла.",
+  ],
+  perfect_row_spotted: [
+    "Редкий узор. Не упусти.",
+    "Идеальный ряд. Такое бывает раз в смуту.",
+    "Линия сложилась. Дожми её.",
+  ],
+  perfect_row_done: [
+    "Вот это уже похоже на мастерство.",
+    "Идеальный ряд закрыт. Почти уважаю.",
+    "Чисто. Даже слишком чисто.",
+  ],
+  rush: ["Час пик. Не зевай.", "Толпа пошла волной.", "Сейчас будет мясо. Работай."],
+  quarrel: [
+    "Сцепились. Разрули.",
+    "Отлично. Теперь ещё и скандал.",
+    "Очередь нашла новый способ мешать.",
+  ],
+  quarrel_cleared: [
+    "Ссору погасил. На минуту.",
+    "Развёл их. Пока что.",
+    "Удивительно. Кто-то тут взрослый.",
+  ],
+  game_over: ["Смена взяла своё.", "Очередь тебя дожала.", "Ночь забрала ещё одного оператора."],
+  gold: [
+    "О. Так ты из богатых.",
+    "Золото с неба. Низко, но эффективно.",
+    "Нечестно. Зато красиво.",
+  ],
+};
+
 const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
 const HAIR_TONES = ["#2d2320", "#5b4032", "#21181a", "#7b5b46"];
 const SHIRT_TONES = ["#2f6d8a", "#7a4b84", "#35524f", "#7b5146", "#59637c"];
@@ -248,6 +333,8 @@ const DOM = {
   time: document.querySelector("#time"),
   sceneDialogue: document.querySelector("#scene-dialogue"),
   sceneDialogueText: document.querySelector("#scene-dialogue-text"),
+  catDialogue: document.querySelector("#cat-dialogue"),
+  catDialogueText: document.querySelector("#cat-dialogue-text"),
   activeOrder: document.querySelector("#active-order"),
   activeOrderBadge: document.querySelector("#active-order-badge"),
   activeOrderIcon: document.querySelector("#active-order-icon"),
@@ -293,6 +380,12 @@ const state = {
   activeSpeakerId: null,
   activeSpeechText: "",
   speechSwitchAt: 0,
+  catSpeechText: "",
+  catSpeechUntil: 0,
+  catSpeechCooldownUntil: 0,
+  catSpeechPriority: 0,
+  catLastLine: "",
+  catPressureTier: 0,
   lastFrame: 0,
   lastId: 1,
 };
@@ -360,6 +453,12 @@ function resetRoundState() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.speechSwitchAt = 0;
+  state.catSpeechText = "";
+  state.catSpeechUntil = 0;
+  state.catSpeechCooldownUntil = 0;
+  state.catSpeechPriority = 0;
+  state.catLastLine = "";
+  state.catPressureTier = 0;
   state.lastFrame = 0;
 }
 
@@ -395,9 +494,11 @@ function setStandby() {
   state.activeSpeakerId = null;
   state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
   state.speechSwitchAt = 0;
+  state.catPressureTier = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   DOM.introOverlay.classList.remove("hidden");
+  speakCat("standby", { priority: 2, bypassCooldown: true, durationMs: 2600 });
   render();
 }
 
@@ -408,6 +509,7 @@ function startGame() {
   DOM.introOverlay.classList.add("hidden");
   spawnClient();
   syncCurrentOrder(true);
+  speakCat("intro", { priority: 4, bypassCooldown: true, durationMs: 2800 });
   render();
   requestAnimationFrame(loop);
 }
@@ -419,6 +521,7 @@ function endGame() {
   DOM.resultMaxCombo.textContent = `x${state.maxCombo}`;
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
+  speakCat("game_over", { priority: 6, bypassCooldown: true, durationMs: 2800 });
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
 }
@@ -604,6 +707,7 @@ function handleCellTap(row, col) {
 
 function registerMiss(targetClient, row, col) {
   const now = performance.now();
+  const lostCombo = state.combo;
   const fallback = getAccessibleClients()[0] || null;
   const selected = targetClient ? { client: targetClient, row, col } : fallback;
 
@@ -623,6 +727,13 @@ function registerMiss(targetClient, row, col) {
 
   if (state.consecutiveErrors >= 3) {
     state.antiStressReady = true;
+    speakCat("anti_stress_ready", { priority: 4, durationMs: 2600 });
+  }
+
+  if (lostCombo >= 5) {
+    speakCat("combo_break", { priority: 5, bypassCooldown: true, durationMs: 2400 });
+  } else {
+    speakCat("miss", { priority: 4, bypassCooldown: true, durationMs: 2200 });
   }
 
   pushToast("Ошибка выдачи. Комбо сброшено.");
@@ -653,11 +764,13 @@ function serveClient(row, col, fromQuarrel) {
   if (state.antiStressReady) {
     points += 15;
     state.antiStressReady = false;
+    speakCat("anti_stress_spent", { priority: 4, durationMs: 2400 });
     pushToast("Антистресс сработал: +15");
   }
   if (fromQuarrel) {
     points += 10;
     clearQuarrel();
+    speakCat("quarrel_cleared", { priority: 4, durationMs: 2400 });
     pushToast("Ссора погашена.");
   }
 
@@ -666,12 +779,22 @@ function serveClient(row, col, fromQuarrel) {
 
   if (state.combo >= 5 && now >= state.flowUntil) {
     state.flowUntil = now + 10_000;
+    speakCat("flow_start", { priority: 4, durationMs: 2400 });
     pushToast("Режим потока: +50% к очкам на 10 секунд.");
   }
 
   if (state.firstFivePerfect && state.served >= 5 && state.totalErrors === 0) {
     state.fastAccessUntil = now + 20_000;
+    speakCat("fast_access", { priority: 4, durationMs: 2400 });
     pushToast("Быстрый старт: зона доступа расширена до 2 рядов.");
+  }
+
+  if (state.combo === 3) {
+    speakCat("combo_3", { priority: 3, durationMs: 2200 });
+  } else if (state.combo === 5) {
+    speakCat("combo_5", { priority: 4, durationMs: 2400 });
+  } else if (state.combo === 8 || state.combo === 12) {
+    speakCat("combo_8", { priority: 4, durationMs: 2400 });
   }
 
   trackPerfectRow(client.type);
@@ -692,6 +815,7 @@ function trackPerfectRow(servedType) {
     const sameType = bottomRow.every((client) => client.type === bottomRow[0].type);
     if (sameType) {
       state.perfectRow = { type: bottomRow[0].type, remaining: 4 };
+      speakCat("perfect_row_spotted", { priority: 3, durationMs: 2400 });
       pushToast("Идеальный ряд обнаружен.");
     }
   }
@@ -708,6 +832,7 @@ function trackPerfectRow(servedType) {
   state.perfectRow.remaining -= 1;
   if (state.perfectRow.remaining <= 0) {
     state.score += 20;
+    speakCat("perfect_row_done", { priority: 4, durationMs: 2400 });
     pushToast("Идеальный ряд: +20");
     playFx("bonus");
     state.perfectRow = null;
@@ -745,10 +870,12 @@ function updateTension(dt, now) {
 
   if (phase.gimmicks.length === 0) {
     state.tension = Math.min(0.88, state.tension + rate * dt);
+    updateCatPressure(now);
     return;
   }
 
   state.tension = Math.min(1, state.tension + rate * dt);
+  updateCatPressure(now);
   if (state.tension >= 1) {
     triggerGimmick(now);
   }
@@ -770,15 +897,18 @@ function triggerGimmick(now) {
       state.gimmick = "rush";
       state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
       state.rushUntil = state.gimmickUntil;
+      speakCat("rush", { priority: 5, bypassCooldown: true, durationMs: 2400 });
       pushToast("Час пик: поток клиентов ускорился.");
     } else {
       state.gimmickUntil = now + BALANCE.gimmicks.quarrel.durationMs;
       state.quarrelSpreadAt = now + BALANCE.gimmicks.quarrel.spreadDelayMs;
+      speakCat("quarrel", { priority: 5, bypassCooldown: true, durationMs: 2400 });
       pushToast("Ссора: заблокированные клетки можно снять любой выдачей.");
     }
   } else {
     state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
     state.rushUntil = state.gimmickUntil;
+    speakCat("rush", { priority: 5, bypassCooldown: true, durationMs: 2400 });
     pushToast("Час пик: поток клиентов ускорился.");
   }
 
@@ -892,6 +1022,7 @@ function loop(timestamp) {
 function render() {
   const now = performance.now();
   updateActiveSpeech(now);
+  updateCatSpeech(now);
 
   if (DOM.score) {
     DOM.score.textContent = formatNumber(state.score);
@@ -906,6 +1037,8 @@ function render() {
   }
   DOM.sceneDialogueText.textContent = state.activeSpeechText || "";
   DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
+  DOM.catDialogueText.textContent = state.catSpeechText || "";
+  DOM.catDialogue.classList.toggle("hidden", !state.catSpeechText);
   renderActiveOrder();
 
   boardCells.forEach((cell) => {
@@ -969,11 +1102,98 @@ function formatCounterScore(value) {
   return formatNumber(normalized);
 }
 
+function sampleCatLine(pool) {
+  if (!pool || pool.length === 0) {
+    return "";
+  }
+  if (pool.length === 1) {
+    state.catLastLine = pool[0];
+    return pool[0];
+  }
+
+  let line = sample(pool);
+  if (line === state.catLastLine) {
+    line = sample(pool.filter((candidate) => candidate !== state.catLastLine));
+  }
+  state.catLastLine = line;
+  return line;
+}
+
+function speakCat(category, options = {}) {
+  const now = performance.now();
+  const { priority = 1, durationMs = 2200, cooldownMs = 5200, bypassCooldown = false } = options;
+  const pool = CAT_QUOTES[category];
+  if (!pool || pool.length === 0) {
+    return false;
+  }
+  if (
+    !bypassCooldown &&
+    now < state.catSpeechCooldownUntil &&
+    priority <= state.catSpeechPriority
+  ) {
+    return false;
+  }
+  if (now < state.catSpeechUntil && priority < state.catSpeechPriority) {
+    return false;
+  }
+
+  state.catSpeechText = sampleCatLine(pool);
+  state.catSpeechUntil = now + durationMs;
+  state.catSpeechCooldownUntil = now + cooldownMs;
+  state.catSpeechPriority = priority;
+  return true;
+}
+
+function updateCatSpeech(now) {
+  if (state.catSpeechText && now >= state.catSpeechUntil) {
+    state.catSpeechText = "";
+    state.catSpeechPriority = 0;
+  }
+}
+
+function updateCatPressure(now) {
+  if (!state.running) {
+    state.catPressureTier = 0;
+    return;
+  }
+
+  let nextTier = 0;
+  if (state.gimmick) {
+    nextTier = 0;
+  } else if (state.tension >= 0.84) {
+    nextTier = 3;
+  } else if (state.tension >= 0.58) {
+    nextTier = 2;
+  } else if (state.tension >= 0.34) {
+    nextTier = 1;
+  }
+
+  if (nextTier === state.catPressureTier) {
+    return;
+  }
+
+  const previousTier = state.catPressureTier;
+  state.catPressureTier = nextTier;
+
+  if (nextTier === 0 && previousTier > 0 && now < state.calmUntil) {
+    speakCat("calm", { priority: 3, durationMs: 2200 });
+    return;
+  }
+  if (nextTier === 1) {
+    speakCat("pressure_rising", { priority: 2, durationMs: 2200 });
+  } else if (nextTier === 2) {
+    speakCat("pressure_high", { priority: 4, durationMs: 2400 });
+  } else if (nextTier === 3) {
+    speakCat("pressure_critical", { priority: 5, durationMs: 2400 });
+  }
+}
+
 function applyGoldCheat() {
   if (!state.running) {
     return;
   }
   state.score += 10_000;
+  speakCat("gold", { priority: 5, bypassCooldown: true, durationMs: 2400 });
   pushToast("GOLD: +10 000 очков.");
   playFx("bonus");
   render();
