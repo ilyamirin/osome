@@ -526,6 +526,7 @@ const state = {
   currentOrder: null,
   activeSpeakerId: null,
   activeSpeechText: "",
+  activeSpeechPlacement: null,
   speechSwitchAt: 0,
   catSpeechText: "",
   catSpeechUntil: 0,
@@ -599,6 +600,7 @@ function resetRoundState() {
   state.currentOrder = null;
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
+  state.activeSpeechPlacement = null;
   state.speechSwitchAt = 0;
   state.catSpeechText = "";
   state.catSpeechUntil = 0;
@@ -640,6 +642,7 @@ function setStandby() {
   state.currentOrder = null;
   state.activeSpeakerId = null;
   state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
+  state.activeSpeechPlacement = null;
   state.speechSwitchAt = 0;
   state.catPressureTier = 0;
   state.lastFrame = 0;
@@ -1358,6 +1361,220 @@ function applyGoldCheat() {
   render();
 }
 
+function getBoardCellElement(row, col) {
+  return (
+    boardCells.find(
+      (cell) => Number(cell.dataset.row) === row && Number(cell.dataset.col) === col
+    ) || null
+  );
+}
+
+function rectsOverlap(left, right) {
+  return (
+    left.left < right.right &&
+    left.right > right.left &&
+    left.top < right.bottom &&
+    left.bottom > right.top
+  );
+}
+
+function toLocalRect(rect, stageRect, margin = 0) {
+  return {
+    left: rect.left - stageRect.left - margin,
+    top: rect.top - stageRect.top - margin,
+    right: rect.right - stageRect.left + margin,
+    bottom: rect.bottom - stageRect.top + margin,
+  };
+}
+
+function isCompactDialogueLayout(stageRect) {
+  return stageRect.width <= 520 || window.matchMedia("(max-width: 760px)").matches;
+}
+
+function measureSceneDialogue(text) {
+  const previousText = DOM.sceneDialogueText.textContent;
+  const previousLeft = DOM.sceneDialogue.style.left;
+  const previousTop = DOM.sceneDialogue.style.top;
+  const previousTransform = DOM.sceneDialogue.style.transform;
+  const wasBelow = DOM.sceneDialogue.classList.contains("is-below");
+  const wasHidden = DOM.sceneDialogue.classList.contains("hidden");
+
+  DOM.sceneDialogueText.textContent = text;
+  DOM.sceneDialogue.classList.remove("hidden", "is-below");
+  DOM.sceneDialogue.style.left = "0px";
+  DOM.sceneDialogue.style.top = "0px";
+  DOM.sceneDialogue.style.transform = "none";
+
+  const rect = DOM.sceneDialogue.getBoundingClientRect();
+
+  DOM.sceneDialogueText.textContent = previousText;
+  DOM.sceneDialogue.style.left = previousLeft;
+  DOM.sceneDialogue.style.top = previousTop;
+  DOM.sceneDialogue.style.transform = previousTransform;
+  DOM.sceneDialogue.classList.toggle("is-below", wasBelow);
+  DOM.sceneDialogue.classList.toggle("hidden", wasHidden);
+
+  return { width: rect.width, height: rect.height };
+}
+
+function getTapTargetRects(stageRect) {
+  const targets = [];
+  for (let row = 0; row < 5; row += 1) {
+    for (let col = 0; col < 4; col += 1) {
+      const client = state.board[row][col];
+      if (!client) {
+        continue;
+      }
+
+      const tappable = isQuarrelCell(row, col) || client.type === state.currentOrder;
+      if (!tappable) {
+        continue;
+      }
+
+      const cell = getBoardCellElement(row, col);
+      if (!cell) {
+        continue;
+      }
+
+      targets.push(toLocalRect(cell.getBoundingClientRect(), stageRect, 6));
+    }
+  }
+  return targets;
+}
+
+function getDialoguePlacementOptions(isCompact) {
+  if (isCompact) {
+    return [
+      { anchor: 0.5, below: false },
+      { anchor: 0.68, below: false },
+      { anchor: 0.32, below: false },
+      { anchor: 0.5, below: true },
+      { anchor: 0.68, below: true },
+      { anchor: 0.32, below: true },
+    ];
+  }
+
+  return [
+    { anchor: 0.5, below: false },
+    { anchor: 0.72, below: false },
+    { anchor: 0.28, below: false },
+    { anchor: 0.5, below: true },
+    { anchor: 0.68, below: true },
+    { anchor: 0.32, below: true },
+  ];
+}
+
+function createDialoguePlacement(candidate, bubbleSize, stageRect, option) {
+  const cell = getBoardCellElement(candidate.row, candidate.col);
+  if (!cell) {
+    return null;
+  }
+
+  const compact = isCompactDialogueLayout(stageRect);
+  const padding = compact ? 8 : 14;
+  const gap = compact ? 10 : 12;
+  const tailPadding = compact ? 22 : 28;
+  const cellRect = cell.getBoundingClientRect();
+  const cellCenterX = cellRect.left - stageRect.left + cellRect.width / 2;
+  const localTop = cellRect.top - stageRect.top;
+  const localBottom = cellRect.bottom - stageRect.top;
+
+  if (bubbleSize.width >= stageRect.width - padding * 2) {
+    return null;
+  }
+
+  const unclampedLeft = cellCenterX - bubbleSize.width * option.anchor;
+  const left = clamp(unclampedLeft, padding, stageRect.width - bubbleSize.width - padding);
+  const top = option.below ? localBottom + gap : localTop - bubbleSize.height - gap;
+
+  if (top < padding || top + bubbleSize.height > stageRect.height - padding) {
+    return null;
+  }
+
+  const rect = {
+    left,
+    top,
+    right: left + bubbleSize.width,
+    bottom: top + bubbleSize.height,
+  };
+
+  return {
+    left,
+    top,
+    below: option.below,
+    tailLeft: clamp(cellCenterX - left, tailPadding, bubbleSize.width - tailPadding),
+    rect,
+  };
+}
+
+function findSafeDialoguePlacement(candidate, text) {
+  const stageRect = DOM.stageSurface.getBoundingClientRect();
+  if (stageRect.width <= 0 || stageRect.height <= 0) {
+    return null;
+  }
+
+  const bubbleSize = measureSceneDialogue(text);
+  const targetRects = getTapTargetRects(stageRect);
+  const options = getDialoguePlacementOptions(isCompactDialogueLayout(stageRect));
+
+  for (const option of options) {
+    const placement = createDialoguePlacement(candidate, bubbleSize, stageRect, option);
+    if (!placement) {
+      continue;
+    }
+    if (targetRects.some((targetRect) => rectsOverlap(placement.rect, targetRect))) {
+      continue;
+    }
+    return placement;
+  }
+
+  return null;
+}
+
+function rotateSpeechCandidates(candidates) {
+  const currentIndex = candidates.findIndex(
+    (candidate) => candidate.client.id === state.activeSpeakerId
+  );
+  if (currentIndex < 0 || candidates.length <= 1) {
+    return candidates;
+  }
+
+  return [
+    ...candidates.slice(currentIndex + 1),
+    ...candidates.slice(0, currentIndex),
+    candidates[currentIndex],
+  ];
+}
+
+function pickSafeSpeechSelection(candidates, options = {}) {
+  const { preferredCandidate = null, preferredText = "" } = options;
+
+  if (preferredCandidate && preferredText) {
+    const placement = findSafeDialoguePlacement(preferredCandidate, preferredText);
+    if (placement) {
+      return {
+        candidate: preferredCandidate,
+        text: preferredText,
+        placement,
+      };
+    }
+  }
+
+  for (const candidate of candidates) {
+    const angry = performance.now() < candidate.client.angryUntil;
+    const quarrel = isQuarrelCell(candidate.row, candidate.col);
+    const text = getSpeechText(candidate.client, angry, quarrel);
+    const placement = findSafeDialoguePlacement(candidate, text);
+    if (!placement) {
+      continue;
+    }
+
+    return { candidate, text, placement };
+  }
+
+  return null;
+}
+
 function positionSceneDialogue() {
   if (!state.activeSpeechText) {
     return;
@@ -1368,42 +1585,19 @@ function positionSceneDialogue() {
     return;
   }
 
-  const activeCell = boardCells.find((cell) => cell.classList.contains("speaker-active"));
-  if (!activeCell) {
+  if (!state.activeSpeechPlacement) {
     positionSceneDialogueDefault();
     return;
   }
 
-  const stageRect = DOM.stageSurface.getBoundingClientRect();
-  const cellRect = activeCell.getBoundingClientRect();
-
-  DOM.sceneDialogue.classList.remove("is-below");
+  DOM.sceneDialogue.classList.toggle("is-below", state.activeSpeechPlacement.below);
   DOM.sceneDialogue.style.transform = "none";
-  DOM.sceneDialogue.style.left = "0px";
-  DOM.sceneDialogue.style.top = "0px";
-
-  const bubbleRect = DOM.sceneDialogue.getBoundingClientRect();
-  const bubbleWidth = bubbleRect.width;
-  const bubbleHeight = bubbleRect.height;
-  const padding = 14;
-  const cellCenterX = cellRect.left - stageRect.left + cellRect.width / 2;
-  const clampedLeft = clamp(
-    cellCenterX - bubbleWidth / 2,
-    padding,
-    stageRect.width - bubbleWidth - padding
+  DOM.sceneDialogue.style.left = `${state.activeSpeechPlacement.left}px`;
+  DOM.sceneDialogue.style.top = `${state.activeSpeechPlacement.top}px`;
+  DOM.sceneDialogue.style.setProperty(
+    "--dialogue-tail-left",
+    `${state.activeSpeechPlacement.tailLeft}px`
   );
-  const preferredTop = cellRect.top - stageRect.top - bubbleHeight - 12;
-  const minTop = 20;
-  const fitsAbove = preferredTop >= minTop;
-  const finalTop = fitsAbove ? preferredTop : cellRect.bottom - stageRect.top + 12;
-  const tailLeft = clamp(cellCenterX - clampedLeft, 28, bubbleWidth - 28);
-
-  DOM.sceneDialogue.style.left = `${clampedLeft}px`;
-  DOM.sceneDialogue.style.top = `${finalTop}px`;
-  DOM.sceneDialogue.style.setProperty("--dialogue-tail-left", `${tailLeft}px`);
-  if (!fitsAbove) {
-    DOM.sceneDialogue.classList.add("is-below");
-  }
 }
 
 function positionSceneDialogueDefault() {
@@ -1418,6 +1612,7 @@ function updateActiveSpeech(now) {
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
     state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
+    state.activeSpeechPlacement = null;
     return;
   }
 
@@ -1425,28 +1620,35 @@ function updateActiveSpeech(now) {
   if (candidates.length === 0) {
     state.activeSpeakerId = null;
     state.activeSpeechText = "";
+    state.activeSpeechPlacement = null;
     return;
   }
 
   const activeStillVisible = candidates.find(
     (candidate) => candidate.client.id === state.activeSpeakerId
   );
-  if (activeStillVisible && now < state.speechSwitchAt) {
+  if (activeStillVisible && now < state.speechSwitchAt && state.activeSpeechText) {
+    const currentSelection = pickSafeSpeechSelection(candidates, {
+      preferredCandidate: activeStillVisible,
+      preferredText: state.activeSpeechText,
+    });
+    if (currentSelection) {
+      state.activeSpeechPlacement = currentSelection.placement;
+      return;
+    }
+  }
+
+  const selection = pickSafeSpeechSelection(rotateSpeechCandidates(candidates));
+  if (!selection) {
+    state.activeSpeakerId = null;
+    state.activeSpeechText = "";
+    state.activeSpeechPlacement = null;
     return;
   }
 
-  const currentIndex = candidates.findIndex(
-    (candidate) => candidate.client.id === state.activeSpeakerId
-  );
-  const nextCandidate =
-    currentIndex >= 0 && candidates.length > 1
-      ? candidates[(currentIndex + 1) % candidates.length]
-      : candidates[0];
-
-  const angry = now < nextCandidate.client.angryUntil;
-  const quarrel = isQuarrelCell(nextCandidate.row, nextCandidate.col);
-  state.activeSpeakerId = nextCandidate.client.id;
-  state.activeSpeechText = getSpeechText(nextCandidate.client, angry, quarrel);
+  state.activeSpeakerId = selection.candidate.client.id;
+  state.activeSpeechText = selection.text;
+  state.activeSpeechPlacement = selection.placement;
   state.speechSwitchAt = now + 2_000;
 }
 
