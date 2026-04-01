@@ -309,6 +309,10 @@ const audioState = {
   loadingPromise: null,
 };
 
+const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
+const pressedKeys = new Set();
+let goldCheatLatched = false;
+
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
 }
@@ -974,6 +978,16 @@ function formatCounterScore(value) {
   return formatNumber(normalized);
 }
 
+function applyGoldCheat() {
+  if (!state.running) {
+    return;
+  }
+  state.score += 10_000;
+  pushToast("GOLD: +10 000 очков.");
+  playFx("bonus");
+  render();
+}
+
 function positionSceneDialogue() {
   if (!state.activeSpeechText) {
     return;
@@ -1349,6 +1363,40 @@ function onBoardPointerDown(event) {
   handleCellTap(row, col);
 }
 
+function handleKeyDown(event) {
+  const key = event.key.toLowerCase();
+  if (!GOLD_CHEAT_KEYS.has(key)) {
+    return;
+  }
+
+  pressedKeys.add(key);
+  const allPressed = [...GOLD_CHEAT_KEYS].every((requiredKey) => pressedKeys.has(requiredKey));
+  if (!allPressed || goldCheatLatched) {
+    return;
+  }
+
+  goldCheatLatched = true;
+  applyGoldCheat();
+}
+
+function handleKeyUp(event) {
+  const key = event.key.toLowerCase();
+  if (!GOLD_CHEAT_KEYS.has(key)) {
+    return;
+  }
+
+  pressedKeys.delete(key);
+  const allPressed = [...GOLD_CHEAT_KEYS].every((requiredKey) => pressedKeys.has(requiredKey));
+  if (!allPressed) {
+    goldCheatLatched = false;
+  }
+}
+
+function resetPressedKeys() {
+  pressedKeys.clear();
+  goldCheatLatched = false;
+}
+
 initBoardMarkup();
 setStandby();
 syncMusicToggle();
@@ -1359,3 +1407,6 @@ DOM.musicToggle.addEventListener("click", toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);
+window.addEventListener("keydown", handleKeyDown);
+window.addEventListener("keyup", handleKeyUp);
+window.addEventListener("blur", resetPressedKeys);
