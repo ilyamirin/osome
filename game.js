@@ -1,70 +1,68 @@
 const BALANCE = globalThis.OSOME_BALANCE;
 
 const ORDER_TYPES = {
-  food: { label: "Еда", className: "food", iconPath: "./assets/icons/food-apple.svg" },
-  tech: { label: "Электроника", className: "tech", iconPath: "./assets/icons/tech-cable.svg" },
-  wear: { label: "Одежда", className: "wear", iconPath: "./assets/icons/wear-shirt.svg" },
-  home: { label: "Дом", className: "home", iconPath: "./assets/icons/home-house.svg" },
+  red: {
+    label: "Красная коробка",
+    className: "red",
+    color: "#df554f",
+    shirtTones: ["#c84842", "#db5a53", "#e46c66"],
+  },
+  orange: {
+    label: "Оранжевая коробка",
+    className: "orange",
+    color: "#e88f36",
+    shirtTones: ["#d17e2b", "#e59139", "#f0a655"],
+  },
+  yellow: {
+    label: "Жёлтая коробка",
+    className: "yellow",
+    color: "#e3c643",
+    shirtTones: ["#ccb238", "#dec24b", "#edd56c"],
+  },
+  green: {
+    label: "Зелёная коробка",
+    className: "green",
+    color: "#54b864",
+    shirtTones: ["#469f55", "#56b866", "#71c77f"],
+  },
+  cyan: {
+    label: "Бирюзовая коробка",
+    className: "cyan",
+    color: "#39b9c5",
+    shirtTones: ["#2fa2ad", "#3bb9c5", "#59c8d2"],
+  },
+  blue: {
+    label: "Синяя коробка",
+    className: "blue",
+    color: "#4d7be0",
+    shirtTones: ["#4069c5", "#507ce0", "#6a92ea"],
+  },
+  violet: {
+    label: "Фиолетовая коробка",
+    className: "violet",
+    color: "#9357d6",
+    shirtTones: ["#8148c4", "#9357d6", "#a973e3"],
+  },
 };
+
+const ORDER_TYPE_KEYS = Object.keys(ORDER_TYPES);
 
 const PHASES = BALANCE.phases;
 
 const CUSTOMER_QUOTES = {
-  food: [
-    "Яблоко заберу и сразу побегу.",
-    "Еду бы побыстрее, пожалуйста.",
-    "У меня тут перекус между делом.",
-    "Там что-то съедобное на моё имя.",
-    "Главное не перепутать пакет с едой.",
-    "Беру заказ и обратно на бегу.",
-    "Если это мой перекус, я спасён.",
-    "У меня там яблоко, не задерживайте.",
-    "Это заказ из еды, давайте быстро.",
-    "Я только за едой и сразу обратно.",
-    "Надеюсь, мой пакет не остывал всю дорогу.",
-    "Мне бы мой заказ, пока я не проголодался совсем.",
-  ],
-  tech: [
-    "Ноутбук уже доехал целым?",
-    "Мне бы технику без сюрпризов.",
-    "Там электроника на моё имя.",
-    "Пожалуйста, только не чужой гаджет.",
-    "Если это мой ноутбук, я спасён.",
-    "Мне нужен именно мой заказ, без путаницы.",
-    "С техникой лучше без лишней драмы.",
-    "Я за электроникой, можно быстрее?",
-    "Главное, чтобы коробку не уронили.",
-    "Надеюсь, приехало именно то устройство.",
-    "У меня тут техника, я быстро заберу.",
-    "Сейчас бы получить ноутбук и выдохнуть.",
-  ],
-  wear: [
-    "Кепка уже приехала?",
-    "Я только за вещами и обратно.",
-    "Там одежда на моё имя, да?",
-    "Мне бы мой заказ без долгих поисков.",
-    "Надеюсь, кепку не отправили не туда.",
-    "Заберу вещи и сразу побегу.",
-    "Это мой заказ с одеждой, пожалуйста.",
-    "Можно побыстрее с модной доставкой?",
-    "У меня там что-то из одежды, давайте без путаницы.",
-    "Если приехала кепка, смена уже удалась.",
-    "Мой заказ лёгкий, можно выдать быстро.",
-    "Я ненадолго, просто забрать вещи.",
-  ],
-  home: [
-    "Лампа уже у вас?",
-    "Мне бы заказ для дома и дальше по делам.",
-    "Там что-то домашнее на моё имя.",
-    "Надеюсь, коробка с лампой целая.",
-    "Заберу домой и сразу поеду.",
-    "Это заказ для дома, можно быстрее?",
-    "Если лампа доехала, вечер спасён.",
-    "Мне бы мой домашний заказ без задержки.",
-    "У меня там вещь для дома, да?",
-    "Главное, чтобы ничего не треснуло по пути.",
-    "Я быстро: лампу забрал и ушёл.",
-    "Дома без этого заказа уже всё встало.",
+  generic: [
+    "Мне бы мою коробку и дальше побегу.",
+    "Главное, чтобы не чужую выдали.",
+    "Я быстро заберу и исчезну.",
+    "Мне нужен именно мой заказ, без сюрпризов.",
+    "Там коробка на моё имя, да?",
+    "Пожалуйста, без путаницы с пакетами.",
+    "Если это моя коробка, я спасён.",
+    "Я просто получить и дальше по делам.",
+    "Беру заказ и обратно в жизнь.",
+    "Мой заказ же недолго искать, правда?",
+    "Мне бы уже закончить с этой коробкой.",
+    "Я только забрать и выйти.",
   ],
   queue: [
     "Я стою культурно, но внутренне уже пишу жалобу.",
@@ -209,9 +207,9 @@ const CUSTOMER_QUOTES = {
 const CAT_QUOTES = {
   standby: ["Тапни по сцене. Дальше будет хуже.", "Открой смену. Я уже разочарован заранее."],
   intro: [
-    "Смотри на товар на стойке. Бери совпадение.",
-    "Не гадай. Сопоставляй и выдавай.",
-    "На стойке ответ. В очереди проблема.",
+    "Смотри на цвет коробки. Ищи такую же рубашку.",
+    "Коробка и рубашка должны совпасть по цвету.",
+    "На стойке цвет. В очереди такой же клиент.",
   ],
   pressure_rising: ["Становится тесно.", "Очередь заводится.", "Нервы пошли в рост."],
   pressure_high: [
@@ -293,14 +291,7 @@ const CAT_QUOTES = {
 
 const SKIN_TONES = ["#f3d0b0", "#ddb08a", "#c78d65", "#8f6244"];
 const HAIR_TONES = ["#2d2320", "#5b4032", "#21181a", "#7b5b46"];
-const SHIRT_TONES = ["#2f6d8a", "#7a4b84", "#35524f", "#7b5146", "#59637c"];
 const SHOE_TONES = ["#20262a", "#3f332e", "#223445"];
-const ACCENT_TONES = {
-  food: "#4da95a",
-  tech: "#2f7fd6",
-  wear: "#b6588f",
-  home: "#e18b35",
-};
 
 const FX_ASSETS = Object.freeze({
   success: "./assets/audio/confirmation_002.ogg",
@@ -527,22 +518,22 @@ function endGame() {
 }
 
 function createClient(type) {
+  const order = ORDER_TYPES[type];
   return {
     id: state.lastId++,
     type,
-    quote: sample(CUSTOMER_QUOTES[type]),
+    quote: sample(CUSTOMER_QUOTES.generic),
     enteredAccessAt: null,
     angryUntil: 0,
     skin: sample(SKIN_TONES),
     hair: sample(HAIR_TONES),
-    shirt: sample(SHIRT_TONES),
+    shirt: sample(order.shirtTones),
     shoe: sample(SHOE_TONES),
-    accent: ACCENT_TONES[type],
   };
 }
 
 function getRandomOrder() {
-  return sample(Object.keys(ORDER_TYPES));
+  return sample(ORDER_TYPE_KEYS);
 }
 
 function getTypeStats() {
@@ -1065,7 +1056,6 @@ function render() {
       return;
     }
 
-    const type = ORDER_TYPES[client.type];
     const angry = now < client.angryUntil;
 
     cell.innerHTML = `
@@ -1074,7 +1064,7 @@ function render() {
         <div class="customer-shadow"></div>
         <div
           class="customer-figure ${angry ? "angry" : ""}"
-          style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --accent:${client.accent}; --shoe:${client.shoe};"
+          style="--skin:${client.skin}; --hair:${client.hair}; --shirt:${client.shirt}; --shoe:${client.shoe};"
         >
           <span class="customer-arm arm-left"></span>
           <span class="customer-arm arm-right"></span>
@@ -1082,9 +1072,6 @@ function render() {
           <span class="customer-head"></span>
           <span class="customer-hair"></span>
           <span class="customer-feet"></span>
-        </div>
-        <div class="order-badge ${type.className}" aria-label="${type.label}">
-          ${renderOrderIcon(type, "order-symbol")}
         </div>
       </div>
     `;
@@ -1348,8 +1335,8 @@ function renderToasts() {
     .join("");
 }
 
-function renderOrderIcon(order, className) {
-  return `<img class="type-icon ${className} ${order.className}-symbol" src="${order.iconPath}" alt="" aria-hidden="true" />`;
+function renderOrderBox(order, className) {
+  return `<span class="type-box ${className} ${order.className}" style="--box-color:${order.color};" aria-hidden="true"></span>`;
 }
 
 function renderActiveOrder() {
@@ -1359,6 +1346,7 @@ function renderActiveOrder() {
     DOM.activeOrderBadge.removeAttribute("aria-label");
     DOM.activeOrderIcon.innerHTML =
       '<span class="active-order-placeholder" aria-hidden="true"></span>';
+    DOM.activeOrderBadge.style.removeProperty("--box-color");
     return;
   }
 
@@ -1366,7 +1354,8 @@ function renderActiveOrder() {
   DOM.activeOrder.dataset.order = state.currentOrder;
   DOM.activeOrderBadge.className = `active-order-badge ${order.className}`;
   DOM.activeOrderBadge.setAttribute("aria-label", order.label);
-  DOM.activeOrderIcon.innerHTML = renderOrderIcon(order, "active-order-symbol");
+  DOM.activeOrderBadge.style.setProperty("--box-color", order.color);
+  DOM.activeOrderIcon.innerHTML = renderOrderBox(order, "active-order-symbol");
 }
 
 function formatNumber(value) {

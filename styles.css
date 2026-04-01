@@ -6,10 +6,13 @@
   --muted: #667078;
   --line: rgba(29, 38, 44, 0.12);
   --shadow: 0 26px 90px rgba(37, 42, 51, 0.16);
-  --food: #4da95a;
-  --tech: #2f7fd6;
-  --wear: #b6588f;
-  --home: #e18b35;
+  --box-red: #df554f;
+  --box-orange: #e88f36;
+  --box-yellow: #e3c643;
+  --box-green: #54b864;
+  --box-cyan: #39b9c5;
+  --box-blue: #4d7be0;
+  --box-violet: #9357d6;
   --danger: #de4f4f;
   --gold: #cba03d;
   --tile: #f7f1e7;
@@ -37,8 +40,8 @@ body {
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(77, 169, 90, 0.16), transparent 20%),
-    radial-gradient(circle at bottom right, rgba(225, 139, 53, 0.16), transparent 26%),
+    radial-gradient(circle at top left, rgba(84, 184, 100, 0.16), transparent 20%),
+    radial-gradient(circle at bottom right, rgba(147, 87, 214, 0.14), transparent 26%),
     linear-gradient(180deg, #f2ebdf 0%, #e9dfd0 100%);
   color: var(--ink);
   font-family: var(--font-body);
@@ -485,9 +488,9 @@ button {
 .customer-shadow {
   position: absolute;
   left: 50%;
-  bottom: 14px;
-  width: 42px;
-  height: 14px;
+  bottom: 12px;
+  width: 50px;
+  height: 16px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: rgba(29, 38, 44, 0.16);
@@ -497,9 +500,9 @@ button {
 .customer-figure {
   position: absolute;
   left: 50%;
-  bottom: 14px;
-  width: 64px;
-  height: 82px;
+  bottom: 10px;
+  width: 78px;
+  height: 98px;
   transform: translateX(-50%);
   animation: customerBob 1.9s ease-in-out infinite;
 }
@@ -519,20 +522,22 @@ button {
 
 .customer-body {
   left: 50%;
-  bottom: 16px;
-  width: 42px;
-  height: 40px;
+  bottom: 18px;
+  width: 50px;
+  height: 48px;
   transform: translateX(-50%);
   border-radius: 46% 46% 36% 36%;
   background: var(--shirt);
-  box-shadow: inset 0 -5px 0 rgba(29, 38, 44, 0.08);
+  box-shadow:
+    inset 0 -6px 0 rgba(29, 38, 44, 0.08),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1);
 }
 
 .customer-head {
   left: 50%;
-  top: 10px;
-  width: 24px;
-  height: 24px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
   transform: translateX(-50%);
   border-radius: 50%;
   background: var(--skin);
@@ -541,9 +546,9 @@ button {
 
 .customer-hair {
   left: 50%;
-  top: 8px;
-  width: 26px;
-  height: 14px;
+  top: 6px;
+  width: 30px;
+  height: 16px;
   transform: translateX(-50%);
   border-radius: 12px 12px 8px 8px;
   background: var(--hair);
@@ -551,72 +556,31 @@ button {
 }
 
 .customer-arm {
-  top: 37px;
-  width: 13px;
-  height: 24px;
+  top: 41px;
+  width: 14px;
+  height: 28px;
   border-radius: 999px;
   background: var(--skin);
 }
 
 .arm-left {
-  left: 5px;
+  left: 8px;
   transform: rotate(22deg);
 }
 
 .arm-right {
-  right: 5px;
+  right: 8px;
   transform: rotate(-22deg);
 }
 
 .customer-feet {
   left: 50%;
-  bottom: 6px;
-  width: 30px;
-  height: 11px;
+  bottom: 8px;
+  width: 34px;
+  height: 12px;
   transform: translateX(-50%);
   border-radius: 999px;
   background: var(--shoe);
-}
-
-.order-badge {
-  position: absolute;
-  left: 76%;
-  top: -2px;
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  transform: translateX(-50%);
-  background: transparent;
-}
-
-.order-symbol {
-  display: block;
-  width: 40px;
-  height: 40px;
-}
-
-.type-icon {
-  transform-origin: center;
-  filter: drop-shadow(0 2px 3px rgba(29, 38, 44, 0.2));
-}
-
-.order-symbol.food-symbol {
-  transform: scale(1.02) translateY(1px);
-}
-
-.order-symbol.tech-symbol {
-  transform: scale(1.02) translateY(2px);
-}
-
-.order-symbol.wear-symbol {
-  transform: scale(1.04) translateY(2px);
-}
-
-.order-symbol.home-symbol {
-  transform: scale(1.03) translateY(2px);
 }
 
 .scene-dialogue {
@@ -777,35 +741,100 @@ button {
   pointer-events: none;
 }
 
+.type-box {
+  position: relative;
+  display: block;
+  width: 68%;
+  height: 52%;
+  margin-top: 24%;
+  margin-left: 2%;
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 233, 0.16), rgba(255, 248, 233, 0) 18%),
+    linear-gradient(
+      90deg,
+      transparent 0 44%,
+      rgba(241, 222, 186, 0.94) 44% 56%,
+      transparent 57% 100%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--box-color) 86%, white),
+      color-mix(in srgb, var(--box-color) 92%, black 8%)
+    );
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -7px 0 rgba(80, 57, 40, 0.14),
+    0 12px 16px rgba(44, 29, 18, 0.16);
+}
+
+.type-box::before,
+.type-box::after {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.type-box::before {
+  left: 4%;
+  right: 8%;
+  top: -18%;
+  height: 24%;
+  border-radius: 8px 8px 2px 2px;
+  transform: skewX(-38deg);
+  transform-origin: bottom left;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.04)),
+    linear-gradient(
+      90deg,
+      transparent 0 44%,
+      rgba(241, 222, 186, 0.88) 44% 56%,
+      transparent 56% 100%
+    ),
+    color-mix(in srgb, var(--box-color) 68%, white);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 2px 0 rgba(65, 43, 28, 0.08);
+}
+
+.type-box::after {
+  top: -8%;
+  right: -18%;
+  width: 18%;
+  height: 100%;
+  border-radius: 0 8px 8px 0;
+  transform: skewY(-39deg);
+  transform-origin: top left;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 228, 0.16), rgba(255, 247, 228, 0)),
+    color-mix(in srgb, var(--box-color) 70%, black 30%);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(85, 59, 39, 0.18);
+}
+
 .active-order-symbol {
   display: block;
-  width: 112px;
-  height: 112px;
+  width: 116px;
+  height: 116px;
   filter: drop-shadow(0 3px 0 rgba(255, 244, 226, 0.18))
     drop-shadow(0 12px 14px rgba(40, 26, 18, 0.2));
 }
 
-.active-order-symbol.food-symbol {
-  transform: scale(1.04) translateY(1px);
-}
-
-.active-order-symbol.tech-symbol {
-  transform: scale(1.03) translateY(2px);
-}
-
-.active-order-symbol.wear-symbol {
-  transform: scale(1.05) translateY(2px);
-}
-
-.active-order-symbol.home-symbol {
-  transform: scale(1.04) translateY(2px);
-}
-
 .active-order-placeholder {
-  width: 42px;
-  height: 42px;
-  border: 3px solid rgba(29, 38, 44, 0.3);
-  border-radius: 999px;
+  width: 78px;
+  height: 58px;
+  border-radius: 10px;
+  border: 3px solid rgba(29, 38, 44, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0)),
+    linear-gradient(
+      90deg,
+      transparent 0 43%,
+      rgba(255, 255, 255, 0.42) 43% 57%,
+      transparent 57% 100%
+    ),
+    rgba(255, 255, 255, 0.12);
 }
 
 .counter-set {
