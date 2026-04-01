@@ -210,10 +210,21 @@ const CAT_QUOTES = {
     "Открывай смену. Темнота уже внутри.",
     "Начинай. Хорошие новости закончились до тебя.",
   ],
-  intro: [
+  intro_soft: [
     "Видишь цвет. Ищи того, кто его надел.",
     "Коробка врёт меньше людей. Смотри на цвет.",
     "На стойке ответ. В очереди проблема того же цвета.",
+    "Смотри на цвет. Остальное приложится само.",
+    "Цвет на стойке. Тот же цвет в очереди. Без мистики.",
+    "Ничего сложного. Значит, люди всё равно справятся плохо.",
+  ],
+  intro_hard: [
+    "Начинай заново. На этот раз попробуй глазами.",
+    "Повторим. Цвет тот же, ошибки желательно нет.",
+    "Смена снова здесь. Урок тоже тот же.",
+    "На стойке ответ. Постарайся не воевать с ним.",
+    "Смотри на цвет и не сочиняй себе новые правила.",
+    "Попробуем ещё раз. Может, сегодня без позора.",
   ],
   pressure_rising: ["Воздух кончается.", "Зал начал скрипеть.", "Неприятности проснулись."],
   pressure_high: [
@@ -231,6 +242,12 @@ const CAT_QUOTES = {
     "Тишина. Подозрительная, как всегда.",
     "Редкая передышка. Не привыкай.",
   ],
+  pressure_recovery: [
+    "Вытащил. Пока ещё можно дышать.",
+    "Отползли от края. Не возвращайся.",
+    "Смена передумала умирать. На минуту.",
+    "Похоже, ты всё-таки не совсем бесполезен.",
+  ],
   combo_3: ["Уже не стыдно.", "Появился рисунок.", "Наконец работа, а не паника."],
   combo_5: [
     "Хорошо. Теперь не испорть.",
@@ -242,6 +259,12 @@ const CAT_QUOTES = {
     "Красиво. Я бы не привыкал.",
     "Даже хаос иногда промахивается.",
   ],
+  combo_dominance: [
+    "Слишком уверенно. Мне это не нравится.",
+    "Рука живая. Редкий случай.",
+    "Почти искусство. К счастью, ненадолго.",
+    "Вот теперь у очереди появился повод бояться.",
+  ],
   combo_break: [
     "И всё. Сказка сгорела.",
     "Был ритм. Стал опыт.",
@@ -252,6 +275,16 @@ const CAT_QUOTES = {
     "Мимо. Уверенно и бесполезно.",
     "Ошибка. Клиенты это обожают.",
   ],
+  error_streak_2: [
+    "Дважды подряд. Уже похоже на систему.",
+    "Ещё один такой шаг, и смена начнёт смеяться.",
+    "Повторение ошибки. Мрачно, но последовательно.",
+  ],
+  error_streak_3: [
+    "Серия провалов собрана. Поздравлять не буду.",
+    "Третий промах. Теперь это уже стиль.",
+    "Ты разогнал катастрофу вручную.",
+  ],
   flow_start: [
     "Пошёл поток. Режь быстро.",
     "Темп твой. Пока что.",
@@ -261,6 +294,12 @@ const CAT_QUOTES = {
     "Ближе стало всё. Кроме покоя.",
     "Два ряда в руке. Не урони.",
     "Пространства больше. Шансов ошибиться тоже.",
+  ],
+  bonus_chain: [
+    "Слишком много подарков сразу. Подозреваю ловушку.",
+    "Бонус на бонус. Мир явно отвлёкся.",
+    "Сложилось красиво. Постарайся не растоптать.",
+    "Вот это уже похоже на временное превосходство.",
   ],
   anti_stress_ready: [
     "Судьба дала тебе одну поблажку.",
@@ -287,15 +326,54 @@ const CAT_QUOTES = {
     "Толпа пошла. Думай быстрее.",
     "Сейчас будет шум. Не становись его частью.",
   ],
+  rush_end: [
+    "Волна ушла. Пена осталась.",
+    "Час пик сдох. Работы меньше не стало.",
+    "Толпа отхлынула. Бардак нет.",
+  ],
   quarrel: [
     "Конечно. Теперь ещё и драма.",
     "Очередь решила развлечься.",
     "Сцепились. Люди иначе не умеют.",
   ],
+  quarrel_spread: [
+    "Поползло дальше. Как плесень по стене.",
+    "Ссора выросла. Люди всегда стараются.",
+    "Ну вот. Драма уже на соседних клетках.",
+  ],
   quarrel_cleared: [
     "Развёл их. Ненадолго.",
     "Тишина куплена в кредит.",
     "Удивительно. Кто-то здесь ещё умеет думать.",
+  ],
+  queue_dense: [
+    "Поле забивается. Воздух дешевеет.",
+    "Толпы стало многовато даже для этой дыры.",
+    "Очередь налилась мясом. Работай.",
+    "Свободного места почти не осталось. Как и жалости.",
+  ],
+  queue_thin: [
+    "Редкий просвет. Не доверяй ему.",
+    "Очередь проредилась. Значит, скоро отыграется.",
+    "Полегчало. Подозрительно.",
+    "Свободы стало больше. Времени нет.",
+  ],
+  slow_player: [
+    "Шевелись. Они сами себя не разберут.",
+    "Ты застыл. Очередь нет.",
+    "Смотреть полезно. Делать тоже.",
+    "Задумался? Они уже нет.",
+  ],
+  long_silence: [
+    "Слишком тихо. Мне это никогда не нравилось.",
+    "Даже тишина здесь звучит как угроза.",
+    "Пауза затянулась. Обычно после неё больнее.",
+  ],
+  cameo_notice: [
+    "О, городской фольклор подтянулся.",
+    "Смотри-ка. Известные лица. Несчастливый знак.",
+    "Публика сегодня с культурным багажом.",
+    "В очередь просочился целый жанр.",
   ],
   game_over: [
     "Смена закрылась на тебе.",
@@ -535,6 +613,14 @@ const state = {
   catLastLineByCategory: {},
   catLineDecks: {},
   catPressureTier: 0,
+  catLastSpokeAt: 0,
+  catLastAmbientAt: 0,
+  catQueueBand: "normal",
+  catLastBonusCount: 0,
+  catNotedClientIds: new Set(),
+  lastRoundServed: 0,
+  lastRoundDurationMs: 0,
+  lastPlayerActionAt: 0,
   lastFrame: 0,
   lastId: 1,
 };
@@ -613,6 +699,12 @@ function resetRoundState() {
   state.catLastLineByCategory = {};
   state.catLineDecks = {};
   state.catPressureTier = 0;
+  state.catLastSpokeAt = 0;
+  state.catLastAmbientAt = 0;
+  state.catQueueBand = "normal";
+  state.catLastBonusCount = 0;
+  state.catNotedClientIds = new Set();
+  state.lastPlayerActionAt = performance.now();
   state.lastFrame = 0;
 }
 
@@ -652,6 +744,11 @@ function setStandby() {
   state.catPressureTier = 0;
   state.catLastLineByCategory = {};
   state.catLineDecks = {};
+  state.catLastSpokeAt = 0;
+  state.catLastAmbientAt = 0;
+  state.catQueueBand = "normal";
+  state.catLastBonusCount = 0;
+  state.catNotedClientIds = new Set();
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
@@ -668,13 +765,16 @@ function startGame() {
   DOM.introOverlay.classList.add("hidden");
   spawnClient();
   syncCurrentOrder(true);
-  speakCat("intro", { priority: 4, bypassCooldown: true, durationMs: 2800 });
+  state.lastPlayerActionAt = performance.now();
+  speakCat(getIntroCategory(), { priority: 4, bypassCooldown: true, durationMs: 2800 });
   render();
   requestAnimationFrame(loop);
 }
 
 function endGame() {
   state.running = false;
+  state.lastRoundServed = state.served;
+  state.lastRoundDurationMs = state.sessionMs;
   DOM.resultScore.textContent = formatNumber(state.score);
   DOM.resultServed.textContent = formatNumber(state.served);
   DOM.resultMaxCombo.textContent = `x${state.maxCombo}`;
@@ -856,6 +956,7 @@ function handleCellTap(row, col) {
   if (!state.running) {
     return;
   }
+  state.lastPlayerActionAt = performance.now();
 
   const client = state.board[row]?.[col];
   if (!client) {
@@ -895,9 +996,13 @@ function registerMiss(targetClient, row, col) {
   state.perfectRow = null;
   state.speedups.push(now + BALANCE.tension.missSpeedupDurationMs);
 
-  if (state.consecutiveErrors >= 3) {
+  if (state.consecutiveErrors === 3) {
     state.antiStressReady = true;
-    speakCat("anti_stress_ready", { priority: 4, durationMs: 2600 });
+    speakCat("anti_stress_ready", { priority: 5, bypassCooldown: true, durationMs: 2600 });
+  } else if (state.consecutiveErrors > 3) {
+    speakCat("error_streak_3", { priority: 5, bypassCooldown: true, durationMs: 2400 });
+  } else if (state.consecutiveErrors === 2) {
+    speakCat("error_streak_2", { priority: 4, bypassCooldown: true, durationMs: 2200 });
   }
 
   if (lostCombo >= 5) {
@@ -965,6 +1070,8 @@ function serveClient(row, col, fromQuarrel) {
     speakCat("combo_5", { priority: 4, durationMs: 2400 });
   } else if (state.combo === 8 || state.combo === 12) {
     speakCat("combo_8", { priority: 4, durationMs: 2400 });
+  } else if (state.combo === 10 || state.combo === 15) {
+    speakCat("combo_dominance", { priority: 4, durationMs: 2400 });
   }
 
   trackPerfectRow(client.type);
@@ -1015,6 +1122,12 @@ function updateBonuses(now) {
     state.accessRows = nextAccessRows;
     updateAccessTimers();
   }
+
+  const activeBonusCount = getActiveBonusCount(now);
+  if (activeBonusCount >= 2 && state.catLastBonusCount < 2) {
+    speakCat("bonus_chain", { priority: 4, durationMs: 2400 });
+  }
+  state.catLastBonusCount = activeBonusCount;
 
   if (now >= state.gimmickUntil && state.gimmick) {
     finishGimmick();
@@ -1086,6 +1199,7 @@ function triggerGimmick(now) {
 }
 
 function finishGimmick(message) {
+  const finishedGimmick = state.gimmick;
   if (message) {
     pushToast(message);
   }
@@ -1095,6 +1209,9 @@ function finishGimmick(message) {
   state.gimmick = null;
   state.gimmickUntil = 0;
   state.rushUntil = 0;
+  if (finishedGimmick === "rush") {
+    speakCat("rush_end", { priority: 3, durationMs: 2200 });
+  }
 }
 
 function createQuarrel(now) {
@@ -1143,6 +1260,9 @@ function spreadQuarrel(now) {
 
   state.quarrelCells = expanded;
   state.quarrelSpreadAt = Infinity;
+  if (expanded.length > 2) {
+    speakCat("quarrel_spread", { priority: 4, durationMs: 2200 });
+  }
 }
 
 function clearQuarrel() {
@@ -1180,6 +1300,7 @@ function loop(timestamp) {
   updateSpawn(dt, timestamp);
   updateTension(dt, timestamp);
   spreadQuarrel(timestamp);
+  updateCatAmbient(timestamp);
   updateToasts(timestamp);
   updateMusic(timestamp);
   render();
@@ -1304,6 +1425,42 @@ function sampleCatLine(category, pool) {
   return line;
 }
 
+function getBoardClientCount() {
+  let count = 0;
+  for (let row = 0; row < 5; row += 1) {
+    for (let col = 0; col < 4; col += 1) {
+      if (state.board[row][col]) {
+        count += 1;
+      }
+    }
+  }
+  return count;
+}
+
+function getActiveBonusCount(now) {
+  let count = 0;
+  if (now < state.flowUntil) {
+    count += 1;
+  }
+  if (now < state.fastAccessUntil) {
+    count += 1;
+  }
+  if (state.antiStressReady) {
+    count += 1;
+  }
+  if (state.perfectRow) {
+    count += 1;
+  }
+  return count;
+}
+
+function getIntroCategory() {
+  const shortLastRun =
+    state.lastRoundServed > 0 &&
+    (state.lastRoundServed < 10 || state.lastRoundDurationMs < 110_000);
+  return shortLastRun ? "intro_hard" : "intro_soft";
+}
+
 function speakCat(category, options = {}) {
   const now = performance.now();
   const { priority = 1, durationMs = 2200, cooldownMs = 5200, bypassCooldown = false } = options;
@@ -1326,6 +1483,7 @@ function speakCat(category, options = {}) {
   state.catSpeechUntil = now + durationMs;
   state.catSpeechCooldownUntil = now + cooldownMs;
   state.catSpeechPriority = priority;
+  state.catLastSpokeAt = now;
   return true;
 }
 
@@ -1364,12 +1522,74 @@ function updateCatPressure(now) {
     speakCat("calm", { priority: 3, durationMs: 2200 });
     return;
   }
+  if (nextTier > 0 && previousTier > nextTier) {
+    speakCat("pressure_recovery", { priority: 3, durationMs: 2200 });
+    return;
+  }
   if (nextTier === 1) {
     speakCat("pressure_rising", { priority: 2, durationMs: 2200 });
   } else if (nextTier === 2) {
     speakCat("pressure_high", { priority: 4, durationMs: 2400 });
   } else if (nextTier === 3) {
     speakCat("pressure_critical", { priority: 5, durationMs: 2400 });
+  }
+}
+
+function updateCatAmbient(now) {
+  if (!state.running || state.gimmick) {
+    return;
+  }
+
+  const boardCount = getBoardClientCount();
+  const accessible = getAccessibleClients();
+  const nextQueueBand =
+    boardCount >= 11 ? "dense" : boardCount <= 4 && state.served >= 3 ? "thin" : "normal";
+
+  if (nextQueueBand !== state.catQueueBand) {
+    state.catQueueBand = nextQueueBand;
+    if (nextQueueBand === "dense") {
+      if (speakCat("queue_dense", { priority: 2, durationMs: 2200, cooldownMs: 7000 })) {
+        state.catLastAmbientAt = now;
+        return;
+      }
+    } else if (nextQueueBand === "thin") {
+      if (speakCat("queue_thin", { priority: 2, durationMs: 2200, cooldownMs: 7000 })) {
+        state.catLastAmbientAt = now;
+        return;
+      }
+    }
+  }
+
+  const notableAccessible = accessible.find(
+    ({ client }) => client.persona !== "generic" && !state.catNotedClientIds.has(client.id)
+  );
+  if (notableAccessible && now - state.catLastAmbientAt > 5_000) {
+    state.catNotedClientIds.add(notableAccessible.client.id);
+    if (speakCat("cameo_notice", { priority: 2, durationMs: 2200, cooldownMs: 7000 })) {
+      state.catLastAmbientAt = now;
+      return;
+    }
+  }
+
+  if (
+    accessible.length > 0 &&
+    now - state.lastPlayerActionAt > 7_500 &&
+    now - state.catLastAmbientAt > 7_500
+  ) {
+    if (speakCat("slow_player", { priority: 2, durationMs: 2200, cooldownMs: 8000 })) {
+      state.catLastAmbientAt = now;
+      return;
+    }
+  }
+
+  if (
+    now - state.catLastSpokeAt > 14_000 &&
+    boardCount >= 6 &&
+    now - state.catLastAmbientAt > 9_000
+  ) {
+    if (speakCat("long_silence", { priority: 1, durationMs: 2400, cooldownMs: 9000 })) {
+      state.catLastAmbientAt = now;
+    }
   }
 }
 
