@@ -2521,14 +2521,14 @@ button {
 
   .customer-shadow {
     left: 50%;
-    bottom: 4px;
+    bottom: 6px;
     width: 32px;
     height: 8px;
   }
 
   .customer-figure {
     left: 50%;
-    bottom: 2px;
+    bottom: 4px;
     width: 54px;
     height: 62px;
   }
