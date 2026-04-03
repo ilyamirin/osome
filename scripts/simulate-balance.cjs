@@ -1,6 +1,7 @@
 const balance = require("../balance-config.js");
 
-const ORDER_TYPES = ["food", "tech", "wear", "home"];
+const ORDER_TYPES = ["red", "orange", "yellow", "green", "cyan", "blue", "violet"];
+const MATCH_GROUP_MIN = 3;
 
 const PROFILES = {
   casual: {
@@ -195,7 +196,7 @@ function runSimulation(activeBalance, profile, rng) {
   };
 
   const dtMs = 50;
-  while (state.running && state.timeMs < 600_000) {
+  while (state.running && state.timeMs < activeBalance.session.simulationHardCapMs) {
     updateBonuses(state);
     updateSpawn(state, dtMs, rng);
     updateTension(state, dtMs, rng);
@@ -232,6 +233,8 @@ function createState(activeBalance) {
     totalErrors: 0,
     firstFivePerfect: true,
     fastAccessUntil: 0,
+    performanceEvents: [],
+    adaptiveSpawnFactor: 1,
     nextClientId: 1,
   };
 }
@@ -307,6 +310,44 @@ function getTypeStats(state) {
   return [...stats.values()];
 }
 
+function getConnectedMatchCells(state, startRow, startCol, type) {
+  if (startRow >= state.accessRows) {
+    return [];
+  }
+
+  const cluster = [];
+  const queue = [{ row: startRow, col: startCol }];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const cell = queue.shift();
+    const key = `${cell.row}:${cell.col}`;
+    if (visited.has(key)) {
+      continue;
+    }
+    visited.add(key);
+
+    if (cell.row < 0 || cell.row >= state.accessRows || cell.col < 0 || cell.col >= 4) {
+      continue;
+    }
+
+    const client = state.board[cell.row]?.[cell.col];
+    if (!client || client.type !== type) {
+      continue;
+    }
+
+    cluster.push(cell);
+    queue.push(
+      { row: cell.row - 1, col: cell.col },
+      { row: cell.row + 1, col: cell.col },
+      { row: cell.row, col: cell.col - 1 },
+      { row: cell.row, col: cell.col + 1 }
+    );
+  }
+
+  return cluster;
+}
+
 function chooseCurrentOrder(state, previousOrder, rng) {
   const stats = getTypeStats(state);
   if (stats.length === 0) {
@@ -334,9 +375,11 @@ function syncCurrentOrder(state, forceChange, rng) {
 function updateSpawn(state, dtMs, rng) {
   const phase = getPhase(state);
   const activeRush = state.timeMs < state.rushUntil;
+  updateAdaptiveSpawn(state, dtMs);
+  const adaptiveInterval = phase.spawn / state.adaptiveSpawnFactor;
   const interval = activeRush
-    ? phase.spawn / state.balance.gimmicks.rush.spawnDivider
-    : phase.spawn;
+    ? adaptiveInterval / state.balance.gimmicks.rush.spawnDivider
+    : adaptiveInterval;
 
   state.spawnAccumulatorMs += dtMs;
   while (state.spawnAccumulatorMs >= interval && state.running) {
@@ -495,7 +538,12 @@ function planAction(state, profile, rng) {
   }
 
   const quarrelTargets = occupied.filter(({ row, col }) => isQuarrelCell(state, row, col));
-  const matches = occupied.filter(({ client }) => client.type === state.currentOrder);
+  const matches = occupied
+    .filter(({ client }) => client.type === state.currentOrder)
+    .map((cell) => ({
+      ...cell,
+      groupSize: getConnectedMatchCells(state, cell.row, cell.col, cell.client.type).length,
+    }));
   const targetPool = quarrelTargets.length > 0 ? quarrelTargets : matches;
   if (targetPool.length === 0) {
     return {
@@ -504,7 +552,7 @@ function planAction(state, profile, rng) {
     };
   }
 
-  const target = targetPool.sort(compareCells)[0];
+  const target = targetPool.sort(compareActionTargets)[0];
   const missChance = calculateMissChance(state, profile, target, occupied.length);
   const shouldMiss = rng() < missChance;
   const finalTarget =
@@ -534,13 +582,15 @@ function executeAction(state, action, rng) {
     return;
   }
 
-  if (isQuarrelCell(state, action.row, action.col)) {
-    serveClient(state, action.row, action.col, true, rng);
+  const fromQuarrel = isQuarrelCell(state, action.row, action.col);
+
+  if (client.type === state.currentOrder) {
+    serveClient(state, action.row, action.col, fromQuarrel, rng);
     return;
   }
 
-  if (client.type === state.currentOrder) {
-    serveClient(state, action.row, action.col, false, rng);
+  if (fromQuarrel) {
+    serveClient(state, action.row, action.col, true, rng);
     return;
   }
 
@@ -553,16 +603,35 @@ function serveClient(state, row, col, fromQuarrel, rng) {
     return;
   }
 
+  const connected = getConnectedMatchCells(state, row, col, client.type);
+  const servedCells =
+    client.type === state.currentOrder && connected.length >= MATCH_GROUP_MIN
+      ? connected
+      : [{ row, col }];
+  const servedCount = servedCells.length;
+  const clearsQuarrel =
+    fromQuarrel ||
+    servedCells.some((cell) =>
+      state.quarrelCells.some((quarrel) => quarrel.row === cell.row && quarrel.col === cell.col)
+    );
+
   state.combo += 1;
-  state.served += 1;
+  state.served += servedCount;
+  recordPerformanceEvent(state, "serve", servedCount);
   state.slowdowns.push(state.timeMs + state.balance.tension.successSlowdownDurationMs);
 
-  if (fromQuarrel) {
+  if (clearsQuarrel) {
     state.quarrelCells = [];
   }
 
-  state.board[row][col] = null;
-  collapseColumn(state, col);
+  const touchedColumns = new Set();
+  for (const cell of servedCells) {
+    state.board[cell.row][cell.col] = null;
+    touchedColumns.add(cell.col);
+  }
+  for (const touchedCol of touchedColumns) {
+    collapseColumn(state, touchedCol);
+  }
   syncCurrentOrder(state, true, rng);
 
   if (state.gimmick === "glitch") {
@@ -576,9 +645,56 @@ function serveClient(state, row, col, fromQuarrel, rng) {
 
 function registerMiss(state) {
   state.totalErrors += 1;
+  recordPerformanceEvent(state, "miss");
   state.combo = 0;
   state.firstFivePerfect = false;
   state.speedups.push(state.timeMs + state.balance.tension.missSpeedupDurationMs);
+}
+
+function recordPerformanceEvent(state, kind, servedCount = 0) {
+  state.performanceEvents.push({
+    at: state.timeMs,
+    served: kind === "serve" ? servedCount : 0,
+    errors: kind === "miss" ? 1 : 0,
+  });
+}
+
+function prunePerformanceEvents(state) {
+  const windowMs = state.balance.adaptiveSpawn.windowMs;
+  state.performanceEvents = state.performanceEvents.filter(
+    (event) => state.timeMs - event.at <= windowMs
+  );
+}
+
+function getAdaptiveSpawnTarget(state) {
+  const config = state.balance.adaptiveSpawn;
+  if (state.timeMs < config.warmupMs) {
+    return 1;
+  }
+
+  prunePerformanceEvents(state);
+  const activeWindowMs = Math.max(6_000, Math.min(config.windowMs, state.timeMs));
+  const windowSeconds = activeWindowMs / 1_000;
+  const served = state.performanceEvents.reduce((sum, event) => sum + event.served, 0);
+  const errors = state.performanceEvents.reduce((sum, event) => sum + event.errors, 0);
+  const servedPerSecond = served / windowSeconds;
+  const errorsPerSecond = errors / windowSeconds;
+  const progress = Math.min(1, state.timeMs / state.balance.session.targetDurationMs);
+  const targetRate = lerp(config.targetRateStart, config.targetRateEnd, progress);
+  const throughputDelta = (servedPerSecond - targetRate) / Math.max(0.25, targetRate);
+
+  return clamp(
+    1 + throughputDelta * config.throughputWeight - errorsPerSecond * config.errorWeight,
+    config.minFactor,
+    config.maxFactor
+  );
+}
+
+function updateAdaptiveSpawn(state, dtMs) {
+  const config = state.balance.adaptiveSpawn;
+  const target = getAdaptiveSpawnTarget(state);
+  const alpha = 1 - Math.exp(-(dtMs / 1_000) * config.smoothingPerSecond);
+  state.adaptiveSpawnFactor += (target - state.adaptiveSpawnFactor) * alpha;
 }
 
 function calculateDelay(state, profile, target, matchCount, occupiedCount, rng) {
@@ -588,6 +704,10 @@ function calculateDelay(state, profile, target, matchCount, occupiedCount, rng) 
     target.row * profile.rowPenaltyMs +
     (matchCount === 1 ? profile.uniquePenaltyMs : 0) -
     Math.min(matchCount - 1, 3) * profile.duplicateBonusMs;
+
+  if (target.groupSize >= MATCH_GROUP_MIN) {
+    delay -= Math.min(target.groupSize - 1, 4) * profile.duplicateBonusMs * 1.4;
+  }
 
   if (state.gimmick === "glitch" && target.row >= state.accessRows) {
     delay += profile.glitchPenaltyMs;
@@ -641,6 +761,15 @@ function compareCells(left, right) {
     return left.row - right.row;
   }
   return left.col - right.col;
+}
+
+function compareActionTargets(left, right) {
+  const leftGroup = left.groupSize || 1;
+  const rightGroup = right.groupSize || 1;
+  if (leftGroup !== rightGroup) {
+    return rightGroup - leftGroup;
+  }
+  return compareCells(left, right);
 }
 
 function summarize(values) {
@@ -755,6 +884,10 @@ function parseArgs(argv) {
 
 function lerp(start, end, t) {
   return start + (end - start) * t;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function sample(items, rng) {

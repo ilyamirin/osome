@@ -48,6 +48,9 @@ const ORDER_TYPES = {
 const ORDER_TYPE_KEYS = Object.keys(ORDER_TYPES);
 
 const PHASES = BALANCE.phases;
+const MATCH_GROUP_MIN = 3;
+const MATCH_GROUP_EXTRA_POINTS = 8;
+const MATCH_GROUP_CHAIN_POINTS = 4;
 
 const CUSTOMER_QUOTES = {
   generic: [
@@ -293,6 +296,21 @@ const CAT_QUOTES = {
     "Рука живая. Редкий случай.",
     "Почти искусство. К счастью, ненадолго.",
     "Вот теперь у очереди появился повод бояться.",
+  ],
+  group_3: [
+    "Тройной сбор. Уже интереснее.",
+    "Три сразу. Неплохо для смертного.",
+    "Связка на троих. Очередь это запомнит.",
+  ],
+  group_4: [
+    "Четверых разом. Становится красиво.",
+    "Четыре за одно касание. Вот это уже аргумент.",
+    "Хорошая жатва. Полю стало легче.",
+  ],
+  group_5: [
+    "Пятеро и больше. Почти массовое исчезновение.",
+    "Вот это я называю санитарной обработкой.",
+    "Большая связка. Даже мне приятно.",
   ],
   combo_break: [
     "И всё. Сказка сгорела.",
@@ -668,6 +686,8 @@ const state = {
   lastRoundServed: 0,
   lastRoundDurationMs: 0,
   lastPlayerActionAt: 0,
+  performanceEvents: [],
+  adaptiveSpawnFactor: 1,
   lastFrame: 0,
   lastId: 1,
 };
@@ -688,6 +708,7 @@ const audioState = {
 const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
 const pressedKeys = new Set();
 let goldCheatLatched = false;
+let boardBurstResetTimer = 0;
 
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
@@ -752,6 +773,8 @@ function resetRoundState() {
   state.catLastBonusCount = 0;
   state.catNotedClientIds = new Set();
   state.lastPlayerActionAt = performance.now();
+  state.performanceEvents = [];
+  state.adaptiveSpawnFactor = 1;
   state.lastFrame = 0;
 }
 
@@ -796,6 +819,8 @@ function setStandby() {
   state.catQueueBand = "normal";
   state.catLastBonusCount = 0;
   state.catNotedClientIds = new Set();
+  state.performanceEvents = [];
+  state.adaptiveSpawnFactor = 1;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
@@ -982,6 +1007,52 @@ function updateAccessTimers() {
   }
 }
 
+function recordPerformanceEvent(kind, servedCount = 0) {
+  const now = performance.now();
+  state.performanceEvents.push({
+    at: now,
+    served: kind === "serve" ? servedCount : 0,
+    errors: kind === "miss" ? 1 : 0,
+  });
+}
+
+function prunePerformanceEvents(now) {
+  const windowMs = BALANCE.adaptiveSpawn.windowMs;
+  state.performanceEvents = state.performanceEvents.filter((event) => now - event.at <= windowMs);
+}
+
+function getAdaptiveSpawnTarget(now) {
+  const config = BALANCE.adaptiveSpawn;
+  if (state.sessionMs < config.warmupMs) {
+    return 1;
+  }
+
+  prunePerformanceEvents(now);
+  const activeWindowMs = Math.max(6_000, Math.min(config.windowMs, state.sessionMs));
+  const windowSeconds = activeWindowMs / 1_000;
+  const served = state.performanceEvents.reduce((sum, event) => sum + event.served, 0);
+  const errors = state.performanceEvents.reduce((sum, event) => sum + event.errors, 0);
+  const servedPerSecond = served / windowSeconds;
+  const errorsPerSecond = errors / windowSeconds;
+  const progress = clamp(state.sessionMs / BALANCE.session.targetDurationMs, 0, 1);
+  const targetRate =
+    config.targetRateStart + (config.targetRateEnd - config.targetRateStart) * progress;
+  const throughputDelta = (servedPerSecond - targetRate) / Math.max(0.25, targetRate);
+
+  return clamp(
+    1 + throughputDelta * config.throughputWeight - errorsPerSecond * config.errorWeight,
+    config.minFactor,
+    config.maxFactor
+  );
+}
+
+function updateAdaptiveSpawn(dt, now) {
+  const config = BALANCE.adaptiveSpawn;
+  const target = getAdaptiveSpawnTarget(now);
+  const alpha = 1 - Math.exp(-dt * config.smoothingPerSecond);
+  state.adaptiveSpawnFactor += (target - state.adaptiveSpawnFactor) * alpha;
+}
+
 function getAccessibleClients() {
   const clients = [];
   for (let row = 0; row < state.accessRows; row += 1) {
@@ -993,6 +1064,44 @@ function getAccessibleClients() {
     }
   }
   return clients;
+}
+
+function getConnectedMatchCells(startRow, startCol, type) {
+  if (startRow >= state.accessRows) {
+    return [];
+  }
+
+  const cluster = [];
+  const queue = [{ row: startRow, col: startCol }];
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const cell = queue.shift();
+    const key = `${cell.row}:${cell.col}`;
+    if (visited.has(key)) {
+      continue;
+    }
+    visited.add(key);
+
+    if (cell.row < 0 || cell.row >= state.accessRows || cell.col < 0 || cell.col >= 4) {
+      continue;
+    }
+
+    const client = state.board[cell.row]?.[cell.col];
+    if (!client || client.type !== type) {
+      continue;
+    }
+
+    cluster.push(cell);
+    queue.push(
+      { row: cell.row - 1, col: cell.col },
+      { row: cell.row + 1, col: cell.col },
+      { row: cell.row, col: cell.col - 1 },
+      { row: cell.row, col: cell.col + 1 }
+    );
+  }
+
+  return cluster;
 }
 
 function isQuarrelCell(row, col) {
@@ -1010,13 +1119,15 @@ function handleCellTap(row, col) {
     return;
   }
 
-  if (isQuarrelCell(row, col)) {
-    serveClient(row, col, true);
+  const fromQuarrel = isQuarrelCell(row, col);
+
+  if (client.type === state.currentOrder) {
+    serveClient(row, col, fromQuarrel);
     return;
   }
 
-  if (client.type === state.currentOrder) {
-    serveClient(row, col, false);
+  if (fromQuarrel) {
+    serveClient(row, col, true);
     return;
   }
 
@@ -1038,6 +1149,7 @@ function registerMiss(targetClient, row, col) {
 
   state.totalErrors += 1;
   state.consecutiveErrors += 1;
+  recordPerformanceEvent("miss");
   state.combo = 0;
   state.firstFivePerfect = false;
   state.perfectRow = null;
@@ -1071,15 +1183,31 @@ function serveClient(row, col, fromQuarrel) {
     return;
   }
 
+  const connected = getConnectedMatchCells(row, col, client.type);
+  const servedCells =
+    client.type === state.currentOrder && connected.length >= MATCH_GROUP_MIN
+      ? connected
+      : [{ row, col }];
+  const servedCount = servedCells.length;
+  const clearsQuarrel =
+    fromQuarrel || servedCells.some((cell) => isQuarrelCell(cell.row, cell.col));
+  const groupBonus =
+    servedCount >= MATCH_GROUP_MIN
+      ? (servedCount - 1) * MATCH_GROUP_EXTRA_POINTS +
+        (servedCount - MATCH_GROUP_MIN + 1) * MATCH_GROUP_CHAIN_POINTS
+      : 0;
+
   state.combo += 1;
   state.maxCombo = Math.max(state.maxCombo, state.combo);
-  state.served += 1;
+  state.served += servedCount;
   state.consecutiveErrors = 0;
+  recordPerformanceEvent("serve", servedCount);
 
   let points = 10 + (state.combo - 1) * 5;
   if (client.enteredAccessAt && now - client.enteredAccessAt <= 2_000) {
     points += 3;
   }
+  points += groupBonus;
   if (now < state.flowUntil) {
     points = Math.round(points * 1.5);
   }
@@ -1089,7 +1217,7 @@ function serveClient(row, col, fromQuarrel) {
     speakCat("anti_stress_spent", { priority: 4, durationMs: 2400 });
     pushToast("Антистресс сработал: +15");
   }
-  if (fromQuarrel) {
+  if (clearsQuarrel) {
     points += 10;
     clearQuarrel();
     speakCat("quarrel_cleared", { priority: 4, durationMs: 2400 });
@@ -1121,15 +1249,35 @@ function serveClient(row, col, fromQuarrel) {
     speakCat("combo_dominance", { priority: 4, durationMs: 2400 });
   }
 
-  trackPerfectRow(client.type);
+  for (let index = 0; index < servedCount; index += 1) {
+    trackPerfectRow(client.type);
+  }
 
-  state.board[row][col] = null;
-  collapseColumn(col);
+  const touchedColumns = new Set();
+  for (const cell of servedCells) {
+    state.board[cell.row][cell.col] = null;
+    touchedColumns.add(cell.col);
+  }
+  [...touchedColumns].forEach((touchedCol) => collapseColumn(touchedCol));
   updateAccessTimers();
   syncCurrentOrder(true);
 
-  playFx("success");
-  vibrate([14]);
+  if (servedCount >= MATCH_GROUP_MIN) {
+    if (servedCount >= 5) {
+      speakCat("group_5", { priority: 6, bypassCooldown: true, durationMs: 2400 });
+    } else if (servedCount === 4) {
+      speakCat("group_4", { priority: 5, bypassCooldown: true, durationMs: 2400 });
+    } else {
+      speakCat("group_3", { priority: 5, bypassCooldown: true, durationMs: 2200 });
+    }
+    pushToast(`Связка x${servedCount}: бонус за группу.`);
+    triggerBoardBurst();
+    playFx("bonus");
+    vibrate([18, 28, 18]);
+  } else {
+    playFx("success");
+    vibrate([14]);
+  }
   render();
 }
 
@@ -1319,7 +1467,11 @@ function clearQuarrel() {
 function updateSpawn(dt, now) {
   const phase = getPhase();
   const activeRush = now < state.rushUntil;
-  const interval = activeRush ? phase.spawn / BALANCE.gimmicks.rush.spawnDivider : phase.spawn;
+  updateAdaptiveSpawn(dt, now);
+  const adaptiveInterval = phase.spawn / state.adaptiveSpawnFactor;
+  const interval = activeRush
+    ? adaptiveInterval / BALANCE.gimmicks.rush.spawnDivider
+    : adaptiveInterval;
 
   state.spawnAccumulator += dt * 1_000;
   while (state.spawnAccumulator >= interval && state.running) {
@@ -1365,8 +1517,12 @@ function render() {
   if (DOM.score) {
     DOM.score.textContent = formatNumber(state.score);
   }
-  DOM.counterScore.textContent = formatCounterScore(state.score);
-  DOM.counterScore.classList.toggle("is-compact", state.score > 9999);
+  const counterScoreText = formatCounterScore(state.score);
+  const counterDigits = counterScoreText.length;
+  DOM.counterScore.textContent = counterScoreText;
+  DOM.counterScore.classList.toggle("is-compact", counterDigits >= 5);
+  DOM.counterScore.classList.toggle("is-tight", counterDigits >= 6);
+  DOM.counterScore.classList.toggle("is-ultra", counterDigits >= 7);
   if (DOM.combo) {
     DOM.combo.textContent = `x${Math.max(1, state.combo)}`;
   }
@@ -1436,7 +1592,7 @@ function formatCounterScore(value) {
   if (normalized <= 9999) {
     return String(normalized).padStart(4, "0");
   }
-  return formatNumber(normalized);
+  return String(normalized);
 }
 
 function shuffle(items) {
@@ -2052,6 +2208,22 @@ function vibrate(pattern) {
   if ("vibrate" in navigator) {
     navigator.vibrate(pattern);
   }
+}
+
+function triggerBoardBurst() {
+  if (!DOM.stageSurface) {
+    return;
+  }
+  if (boardBurstResetTimer) {
+    clearTimeout(boardBurstResetTimer);
+  }
+  DOM.stageSurface.classList.remove("board-burst");
+  void DOM.stageSurface.offsetWidth;
+  DOM.stageSurface.classList.add("board-burst");
+  boardBurstResetTimer = window.setTimeout(() => {
+    DOM.stageSurface.classList.remove("board-burst");
+    boardBurstResetTimer = 0;
+  }, 380);
 }
 
 function unlockAudio() {
