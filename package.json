@@ -10,7 +10,8 @@
     "secrets:check": "node ./scripts/check-secrets.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
     "balance:simulate": "node ./scripts/simulate-balance.cjs",
-    "balance:search": "node ./scripts/simulate-balance.cjs search"
+    "balance:search": "node ./scripts/simulate-balance.cjs search",
+    "build:yandex": "node ./scripts/build-yandex.cjs"
   },
   "keywords": [
     "game",

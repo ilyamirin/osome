@@ -619,6 +619,7 @@ const FX_GAIN = Object.freeze({
 const DOM = {
   gameScreen: document.querySelector("#game-screen"),
   stageSurface: document.querySelector("#stage-surface"),
+  rotateOverlay: document.querySelector("#rotate-overlay"),
   introOverlay: document.querySelector("#intro-overlay"),
   restartButton: document.querySelector("#restart-button"),
   menuButton: document.querySelector("#menu-button"),
@@ -644,6 +645,9 @@ const DOM = {
 };
 
 const boardCells = [];
+const FORCE_YANDEX_MODE =
+  new URLSearchParams(window.location.search).get("platform") === "yandex" ||
+  document.documentElement.dataset.platform === "yandex";
 const state = {
   running: false,
   awaitingStart: true,
@@ -703,6 +707,7 @@ const state = {
   adaptiveSpawnFactor: 1,
   adaptiveSpawnAccumulatedMs: 0,
   adaptiveSpawnSampleMs: 0,
+  platformPaused: false,
   lastSavedAt: 0,
   lastFrame: 0,
   lastId: 1,
@@ -726,6 +731,16 @@ const pressedKeys = new Set();
 let goldCheatLatched = false;
 let boardBurstResetTimer = 0;
 let playerProfile = null;
+const platformState = {
+  sdk: null,
+  initStarted: false,
+  initPromise: null,
+  loadingReadySent: false,
+  gameplayActive: false,
+  pauseReasons: new Set(),
+  isYandexEnvironment: FORCE_YANDEX_MODE,
+  orientationBlocked: false,
+};
 
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
@@ -1127,6 +1142,7 @@ function setStandby() {
   DOM.introOverlay.classList.remove("hidden");
   clearSavedRun();
   speakCat("standby", { priority: 2, bypassCooldown: true, durationMs: 2600 });
+  syncPlatformGameplayState();
   render();
 }
 
@@ -1169,6 +1185,7 @@ function startTutorialGame() {
   state.lastPlayerActionAt = performance.now();
 
   render();
+  syncPlatformGameplayState();
   requestAnimationFrame(loop);
 }
 
@@ -1217,6 +1234,7 @@ function startGame() {
   state.lastPlayerActionAt = performance.now();
   speakCat(getIntroCategory(), { priority: 4, bypassCooldown: true, durationMs: 2800 });
   render();
+  syncPlatformGameplayState();
   requestAnimationFrame(loop);
 }
 
@@ -1235,6 +1253,7 @@ function endGame() {
   speakCat("game_over", { priority: 6, bypassCooldown: true, durationMs: 2800 });
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
+  syncPlatformGameplayState();
 }
 
 function createClient(type) {
@@ -1954,6 +1973,7 @@ function restoreRunSnapshot(snapshot) {
   document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.add("hidden");
   render();
+  syncPlatformGameplayState();
   requestAnimationFrame(loop);
   return true;
 }
@@ -1978,6 +1998,13 @@ function updateSpawn(dt, now) {
 
 function loop(timestamp) {
   if (!state.running) {
+    return;
+  }
+
+  if (isRuntimePaused()) {
+    state.lastFrame = timestamp;
+    render();
+    requestAnimationFrame(loop);
     return;
   }
 
@@ -2734,6 +2761,204 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+function isMobileDevice() {
+  return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+}
+
+function isLandscapeOrientation() {
+  return window.innerWidth > window.innerHeight;
+}
+
+function isOrientationBlocked() {
+  return platformState.isYandexEnvironment && isMobileDevice() && isLandscapeOrientation();
+}
+
+function isRuntimePaused() {
+  return platformState.pauseReasons.size > 0;
+}
+
+function applyPlatformMode() {
+  document.body.classList.toggle("platform-yandex", platformState.isYandexEnvironment);
+}
+
+function pauseAllAudioPlayback() {
+  for (const media of audioState.activeMediaFx) {
+    media.pause();
+    media.currentTime = 0;
+  }
+
+  if (audioState.ctx && audioState.ctx.state === "running") {
+    void audioState.ctx.suspend().catch(() => {});
+  }
+}
+
+function resumeAudioPlayback() {
+  if (audioState.enabled && audioState.ctx && audioState.ctx.state === "suspended") {
+    void audioState.ctx.resume().catch(() => {});
+  }
+}
+
+function syncPlatformGameplayState() {
+  if (!platformState.sdk) {
+    return;
+  }
+
+  const shouldBeActive =
+    state.running && !isRuntimePaused() && DOM.overlay.classList.contains("hidden");
+  if (shouldBeActive === platformState.gameplayActive) {
+    return;
+  }
+
+  platformState.gameplayActive = shouldBeActive;
+  if (shouldBeActive) {
+    platformState.sdk.features?.GameplayAPI?.start?.();
+  } else {
+    platformState.sdk.features?.GameplayAPI?.stop?.();
+  }
+}
+
+function addPauseReason(reason) {
+  const sizeBefore = platformState.pauseReasons.size;
+  platformState.pauseReasons.add(reason);
+  state.platformPaused = platformState.pauseReasons.size > 0;
+  if (sizeBefore === 0 && state.platformPaused) {
+    state.lastFrame = 0;
+    pauseAllAudioPlayback();
+    persistRunSnapshot(true);
+  }
+  syncPlatformGameplayState();
+}
+
+function removePauseReason(reason) {
+  const hadReason = platformState.pauseReasons.delete(reason);
+  state.platformPaused = platformState.pauseReasons.size > 0;
+  if (hadReason && !state.platformPaused) {
+    state.lastFrame = 0;
+    resumeAudioPlayback();
+  }
+  syncPlatformGameplayState();
+}
+
+function syncOrientationGuard() {
+  platformState.orientationBlocked = isOrientationBlocked();
+  DOM.rotateOverlay.classList.toggle("hidden", !platformState.orientationBlocked);
+  if (platformState.orientationBlocked) {
+    addPauseReason("orientation");
+  } else {
+    removePauseReason("orientation");
+  }
+}
+
+function applyPlatformLanguage(ysdk) {
+  const lang = ysdk?.environment?.i18n?.lang;
+  if (!lang) {
+    return;
+  }
+
+  document.documentElement.lang = String(lang).slice(0, 2);
+}
+
+function requestFullscreenIfPossible() {
+  if (!platformState.isYandexEnvironment || !isMobileDevice()) {
+    return;
+  }
+
+  const root = document.documentElement;
+  const requestFullscreen =
+    root.requestFullscreen ||
+    root.webkitRequestFullscreen ||
+    root.mozRequestFullScreen ||
+    root.msRequestFullscreen;
+
+  if (typeof requestFullscreen === "function" && !document.fullscreenElement) {
+    try {
+      requestFullscreen.call(root);
+    } catch (error) {
+      void error;
+    }
+  }
+}
+
+function markPlatformReady() {
+  if (!platformState.sdk || platformState.loadingReadySent) {
+    return;
+  }
+
+  if (platformState.sdk.features?.LoadingAPI?.ready) {
+    platformState.sdk.features.LoadingAPI.ready();
+  }
+  platformState.loadingReadySent = true;
+}
+
+async function loadYandexSDKScript() {
+  if (window.YaGames) {
+    return window.YaGames;
+  }
+
+  const existing = document.querySelector('script[data-yandex-sdk="true"]');
+  if (existing) {
+    return new Promise((resolve, reject) => {
+      existing.addEventListener("load", () => resolve(window.YaGames), { once: true });
+      existing.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "/sdk.js";
+    script.async = true;
+    script.dataset.yandexSdk = "true";
+    script.onload = () => resolve(window.YaGames);
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function attachYandexPauseHandlers(ysdk) {
+  ysdk.on?.("game_api_pause", () => {
+    addPauseReason("sdk");
+  });
+  ysdk.on?.("game_api_resume", () => {
+    removePauseReason("sdk");
+  });
+}
+
+async function initYandexPlatform() {
+  if (platformState.initPromise) {
+    return platformState.initPromise;
+  }
+
+  platformState.initStarted = true;
+  platformState.initPromise = loadYandexSDKScript()
+    .then((YaGames) => {
+      if (!YaGames?.init) {
+        return null;
+      }
+      return YaGames.init();
+    })
+    .then((ysdk) => {
+      if (!ysdk) {
+        return null;
+      }
+
+      platformState.sdk = ysdk;
+      platformState.isYandexEnvironment = true;
+      applyPlatformMode();
+      applyPlatformLanguage(ysdk);
+      attachYandexPauseHandlers(ysdk);
+      syncOrientationGuard();
+      markPlatformReady();
+      syncPlatformGameplayState();
+      return ysdk;
+    })
+    .catch((error) => {
+      console.warn("Could not initialize Yandex Games SDK.", error);
+      return null;
+    });
+
+  return platformState.initPromise;
+}
+
 function escapeHtml(value) {
   return value
     .replaceAll("&", "&amp;")
@@ -2852,7 +3077,11 @@ function getMusicGainValue() {
 }
 
 function shouldUseMediaAudio() {
-  return isMobileAudioContext() && audioState.mediaElements.size > 0;
+  return (
+    isMobileAudioContext() &&
+    !platformState.isYandexEnvironment &&
+    audioState.mediaElements.size > 0
+  );
 }
 
 function cleanupMediaFxInstance(instance) {
@@ -3002,6 +3231,13 @@ function handleSceneTap(event) {
   if (event.target.closest("#music-toggle")) {
     return;
   }
+  if (platformState.isYandexEnvironment) {
+    void initYandexPlatform();
+  }
+  if (platformState.orientationBlocked) {
+    return;
+  }
+  requestFullscreenIfPossible();
   if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
     startGame();
   }
@@ -3009,6 +3245,9 @@ function handleSceneTap(event) {
 
 function onBoardPointerDown(event) {
   unlockAudio();
+  if (platformState.orientationBlocked) {
+    return;
+  }
   const cell = event.target.closest(".cell");
   if (!cell) {
     return;
@@ -3057,6 +3296,9 @@ initBoardMarkup();
 playerProfile = loadProfile();
 audioState.enabled = playerProfile.soundEnabled !== false;
 syncMusicToggle();
+applyPlatformMode();
+syncOrientationGuard();
+void initYandexPlatform();
 
 const restoredRun = loadRunSnapshot();
 if (!restoreRunSnapshot(restoredRun)) {
@@ -3069,14 +3311,22 @@ DOM.musicToggle.addEventListener("click", toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);
+DOM.stageSurface.addEventListener("contextmenu", (event) => event.preventDefault());
+DOM.board.addEventListener("contextmenu", (event) => event.preventDefault());
+DOM.stageSurface.addEventListener("selectstart", (event) => event.preventDefault());
 window.addEventListener("touchstart", unlockAudio, { passive: true });
 window.addEventListener("pointerdown", unlockAudio, { passive: true });
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", resetPressedKeys);
 window.addEventListener("pagehide", () => persistRunSnapshot(true));
+window.addEventListener("resize", syncOrientationGuard);
+window.addEventListener("orientationchange", syncOrientationGuard);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") {
     persistRunSnapshot(true);
+    addPauseReason("visibility");
+  } else {
+    removePauseReason("visibility");
   }
 });
