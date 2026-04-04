@@ -5,6 +5,10 @@ const I18N = globalThis.OSOME_I18N || {
   customerQuotes: {},
   catQuotes: {},
 };
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const STILLS_DATA = globalThis.OSOME_STILLS || { scenes: {} };
+const STILLS_SCENE_NAME = URL_PARAMS.get("stillsScene");
+const QUERY_LOCALE = URL_PARAMS.get("locale");
 
 const ORDER_TYPES = {
   red: {
@@ -739,6 +743,7 @@ const state = {
   adaptiveSpawnAccumulatedMs: 0,
   adaptiveSpawnSampleMs: 0,
   platformPaused: false,
+  stillsMode: false,
   lastSavedAt: 0,
   lastFrame: 0,
   lastId: 1,
@@ -767,7 +772,10 @@ let goldCheatLatched = false;
 let boardBurstResetTimer = 0;
 let playerProfile = null;
 let activeLocale = resolveLocale(
-  globalThis.OSOME_PREFERRED_LOCALE || navigator.language || navigator.languages?.[0]
+  globalThis.OSOME_PREFERRED_LOCALE ||
+    QUERY_LOCALE ||
+    navigator.language ||
+    navigator.languages?.[0]
 );
 const platformState = {
   sdk: null,
@@ -1168,6 +1176,116 @@ function renderBestScore() {
   });
 }
 
+function getStillLocaleText(value) {
+  if (!value || typeof value !== "object") {
+    return value || "";
+  }
+  return value[activeLocale] || value.ru || value.en || value.tr || "";
+}
+
+function createStillClient(snapshot) {
+  const order = ORDER_TYPES[snapshot.type];
+  return {
+    id: state.lastId++,
+    type: snapshot.type,
+    quote: getStillLocaleText(snapshot.quote) || sample(getCustomerQuotesBucket("generic")),
+    enteredAccessAt: null,
+    angryUntil: snapshot.angry ? Infinity : 0,
+    skin: snapshot.skin,
+    hair: snapshot.hair,
+    shirt: snapshot.shirt || order.shirtTones[1],
+    shoe: snapshot.shoe,
+    accessoryTone: snapshot.accessoryTone,
+    bodyType: snapshot.bodyType,
+    posture: snapshot.posture,
+    hairType: snapshot.hairType,
+    topType: snapshot.topType,
+    accessory: snapshot.accessory,
+    idleType: snapshot.idleType,
+    persona: snapshot.persona || "generic",
+  };
+}
+
+function applyStillScene(sceneName) {
+  const scene = STILLS_DATA.scenes?.[sceneName];
+  if (!scene) {
+    return false;
+  }
+
+  const stillsLayout = URL_PARAMS.get("stillsLayout") || "clean";
+  const stillsOrientation = URL_PARAMS.get("stillsOrientation") || "landscape";
+
+  document.body.classList.add("stills-mode");
+  document.body.classList.toggle("stills-clean", stillsLayout === "clean");
+  document.body.classList.toggle("stills-portrait", stillsOrientation === "portrait");
+
+  resetRoundState();
+  state.running = false;
+  state.awaitingStart = false;
+  state.stillsMode = true;
+  state.backgroundMusicUnlocked = false;
+  state.board = scene.board.map((row) =>
+    row.map((client) => {
+      if (!client) {
+        return null;
+      }
+      const avatar = STILLS_DATA.avatars?.[client.avatar];
+      return createStillClient({
+        ...avatar,
+        ...client,
+      });
+    })
+  );
+  state.score = scene.score || 0;
+  state.served = scene.served || 0;
+  state.combo = scene.combo || 0;
+  state.maxCombo = scene.maxCombo || scene.combo || 0;
+  state.sessionMs = scene.sessionMs || 0;
+  state.tension = scene.tension || 0;
+  state.accessRows = scene.accessRows || 1;
+  state.currentOrder = scene.currentOrder || null;
+  state.gimmick = scene.gimmick || null;
+  state.gimmickUntil = scene.gimmick ? Infinity : 0;
+  state.rushUntil = scene.rush ? Infinity : 0;
+  state.flowUntil = scene.flow ? Infinity : 0;
+  state.fastAccessUntil = scene.fastAccess ? Infinity : 0;
+  state.antiStressReady = Boolean(scene.antiStressReady);
+  state.quarrelCells = (scene.quarrelCells || []).map((cell) => ({ ...cell }));
+  state.notifications = (scene.notifications || []).map((toastKey, index) => ({
+    id: `still-toast-${sceneName}-${index}`,
+    text: t(toastKey),
+    expiresAt: Infinity,
+  }));
+  state.activeSpeakerId = null;
+  state.activeSpeechText = "";
+  state.activeSpeechPlacement = null;
+  state.catSpeechText = getStillLocaleText(scene.catSpeech);
+  state.catSpeechUntil = Infinity;
+  state.catSpeechCooldownUntil = Infinity;
+  state.catSpeechPriority = state.catSpeechText ? 99 : 0;
+
+  if (scene.speaker) {
+    const targetClient = state.board[scene.speaker.row]?.[scene.speaker.col] || null;
+    state.activeSpeakerId = targetClient?.id || null;
+    state.activeSpeechText = getStillLocaleText(scene.speaker.text);
+    state.speechSwitchAt = Infinity;
+  }
+
+  DOM.introOverlay.classList.add("hidden");
+  DOM.overlay.classList.toggle("hidden", !scene.showOverlay);
+  document.body.classList.toggle("overlay-open", Boolean(scene.showOverlay));
+  if (scene.showOverlay) {
+    DOM.resultScore.textContent = formatNumber(state.score);
+    DOM.resultServed.textContent = formatNumber(state.served);
+    DOM.resultMaxCombo.textContent = `x${state.maxCombo}`;
+    DOM.resultTime.textContent = formatTime(state.sessionMs);
+  }
+
+  render();
+  document.body.dataset.ready = "true";
+  return true;
+}
+
 function initBoardMarkup() {
   for (let row = 4; row >= 0; row -= 1) {
     for (let col = 0; col < 4; col += 1) {
@@ -1184,6 +1302,7 @@ function initBoardMarkup() {
 function resetRoundState() {
   state.running = true;
   state.awaitingStart = false;
+  state.stillsMode = false;
   state.tutorialActive = false;
   state.tutorialStep = null;
   state.tutorialType = null;
@@ -1249,6 +1368,7 @@ function setStandby() {
   }
   state.running = false;
   state.awaitingStart = true;
+  state.stillsMode = false;
   state.tutorialActive = false;
   state.tutorialStep = null;
   state.tutorialType = null;
@@ -1640,10 +1760,6 @@ function getAccessibleClients() {
 }
 
 function getConnectedMatchCells(startRow, startCol, type) {
-  if (startRow >= state.accessRows) {
-    return [];
-  }
-
   const cluster = [];
   const queue = [{ row: startRow, col: startCol }];
   const visited = new Set();
@@ -1656,7 +1772,7 @@ function getConnectedMatchCells(startRow, startCol, type) {
     }
     visited.add(key);
 
-    if (cell.row < 0 || cell.row >= state.accessRows || cell.col < 0 || cell.col >= 4) {
+    if (cell.row < 0 || cell.row >= 5 || cell.col < 0 || cell.col >= 4) {
       continue;
     }
 
@@ -2409,6 +2525,9 @@ function speakCat(category, options = {}) {
 }
 
 function updateCatSpeech(now) {
+  if (state.stillsMode) {
+    return;
+  }
   if (state.catSpeechText && now >= state.catSpeechUntil) {
     state.catSpeechText = "";
     state.catSpeechPriority = 0;
@@ -2773,6 +2892,20 @@ function positionSceneDialogueDefault() {
 }
 
 function updateActiveSpeech(now) {
+  if (state.stillsMode) {
+    if (state.activeSpeechText && state.activeSpeakerId) {
+      const candidate = getSpeechCandidates().find(
+        (entry) => entry.client.id === state.activeSpeakerId
+      );
+      state.activeSpeechPlacement = candidate
+        ? findSafeDialoguePlacement(candidate, state.activeSpeechText)
+        : null;
+    } else {
+      state.activeSpeechPlacement = null;
+    }
+    return;
+  }
+
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
     state.activeSpeechText = t("sceneStart");
@@ -3652,22 +3785,52 @@ function resetPressedKeys() {
   goldCheatLatched = false;
 }
 
+function bindTapAction(element, handler) {
+  if (!element) {
+    return;
+  }
+
+  let touchHandled = false;
+  element.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "mouse") {
+      touchHandled = true;
+      event.preventDefault();
+      handler(event);
+    }
+  });
+  element.addEventListener("click", (event) => {
+    if (touchHandled) {
+      touchHandled = false;
+      event.preventDefault();
+      return;
+    }
+    handler(event);
+  });
+}
+
 initBoardMarkup();
 playerProfile = loadProfile();
 audioState.enabled = playerProfile.soundEnabled !== false;
 setLocale(activeLocale);
 applyPlatformMode();
 syncOrientationGuard();
-void initYandexPlatform();
+if (STILLS_SCENE_NAME) {
+  applyStillScene(STILLS_SCENE_NAME);
+} else {
+  void initYandexPlatform();
+  const restoredRun = loadRunSnapshot();
+  if (!restoreRunSnapshot(restoredRun)) {
+    setStandby();
+  }
+}
 
-const restoredRun = loadRunSnapshot();
-if (!restoreRunSnapshot(restoredRun)) {
+if (!STILLS_SCENE_NAME && !state.running && !state.awaitingStart) {
   setStandby();
 }
 
-DOM.restartButton.addEventListener("click", startGame);
-DOM.menuButton.addEventListener("click", setStandby);
-DOM.musicToggle.addEventListener("click", toggleMusic);
+bindTapAction(DOM.restartButton, startGame);
+bindTapAction(DOM.menuButton, setStandby);
+bindTapAction(DOM.musicToggle, toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);
 DOM.board.addEventListener("pointerdown", onBoardPointerDown);

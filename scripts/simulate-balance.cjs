@@ -311,10 +311,6 @@ function getTypeStats(state) {
 }
 
 function getConnectedMatchCells(state, startRow, startCol, type) {
-  if (startRow >= state.accessRows) {
-    return [];
-  }
-
   const cluster = [];
   const queue = [{ row: startRow, col: startCol }];
   const visited = new Set();
@@ -327,7 +323,7 @@ function getConnectedMatchCells(state, startRow, startCol, type) {
     }
     visited.add(key);
 
-    if (cell.row < 0 || cell.row >= state.accessRows || cell.col < 0 || cell.col >= 4) {
+    if (cell.row < 0 || cell.row >= 5 || cell.col < 0 || cell.col >= 4) {
       continue;
     }
 
