@@ -51,6 +51,12 @@ const PHASES = BALANCE.phases;
 const MATCH_GROUP_MIN = 3;
 const MATCH_GROUP_EXTRA_POINTS = 8;
 const MATCH_GROUP_CHAIN_POINTS = 4;
+const SAVE_KEY = "osome.save.v1";
+const PROFILE_KEY = "osome.profile.v1";
+const SAVE_VERSION = 1;
+const SAVE_INTERVAL_MS = 900;
+const PROFILE_BASELINE_BLEND = 0.24;
+const TUTORIAL_RESUME_DELAY_MS = 2_600;
 
 const CUSTOMER_QUOTES = {
   generic: [
@@ -641,6 +647,13 @@ const boardCells = [];
 const state = {
   running: false,
   awaitingStart: true,
+  tutorialActive: false,
+  tutorialStep: null,
+  tutorialType: null,
+  tutorialTargetIds: new Set(),
+  tutorialHintUntil: 0,
+  tutorialNudgeUntil: 0,
+  tutorialReadyToResume: false,
   board: createEmptyBoard(),
   score: 0,
   served: 0,
@@ -688,6 +701,9 @@ const state = {
   lastPlayerActionAt: 0,
   performanceEvents: [],
   adaptiveSpawnFactor: 1,
+  adaptiveSpawnAccumulatedMs: 0,
+  adaptiveSpawnSampleMs: 0,
+  lastSavedAt: 0,
   lastFrame: 0,
   lastId: 1,
 };
@@ -709,9 +725,270 @@ const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
 const pressedKeys = new Set();
 let goldCheatLatched = false;
 let boardBurstResetTimer = 0;
+let playerProfile = null;
 
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
+}
+
+function createDefaultProfile() {
+  return {
+    version: SAVE_VERSION,
+    sessionsPlayed: 0,
+    hasCompletedFirstTapTutorial: false,
+    preferredSpawnBaseline: 1,
+    soundEnabled: true,
+    lastPlayedAt: 0,
+  };
+}
+
+function clampPreferredSpawnBaseline(value) {
+  return clamp(
+    value,
+    BALANCE.adaptiveSpawn.minFactor,
+    Math.min(1.2, BALANCE.adaptiveSpawn.maxFactor)
+  );
+}
+
+function loadProfile() {
+  const fallback = createDefaultProfile();
+  try {
+    const raw = window.localStorage.getItem(PROFILE_KEY);
+    if (!raw) {
+      return fallback;
+    }
+
+    const parsed = JSON.parse(raw);
+    return {
+      ...fallback,
+      ...parsed,
+      preferredSpawnBaseline: clampPreferredSpawnBaseline(
+        parsed.preferredSpawnBaseline ?? fallback.preferredSpawnBaseline
+      ),
+    };
+  } catch (error) {
+    console.warn("Could not load player profile.", error);
+    return fallback;
+  }
+}
+
+function saveProfile() {
+  if (!playerProfile) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(PROFILE_KEY, JSON.stringify(playerProfile));
+  } catch (error) {
+    console.warn("Could not save player profile.", error);
+  }
+}
+
+function clearSavedRun() {
+  try {
+    window.localStorage.removeItem(SAVE_KEY);
+  } catch (error) {
+    console.warn("Could not clear saved run.", error);
+  }
+}
+
+function getProfileSpawnBaseline() {
+  return clampPreferredSpawnBaseline(playerProfile?.preferredSpawnBaseline ?? 1);
+}
+
+function getRemainingMs(until, now) {
+  if (!until) {
+    return 0;
+  }
+  if (until === Infinity) {
+    return "infinity";
+  }
+  return Math.max(0, Math.round(until - now));
+}
+
+function restoreUntil(remaining, now) {
+  if (remaining === "infinity") {
+    return Infinity;
+  }
+  if (!remaining) {
+    return 0;
+  }
+  return now + remaining;
+}
+
+function serializeClient(client, now) {
+  return {
+    id: client.id,
+    type: client.type,
+    quote: client.quote,
+    angryRemainingMs: getRemainingMs(client.angryUntil, now),
+    accessAgeMs:
+      client.enteredAccessAt === null
+        ? null
+        : Math.max(0, Math.round(now - client.enteredAccessAt)),
+    skin: client.skin,
+    hair: client.hair,
+    shirt: client.shirt,
+    shoe: client.shoe,
+    accessoryTone: client.accessoryTone,
+    bodyType: client.bodyType,
+    posture: client.posture,
+    hairType: client.hairType,
+    topType: client.topType,
+    accessory: client.accessory,
+    idleType: client.idleType,
+    persona: client.persona,
+  };
+}
+
+function restoreClient(snapshot, now) {
+  return {
+    ...snapshot,
+    angryUntil: restoreUntil(snapshot.angryRemainingMs, now),
+    enteredAccessAt: snapshot.accessAgeMs === null ? null : now - Math.max(0, snapshot.accessAgeMs),
+  };
+}
+
+function serializeBoard(now) {
+  return state.board.map((row) =>
+    row.map((client) => (client ? serializeClient(client, now) : null))
+  );
+}
+
+function restoreBoard(boardSnapshot, now) {
+  return boardSnapshot.map((row) =>
+    row.map((client) => (client ? restoreClient(client, now) : null))
+  );
+}
+
+function serializeRunSnapshot(now = performance.now()) {
+  if (!state.running) {
+    return null;
+  }
+
+  return {
+    version: SAVE_VERSION,
+    savedAt: Date.now(),
+    state: {
+      tutorialActive: state.tutorialActive,
+      tutorialStep: state.tutorialStep,
+      tutorialType: state.tutorialType,
+      tutorialTargetIds: [...state.tutorialTargetIds],
+      tutorialHintRemainingMs: getRemainingMs(state.tutorialHintUntil, now),
+      tutorialNudgeRemainingMs: getRemainingMs(state.tutorialNudgeUntil, now),
+      tutorialReadyToResume: state.tutorialReadyToResume,
+      board: serializeBoard(now),
+      score: state.score,
+      served: state.served,
+      combo: state.combo,
+      maxCombo: state.maxCombo,
+      sessionMs: state.sessionMs,
+      spawnAccumulator: state.spawnAccumulator,
+      tension: state.tension,
+      calmRemainingMs: getRemainingMs(state.calmUntil, now),
+      accessRows: state.accessRows,
+      firstFivePerfect: state.firstFivePerfect,
+      totalErrors: state.totalErrors,
+      consecutiveErrors: state.consecutiveErrors,
+      slowdowns: state.slowdowns.map((endsAt) => getRemainingMs(endsAt, now)).filter(Boolean),
+      speedups: state.speedups.map((endsAt) => getRemainingMs(endsAt, now)).filter(Boolean),
+      perfectRow: state.perfectRow ? { ...state.perfectRow } : null,
+      flowRemainingMs: getRemainingMs(state.flowUntil, now),
+      fastAccessRemainingMs: getRemainingMs(state.fastAccessUntil, now),
+      antiStressReady: state.antiStressReady,
+      gimmick: state.gimmick,
+      gimmickRemainingMs: getRemainingMs(state.gimmickUntil, now),
+      quarrelSpreadRemainingMs: getRemainingMs(state.quarrelSpreadAt, now),
+      quarrelCells: state.quarrelCells.map((cell) => ({ ...cell })),
+      rushRemainingMs: getRemainingMs(state.rushUntil, now),
+      currentOrder: state.currentOrder,
+      activeSpeakerId: state.activeSpeakerId,
+      activeSpeechText: state.activeSpeechText,
+      speechRemainingMs: getRemainingMs(state.speechSwitchAt, now),
+      catSpeechText: state.catSpeechText,
+      catSpeechRemainingMs: getRemainingMs(state.catSpeechUntil, now),
+      catSpeechCooldownRemainingMs: getRemainingMs(state.catSpeechCooldownUntil, now),
+      catSpeechPriority: state.catSpeechPriority,
+      catLastLineByCategory: { ...state.catLastLineByCategory },
+      catLineDecks: JSON.parse(JSON.stringify(state.catLineDecks)),
+      catPressureTier: state.catPressureTier,
+      catLastSpokeAgeMs: Math.max(0, Math.round(now - state.catLastSpokeAt)),
+      catLastAmbientAgeMs: Math.max(0, Math.round(now - state.catLastAmbientAt)),
+      catQueueBand: state.catQueueBand,
+      catLastBonusCount: state.catLastBonusCount,
+      catNotedClientIds: [...state.catNotedClientIds],
+      lastPlayerActionAgeMs: Math.max(0, Math.round(now - state.lastPlayerActionAt)),
+      performanceEvents: state.performanceEvents.map((event) => ({
+        ageMs: Math.max(0, Math.round(now - event.at)),
+        served: event.served,
+        errors: event.errors,
+      })),
+      adaptiveSpawnFactor: state.adaptiveSpawnFactor,
+      adaptiveSpawnAccumulatedMs: state.adaptiveSpawnAccumulatedMs,
+      adaptiveSpawnSampleMs: state.adaptiveSpawnSampleMs,
+      lastId: state.lastId,
+    },
+  };
+}
+
+function persistRunSnapshot(force = false, now = performance.now()) {
+  if (!state.running) {
+    clearSavedRun();
+    return;
+  }
+
+  if (!force && now - state.lastSavedAt < SAVE_INTERVAL_MS) {
+    return;
+  }
+
+  const snapshot = serializeRunSnapshot(now);
+  if (!snapshot) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
+    state.lastSavedAt = now;
+  } catch (error) {
+    console.warn("Could not save run snapshot.", error);
+  }
+}
+
+function loadRunSnapshot() {
+  try {
+    const raw = window.localStorage.getItem(SAVE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    const snapshot = JSON.parse(raw);
+    if (snapshot?.version !== SAVE_VERSION || !snapshot.state?.board) {
+      return null;
+    }
+    return snapshot;
+  } catch (error) {
+    console.warn("Could not load run snapshot.", error);
+    return null;
+  }
+}
+
+function shouldShowFirstTapTutorial() {
+  return !playerProfile?.hasCompletedFirstTapTutorial;
+}
+
+function updateProfileFromSession() {
+  if (state.sessionMs < 20_000 || state.adaptiveSpawnSampleMs <= 0) {
+    return;
+  }
+
+  const sessionMean = state.adaptiveSpawnAccumulatedMs / state.adaptiveSpawnSampleMs;
+  playerProfile.preferredSpawnBaseline = clampPreferredSpawnBaseline(
+    playerProfile.preferredSpawnBaseline * (1 - PROFILE_BASELINE_BLEND) +
+      sessionMean * PROFILE_BASELINE_BLEND
+  );
+  playerProfile.sessionsPlayed += 1;
+  playerProfile.lastPlayedAt = Date.now();
+  saveProfile();
 }
 
 function initBoardMarkup() {
@@ -730,6 +1007,13 @@ function initBoardMarkup() {
 function resetRoundState() {
   state.running = true;
   state.awaitingStart = false;
+  state.tutorialActive = false;
+  state.tutorialStep = null;
+  state.tutorialType = null;
+  state.tutorialTargetIds = new Set();
+  state.tutorialHintUntil = 0;
+  state.tutorialNudgeUntil = 0;
+  state.tutorialReadyToResume = false;
   state.board = createEmptyBoard();
   state.score = 0;
   state.served = 0;
@@ -774,13 +1058,26 @@ function resetRoundState() {
   state.catNotedClientIds = new Set();
   state.lastPlayerActionAt = performance.now();
   state.performanceEvents = [];
-  state.adaptiveSpawnFactor = 1;
+  state.adaptiveSpawnFactor = getProfileSpawnBaseline();
+  state.adaptiveSpawnAccumulatedMs = 0;
+  state.adaptiveSpawnSampleMs = 0;
+  state.lastSavedAt = 0;
   state.lastFrame = 0;
 }
 
 function setStandby() {
+  if (state.running) {
+    updateProfileFromSession();
+  }
   state.running = false;
   state.awaitingStart = true;
+  state.tutorialActive = false;
+  state.tutorialStep = null;
+  state.tutorialType = null;
+  state.tutorialTargetIds = new Set();
+  state.tutorialHintUntil = 0;
+  state.tutorialNudgeUntil = 0;
+  state.tutorialReadyToResume = false;
   state.board = createEmptyBoard();
   state.score = 0;
   state.served = 0;
@@ -820,16 +1117,96 @@ function setStandby() {
   state.catLastBonusCount = 0;
   state.catNotedClientIds = new Set();
   state.performanceEvents = [];
-  state.adaptiveSpawnFactor = 1;
+  state.adaptiveSpawnFactor = getProfileSpawnBaseline();
+  state.adaptiveSpawnAccumulatedMs = 0;
+  state.adaptiveSpawnSampleMs = 0;
+  state.lastSavedAt = 0;
   state.lastFrame = 0;
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.remove("hidden");
+  clearSavedRun();
   speakCat("standby", { priority: 2, bypassCooldown: true, durationMs: 2600 });
   render();
 }
 
+function createTutorialOpeningBoard() {
+  const tutorialType = "green";
+  const distractors = ["red", "violet", "orange"];
+  const board = createEmptyBoard();
+  const targets = [
+    createClient(tutorialType),
+    createClient(tutorialType),
+    createClient(tutorialType),
+  ];
+  const wrongClient = createClient(sample(distractors));
+  board[0][0] = targets[0];
+  board[0][1] = targets[1];
+  board[0][2] = targets[2];
+  board[0][3] = wrongClient;
+
+  return {
+    board,
+    tutorialType,
+    targetIds: targets.map((client) => client.id),
+  };
+}
+
+function startTutorialGame() {
+  unlockAudio();
+  resetRoundState();
+  DOM.overlay.classList.add("hidden");
+  document.body.classList.remove("overlay-open");
+  DOM.introOverlay.classList.add("hidden");
+
+  const tutorial = createTutorialOpeningBoard();
+  state.board = tutorial.board;
+  state.currentOrder = tutorial.tutorialType;
+  state.tutorialActive = true;
+  state.tutorialStep = "match";
+  state.tutorialType = tutorial.tutorialType;
+  state.tutorialTargetIds = new Set(tutorial.targetIds);
+  state.lastPlayerActionAt = performance.now();
+
+  render();
+  requestAnimationFrame(loop);
+}
+
+function finishTutorialOnboarding(now) {
+  if (!state.tutorialActive) {
+    return;
+  }
+
+  state.tutorialActive = false;
+  state.tutorialStep = null;
+  state.tutorialType = null;
+  state.tutorialTargetIds = new Set();
+  state.tutorialHintUntil = 0;
+  state.tutorialNudgeUntil = 0;
+  state.tutorialReadyToResume = false;
+  state.activeSpeakerId = null;
+  state.activeSpeechText = "";
+  state.activeSpeechPlacement = null;
+  state.speechSwitchAt = 0;
+  playerProfile.hasCompletedFirstTapTutorial = true;
+  saveProfile();
+
+  if (getAccessibleClients().length < 3) {
+    spawnClient();
+    spawnClient();
+    syncCurrentOrder(true);
+  }
+
+  state.lastPlayerActionAt = now;
+  speakCat(getIntroCategory(), { priority: 3, bypassCooldown: true, durationMs: 2400 });
+}
+
 function startGame() {
+  if (shouldShowFirstTapTutorial()) {
+    startTutorialGame();
+    return;
+  }
+
   unlockAudio();
   resetRoundState();
   DOM.overlay.classList.add("hidden");
@@ -845,6 +1222,7 @@ function startGame() {
 
 function endGame() {
   state.running = false;
+  updateProfileFromSession();
   state.lastRoundServed = state.served;
   state.lastRoundDurationMs = state.sessionMs;
   DOM.resultScore.textContent = formatNumber(state.score);
@@ -853,6 +1231,7 @@ function endGame() {
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
   document.body.classList.add("overlay-open");
+  clearSavedRun();
   speakCat("game_over", { priority: 6, bypassCooldown: true, durationMs: 2800 });
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
@@ -1051,6 +1430,8 @@ function updateAdaptiveSpawn(dt, now) {
   const target = getAdaptiveSpawnTarget(now);
   const alpha = 1 - Math.exp(-dt * config.smoothingPerSecond);
   state.adaptiveSpawnFactor += (target - state.adaptiveSpawnFactor) * alpha;
+  state.adaptiveSpawnAccumulatedMs += state.adaptiveSpawnFactor * dt * 1_000;
+  state.adaptiveSpawnSampleMs += dt * 1_000;
 }
 
 function getAccessibleClients() {
@@ -1112,11 +1493,24 @@ function handleCellTap(row, col) {
   if (!state.running) {
     return;
   }
-  state.lastPlayerActionAt = performance.now();
+  const now = performance.now();
+  state.lastPlayerActionAt = now;
 
   const client = state.board[row]?.[col];
   if (!client) {
     return;
+  }
+
+  if (state.tutorialActive) {
+    if (state.tutorialStep !== "match") {
+      return;
+    }
+
+    if (client.type !== state.tutorialType || !state.tutorialTargetIds.has(client.id)) {
+      state.tutorialNudgeUntil = now + 1_300;
+      render();
+      return;
+    }
   }
 
   const fromQuarrel = isQuarrelCell(row, col);
@@ -1261,6 +1655,13 @@ function serveClient(row, col, fromQuarrel) {
   [...touchedColumns].forEach((touchedCol) => collapseColumn(touchedCol));
   updateAccessTimers();
   syncCurrentOrder(true);
+
+  if (state.tutorialActive && state.tutorialStep === "match") {
+    state.tutorialStep = "group_tip";
+    state.tutorialTargetIds = new Set();
+    state.tutorialHintUntil = now + TUTORIAL_RESUME_DELAY_MS;
+    state.tutorialReadyToResume = true;
+  }
 
   if (servedCount >= MATCH_GROUP_MIN) {
     if (servedCount >= 5) {
@@ -1464,6 +1865,99 @@ function clearQuarrel() {
   state.quarrelCells = [];
 }
 
+function updateTutorialState(now) {
+  if (!state.tutorialActive) {
+    return;
+  }
+
+  if (
+    state.tutorialStep === "group_tip" &&
+    state.tutorialReadyToResume &&
+    now >= state.tutorialHintUntil
+  ) {
+    finishTutorialOnboarding(now);
+  }
+}
+
+function restoreRunSnapshot(snapshot) {
+  const now = performance.now();
+  const restored = snapshot?.state;
+  if (!restored) {
+    return false;
+  }
+
+  resetRoundState();
+  state.running = true;
+  state.awaitingStart = false;
+  state.tutorialActive = Boolean(restored.tutorialActive);
+  state.tutorialStep = restored.tutorialStep || null;
+  state.tutorialType = restored.tutorialType || null;
+  state.tutorialTargetIds = new Set(restored.tutorialTargetIds || []);
+  state.tutorialHintUntil = restoreUntil(restored.tutorialHintRemainingMs, now);
+  state.tutorialNudgeUntil = restoreUntil(restored.tutorialNudgeRemainingMs, now);
+  state.tutorialReadyToResume = Boolean(restored.tutorialReadyToResume);
+  state.board = restoreBoard(restored.board, now);
+  state.score = restored.score || 0;
+  state.served = restored.served || 0;
+  state.combo = restored.combo || 0;
+  state.maxCombo = restored.maxCombo || 0;
+  state.sessionMs = restored.sessionMs || 0;
+  state.spawnAccumulator = restored.spawnAccumulator || 0;
+  state.tension = restored.tension || 0;
+  state.calmUntil = restoreUntil(restored.calmRemainingMs, now);
+  state.accessRows = restored.accessRows || 1;
+  state.firstFivePerfect = restored.firstFivePerfect !== false;
+  state.totalErrors = restored.totalErrors || 0;
+  state.consecutiveErrors = restored.consecutiveErrors || 0;
+  state.slowdowns = (restored.slowdowns || []).map((value) => restoreUntil(value, now));
+  state.speedups = (restored.speedups || []).map((value) => restoreUntil(value, now));
+  state.perfectRow = restored.perfectRow ? { ...restored.perfectRow } : null;
+  state.flowUntil = restoreUntil(restored.flowRemainingMs, now);
+  state.fastAccessUntil = restoreUntil(restored.fastAccessRemainingMs, now);
+  state.antiStressReady = Boolean(restored.antiStressReady);
+  state.gimmick = restored.gimmick || null;
+  state.gimmickUntil = restoreUntil(restored.gimmickRemainingMs, now);
+  state.quarrelSpreadAt = restoreUntil(restored.quarrelSpreadRemainingMs, now);
+  state.quarrelCells = (restored.quarrelCells || []).map((cell) => ({ ...cell }));
+  state.rushUntil = restoreUntil(restored.rushRemainingMs, now);
+  state.currentOrder = restored.currentOrder || null;
+  state.activeSpeakerId = restored.activeSpeakerId || null;
+  state.activeSpeechText = restored.activeSpeechText || "";
+  state.activeSpeechPlacement = null;
+  state.speechSwitchAt = restoreUntil(restored.speechRemainingMs, now);
+  state.catSpeechText = restored.catSpeechText || "";
+  state.catSpeechUntil = restoreUntil(restored.catSpeechRemainingMs, now);
+  state.catSpeechCooldownUntil = restoreUntil(restored.catSpeechCooldownRemainingMs, now);
+  state.catSpeechPriority = restored.catSpeechPriority || 0;
+  state.catLastLineByCategory = restored.catLastLineByCategory || {};
+  state.catLineDecks = restored.catLineDecks || {};
+  state.catPressureTier = restored.catPressureTier || 0;
+  state.catLastSpokeAt = now - (restored.catLastSpokeAgeMs || 0);
+  state.catLastAmbientAt = now - (restored.catLastAmbientAgeMs || 0);
+  state.catQueueBand = restored.catQueueBand || "normal";
+  state.catLastBonusCount = restored.catLastBonusCount || 0;
+  state.catNotedClientIds = new Set(restored.catNotedClientIds || []);
+  state.lastPlayerActionAt = now - (restored.lastPlayerActionAgeMs || 0);
+  state.performanceEvents = (restored.performanceEvents || []).map((event) => ({
+    at: now - (event.ageMs || 0),
+    served: event.served || 0,
+    errors: event.errors || 0,
+  }));
+  state.adaptiveSpawnFactor = restored.adaptiveSpawnFactor || getProfileSpawnBaseline();
+  state.adaptiveSpawnAccumulatedMs = restored.adaptiveSpawnAccumulatedMs || 0;
+  state.adaptiveSpawnSampleMs = restored.adaptiveSpawnSampleMs || 0;
+  state.lastId = restored.lastId || state.lastId;
+  state.lastSavedAt = 0;
+  state.lastFrame = 0;
+
+  DOM.overlay.classList.add("hidden");
+  document.body.classList.remove("overlay-open");
+  DOM.introOverlay.classList.add("hidden");
+  render();
+  requestAnimationFrame(loop);
+  return true;
+}
+
 function updateSpawn(dt, now) {
   const phase = getPhase();
   const activeRush = now < state.rushUntil;
@@ -1493,6 +1987,19 @@ function loop(timestamp) {
 
   const dt = Math.min(0.05, (timestamp - state.lastFrame) / 1_000);
   state.lastFrame = timestamp;
+
+  if (state.tutorialActive) {
+    updateTutorialState(timestamp);
+    updateToasts(timestamp);
+    updateMusic(timestamp);
+    render();
+    persistRunSnapshot(false, timestamp);
+    if (state.running) {
+      requestAnimationFrame(loop);
+    }
+    return;
+  }
+
   state.sessionMs += dt * 1_000;
 
   updateBonuses(timestamp);
@@ -1503,6 +2010,7 @@ function loop(timestamp) {
   updateToasts(timestamp);
   updateMusic(timestamp);
   render();
+  persistRunSnapshot(false, timestamp);
 
   if (state.running) {
     requestAnimationFrame(loop);
@@ -1533,6 +2041,7 @@ function render() {
   DOM.sceneDialogue.classList.toggle("hidden", !state.activeSpeechText);
   DOM.catDialogueText.textContent = state.catSpeechText || "";
   DOM.catDialogue.classList.toggle("hidden", !state.catSpeechText);
+  DOM.stageSurface.classList.toggle("is-tutorial", state.tutorialActive);
   renderActiveOrder();
 
   boardCells.forEach((cell) => {
@@ -1552,6 +2061,9 @@ function render() {
     }
     if (client && client.id === state.activeSpeakerId) {
       cell.classList.add("speaker-active");
+    }
+    if (client && state.tutorialActive && state.tutorialTargetIds.has(client.id)) {
+      cell.classList.add("tutorial-target");
     }
 
     if (!client) {
@@ -2062,6 +2574,32 @@ function updateActiveSpeech(now) {
     return;
   }
 
+  if (state.tutorialActive) {
+    if (state.tutorialStep === "match") {
+      const targetCandidate = getAccessibleClients().find((candidate) =>
+        state.tutorialTargetIds.has(candidate.client.id)
+      );
+      const text =
+        now < state.tutorialNudgeUntil
+          ? "Не этот. Ищи клиента цвета коробки."
+          : "Смотри на цвет коробки. Нажми на такого же клиента.";
+
+      state.activeSpeakerId = targetCandidate?.client.id || null;
+      state.activeSpeechText = text;
+      state.activeSpeechPlacement = targetCandidate
+        ? findSafeDialoguePlacement(targetCandidate, text)
+        : null;
+      return;
+    }
+
+    if (state.tutorialStep === "group_tip") {
+      state.activeSpeakerId = null;
+      state.activeSpeechText = "Если рядом трое одного цвета, они уйдут все.";
+      state.activeSpeechPlacement = null;
+      return;
+    }
+  }
+
   const candidates = getSpeechCandidates();
   if (candidates.length === 0) {
     state.activeSpeakerId = null;
@@ -2171,7 +2709,7 @@ function renderActiveOrder() {
 
   const order = ORDER_TYPES[state.currentOrder];
   DOM.activeOrder.dataset.order = state.currentOrder;
-  DOM.activeOrderBadge.className = `active-order-badge ${order.className}`;
+  DOM.activeOrderBadge.className = `active-order-badge ${order.className} ${state.tutorialActive ? "is-tutorial" : ""}`;
   DOM.activeOrderBadge.setAttribute("aria-label", order.label);
   DOM.activeOrderBadge.style.setProperty("--box-color", order.color);
   DOM.activeOrderIcon.innerHTML = renderOrderBox(order, "active-order-symbol");
@@ -2442,6 +2980,10 @@ function updateMusic(now) {
 function toggleMusic() {
   unlockAudio();
   audioState.enabled = !audioState.enabled;
+  if (playerProfile) {
+    playerProfile.soundEnabled = audioState.enabled;
+    saveProfile();
+  }
   syncMusicToggle();
 }
 
@@ -2512,8 +3054,14 @@ function resetPressedKeys() {
 }
 
 initBoardMarkup();
-setStandby();
+playerProfile = loadProfile();
+audioState.enabled = playerProfile.soundEnabled !== false;
 syncMusicToggle();
+
+const restoredRun = loadRunSnapshot();
+if (!restoreRunSnapshot(restoredRun)) {
+  setStandby();
+}
 
 DOM.restartButton.addEventListener("click", startGame);
 DOM.menuButton.addEventListener("click", setStandby);
@@ -2526,3 +3074,9 @@ window.addEventListener("pointerdown", unlockAudio, { passive: true });
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", resetPressedKeys);
+window.addEventListener("pagehide", () => persistRunSnapshot(true));
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    persistRunSnapshot(true);
+  }
+});
