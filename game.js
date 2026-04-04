@@ -642,6 +642,7 @@ const DOM = {
   resultTime: document.querySelector("#result-time"),
   musicToggle: document.querySelector("#music-toggle"),
   toastStack: document.querySelector("#toast-stack"),
+  introBestScore: document.querySelector("#intro-best-score"),
 };
 
 const boardCells = [];
@@ -754,6 +755,7 @@ function createDefaultProfile() {
   return {
     version: SAVE_VERSION,
     sessionsPlayed: 0,
+    bestScore: 0,
     hasCompletedFirstTapTutorial: false,
     preferredSpawnBaseline: 1,
     soundEnabled: true,
@@ -1010,6 +1012,14 @@ function updateProfileFromSession() {
   saveProfile();
 }
 
+function renderBestScore() {
+  if (!DOM.introBestScore) {
+    return;
+  }
+
+  DOM.introBestScore.textContent = `Лучший результат: ${formatNumber(playerProfile?.bestScore || 0)}`;
+}
+
 function initBoardMarkup() {
   for (let row = 4; row >= 0; row -= 1) {
     for (let col = 0; col < 4; col += 1) {
@@ -1245,6 +1255,10 @@ function startGame() {
 function endGame() {
   state.running = false;
   updateProfileFromSession();
+  if (playerProfile && state.score > (playerProfile.bestScore || 0)) {
+    playerProfile.bestScore = state.score;
+    saveProfile();
+  }
   state.lastRoundServed = state.served;
   state.lastRoundDurationMs = state.sessionMs;
   DOM.resultScore.textContent = formatNumber(state.score);
@@ -2053,6 +2067,7 @@ function render() {
   const now = performance.now();
   updateActiveSpeech(now);
   updateCatSpeech(now);
+  renderBestScore();
 
   if (DOM.score) {
     DOM.score.textContent = formatNumber(state.score);
