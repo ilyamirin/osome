@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Osome Stills</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-0: #0f1218;
+        --bg-1: #131922;
+        --bg-2: #232d3b;
+        --copy: rgba(244, 240, 231, 0.92);
+        --muted: rgba(244, 240, 231, 0.62);
+        --line: rgba(244, 240, 231, 0.12);
+        --panel: rgba(16, 19, 27, 0.78);
+        --accent: #d95c52;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 16% 18%, rgba(217, 92, 82, 0.22), transparent 24%),
+          radial-gradient(circle at 82% 72%, rgba(78, 175, 102, 0.16), transparent 22%),
+          linear-gradient(135deg, var(--bg-0), var(--bg-1) 48%, var(--bg-2) 120%);
+        font-family:
+          "IBM Plex Sans",
+          "Segoe UI",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        color: var(--copy);
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: 540px 1fr;
+        gap: 32px;
+        padding: 36px;
+      }
+
+      body.clean {
+        display: block;
+        padding: 0;
+        background:
+          radial-gradient(circle at 16% 18%, rgba(217, 92, 82, 0.14), transparent 24%),
+          radial-gradient(circle at 82% 72%, rgba(78, 175, 102, 0.1), transparent 22%),
+          linear-gradient(135deg, var(--bg-0), var(--bg-1) 48%, var(--bg-2) 120%);
+      }
+
+      aside,
+      .frame-shell {
+        border: 1px solid var(--line);
+        border-radius: 32px;
+        background: var(--panel);
+        backdrop-filter: blur(12px);
+        overflow: hidden;
+      }
+
+      body.clean aside {
+        display: none;
+      }
+
+      aside {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 36px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        font-size: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.32em;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 56px;
+        line-height: 0.94;
+        letter-spacing: -0.04em;
+      }
+
+      .subtitle {
+        margin: 18px 0 0;
+        max-width: 22ch;
+        font-size: 22px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      .stats {
+        display: grid;
+        gap: 14px;
+        margin: 28px 0 0;
+      }
+
+      .stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 18px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .stat-label {
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .stat-value {
+        font-size: 18px;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 18px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .frame-shell {
+        padding: 18px;
+      }
+
+      body.clean .frame-shell {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .frame-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 4px 8px 18px;
+      }
+
+      body.clean .frame-topbar {
+        display: none;
+      }
+
+      .frame-title {
+        font-size: 18px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .frame-badge {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .viewport {
+        --frame-scale: 1;
+        width: 100%;
+        height: calc(100vh - 108px);
+        border-radius: 24px;
+        overflow: hidden;
+        background: rgba(6, 8, 12, 0.42);
+        display: grid;
+        place-items: center;
+      }
+
+      body.clean .viewport {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+      }
+
+      iframe {
+        display: block;
+        width: calc(100% / var(--frame-scale));
+        height: calc(100% / var(--frame-scale));
+        border: 0;
+        background: transparent;
+        transform: scale(var(--frame-scale));
+        transform-origin: center center;
+      }
+
+      body.orientation-landscape .viewport {
+        --frame-scale: 0.78;
+      }
+
+      body.clean.orientation-landscape .viewport {
+        --frame-scale: 0.78;
+      }
+
+      body.orientation-portrait .viewport {
+        --frame-scale: 1.2;
+      }
+    </style>
+  </head>
+  <body>
+    <aside>
+      <div>
+        <p class="eyebrow">Osome Stills</p>
+        <h1 id="scene-title">Cluster Burst</h1>
+        <p class="subtitle" id="scene-subtitle"></p>
+        <div class="stats" id="scene-stats"></div>
+      </div>
+      <p class="footer" id="scene-footer"></p>
+    </aside>
+
+    <section class="frame-shell">
+      <div class="frame-topbar">
+        <div class="frame-title">Osome: Pickup Queue</div>
+        <div class="frame-badge" id="scene-badge">Scene</div>
+      </div>
+      <div class="viewport">
+        <iframe id="scene-frame" title="Osome still preview"></iframe>
+      </div>
+    </section>
+
+    <script src="./stills-data.js"></script>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const sceneName = params.get("scene") || "cluster_burst";
+      const locale = params.get("locale") || "ru";
+      const orientation = params.get("orientation") || "landscape";
+      const layout = params.get("layout") || "promo";
+      const scene = globalThis.OSOME_STILLS?.scenes?.[sceneName];
+
+      if (layout === "clean") {
+        document.body.classList.add("clean");
+      }
+      document.body.classList.add(`orientation-${orientation}`);
+
+      if (!scene) {
+        document.body.innerHTML = `<pre style="padding:40px;color:#fff;">Unknown scene: ${sceneName}</pre>`;
+      } else {
+        document.getElementById("scene-title").textContent = scene.title;
+        document.getElementById("scene-subtitle").textContent = scene.subtitle;
+        document.getElementById("scene-footer").textContent = scene.footer;
+        document.getElementById("scene-badge").textContent = scene.badge;
+
+        const stats = [
+          ["Locale", locale.toUpperCase()],
+          ["Orientation", orientation],
+          ["Capture", layout],
+        ];
+
+        document.getElementById("scene-stats").replaceChildren(
+          ...stats.map(([label, value]) => {
+            const card = document.createElement("div");
+            card.className = "stat";
+            card.innerHTML = `<div class="stat-label">${label}</div><div class="stat-value">${value}</div>`;
+            return card;
+          })
+        );
+
+        const iframe = document.getElementById("scene-frame");
+        const src = new URL("../index.html", window.location.href);
+        src.searchParams.set("stillsScene", sceneName);
+        src.searchParams.set("locale", locale);
+        src.searchParams.set("stillsLayout", "clean");
+        src.searchParams.set("stillsOrientation", orientation);
+        iframe.src = src.toString();
+
+        const markReady = () => {
+          try {
+            const ready = iframe.contentWindow?.document?.body?.dataset?.ready;
+            if (ready === "true") {
+              document.body.dataset.ready = "true";
+              return;
+            }
+          } catch (_) {
+            return;
+          }
+          window.requestAnimationFrame(markReady);
+        };
+
+        iframe.addEventListener("load", () => {
+          window.requestAnimationFrame(markReady);
+        });
+      }
+    </script>
+  </body>
+</html>

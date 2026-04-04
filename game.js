@@ -1251,11 +1251,19 @@ function applyStillScene(sceneName) {
   state.fastAccessUntil = scene.fastAccess ? Infinity : 0;
   state.antiStressReady = Boolean(scene.antiStressReady);
   state.quarrelCells = (scene.quarrelCells || []).map((cell) => ({ ...cell }));
-  state.notifications = (scene.notifications || []).map((toastKey, index) => ({
-    id: `still-toast-${sceneName}-${index}`,
-    text: t(toastKey),
-    expiresAt: Infinity,
-  }));
+  state.notifications = (scene.notifications || []).map((toastEntry, index) => {
+    const key = typeof toastEntry === "string" ? toastEntry : toastEntry?.key;
+    const params =
+      toastEntry && typeof toastEntry === "object" && !Array.isArray(toastEntry)
+        ? toastEntry.params || {}
+        : {};
+
+    return {
+      id: `still-toast-${sceneName}-${index}`,
+      text: key ? t(key, params) : "",
+      expiresAt: Infinity,
+    };
+  });
   state.activeSpeakerId = null;
   state.activeSpeechText = "";
   state.activeSpeechPlacement = null;

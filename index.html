@@ -21,7 +21,7 @@
               </div>
               <div>
                 <p class="eyebrow">Feel Osome!</p>
-                <h1>ПВЗ: Очередь</h1>
+                <h1 id="ui-game-title">ПВЗ: Очередь</h1>
               </div>
             </div>
           </header>
@@ -32,8 +32,8 @@
                 <div class="rotate-overlay hidden" id="rotate-overlay" aria-live="polite">
                   <div class="rotate-card">
                     <p class="eyebrow">Yandex Games</p>
-                    <h2>Поверни устройство</h2>
-                    <p>Для этой версии игры нужен портретный режим.</p>
+                    <h2 id="ui-rotate-title">Поверни устройство</h2>
+                    <p id="ui-rotate-body">Для этой версии игры нужен портретный режим.</p>
                   </div>
                 </div>
 
@@ -92,8 +92,8 @@
                 <div class="intro-overlay" id="intro-overlay">
                   <div class="intro-card">
                     <p class="eyebrow">Feel Osome!</p>
-                    <h2>Тапни по сцене</h2>
-                    <p class="intro-copy">
+                    <h2 id="ui-intro-title">Тапни по сцене</h2>
+                    <p class="intro-copy" id="ui-intro-copy">
                       На стойке появляется товар. Тапни по клиенту того же цвета.
                     </p>
                     <p class="intro-best-score" id="intro-best-score">Лучший результат: 0</p>
@@ -103,19 +103,21 @@
             </section>
           </section>
 
-          <section class="author-plaque" aria-label="Информация о проекте">
+          <section class="author-plaque" id="ui-author-plaque" aria-label="Информация о проекте">
             <div class="author-plaque-mark" aria-hidden="true">
               <img src="./assets/brand/osome-mark-o-horns.svg" alt="" width="40" height="40" />
             </div>
             <div class="author-plaque-copy">
-              <span class="author-plaque-label">Проект</span>
-              <strong>Osome: ПВЗ Очередь</strong>
-              <p class="author-plaque-role">Автор: Ilya Mirin</p>
-              <p class="author-plaque-license">License: MIT</p>
-              <p class="author-plaque-license">
+              <span class="author-plaque-label" id="ui-author-label">Проект</span>
+              <strong id="ui-author-title">Osome: ПВЗ Очередь</strong>
+              <p class="author-plaque-role" id="ui-author-role">Автор: Ilya Mirin</p>
+              <p class="author-plaque-license" id="ui-author-license">License: MIT</p>
+              <p class="author-plaque-license" id="ui-author-ai-note">
                 Original repo content is AI-generated. Downloaded audio keeps source attribution.
               </p>
-              <p class="author-plaque-summary">Внешние ссылки внутри игры отключены.</p>
+              <p class="author-plaque-summary" id="ui-author-summary">
+                Внешние ссылки внутри игры отключены.
+              </p>
             </div>
           </section>
         </section>
@@ -125,23 +127,23 @@
 
       <section class="overlay hidden" id="game-over-overlay">
         <div class="overlay-card">
-          <p class="eyebrow">Смена окончена</p>
-          <h2>Очередь встала у стойки</h2>
+          <p class="eyebrow" id="ui-overlay-eyebrow">Смена окончена</p>
+          <h2 id="ui-overlay-title">Очередь встала у стойки</h2>
           <div class="results-grid">
             <div>
-              <span>Очки</span>
+              <span id="ui-result-score-label">Очки</span>
               <strong id="result-score">0</strong>
             </div>
             <div>
-              <span>Клиентов</span>
+              <span id="ui-result-served-label">Клиентов</span>
               <strong id="result-served">0</strong>
             </div>
             <div>
-              <span>Макс. комбо</span>
+              <span id="ui-result-combo-label">Макс. комбо</span>
               <strong id="result-max-combo">0</strong>
             </div>
             <div>
-              <span>Время</span>
+              <span id="ui-result-time-label">Время</span>
               <strong id="result-time">0:00</strong>
             </div>
           </div>
@@ -154,6 +156,8 @@
     </div>
 
     <script src="./balance-config.js?v=20260401b"></script>
-    <script src="./game.js?v=20260401b"></script>
+    <script src="./locales.js?v=20260404a"></script>
+    <script src="./tools/stills-data.js?v=20260404a"></script>
+    <script src="./game.js?v=20260404c"></script>
   </body>
 </html>

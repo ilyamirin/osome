@@ -305,6 +305,8 @@ body.platform-yandex .game-panel {
 .secondary-action {
   border: 0;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition:
     transform 140ms ease,
     box-shadow 140ms ease,
@@ -453,6 +455,148 @@ body.platform-yandex .scene-panel {
 
 body.platform-yandex .author-plaque {
   display: none;
+}
+
+body.stills-mode {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.stills-clean .author-plaque,
+body.stills-clean .speaker-toggle {
+  display: none;
+}
+
+body.stills-clean .game-layout {
+  width: 100%;
+  max-width: none;
+}
+
+body.stills-clean .app-shell {
+  min-height: 100vh;
+}
+
+body.stills-clean .game-panel {
+  display: flex;
+  min-height: calc(
+    100vh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
+      max(var(--shell-pad-y), env(safe-area-inset-bottom))
+  );
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body.stills-clean {
+  --board-max-w: 640px;
+  --counter-max-w: 820px;
+  --stage-min-h: min(760px, calc(100vh - 128px));
+  --queue-pad-top: clamp(28px, 4vw, 46px);
+  --queue-pad-bottom: clamp(10px, 1.2vw, 16px);
+  --counter-top-pad: clamp(18px, 2.4vw, 26px);
+}
+
+body.stills-clean .scene-panel {
+  min-height: 100%;
+  height: 100%;
+}
+
+body.stills-clean .play-area {
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+}
+
+body.stills-clean .queue-zone {
+  height: 100%;
+  align-content: center;
+  justify-items: center;
+  padding-left: var(--queue-pad-x);
+  padding-right: var(--queue-pad-x);
+}
+
+body.stills-clean .board-shell,
+body.stills-clean .counter-set {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.stills-clean .frontal-counter .counter-desk {
+  grid-template-columns: var(--counter-left-col) minmax(var(--counter-center-min), 1fr);
+  justify-content: center;
+}
+
+body.stills-clean .frontal-counter .active-order {
+  justify-self: center;
+}
+
+body.stills-clean .frontal-counter {
+  padding-top: 18px;
+}
+
+body.stills-clean .facility-stage {
+  min-height: 100%;
+  height: 100%;
+}
+
+body.stills-clean .hud {
+  justify-content: center;
+}
+
+body.stills-clean .brand-card {
+  justify-content: center;
+  text-align: center;
+}
+
+body.stills-clean.stills-portrait .queue-zone {
+  justify-items: center;
+  padding-left: var(--queue-pad-x);
+}
+
+body.stills-clean.stills-portrait .app-shell,
+body.stills-clean.stills-portrait .game-layout {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+}
+
+body.stills-clean.stills-portrait .game-layout {
+  width: 100%;
+}
+
+body.stills-clean.stills-portrait .game-panel {
+  width: 100%;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+body.stills-clean.stills-portrait .play-area {
+  flex: 0 0 auto;
+}
+
+body.stills-clean.stills-portrait .scene-panel {
+  min-height: auto;
+  height: auto;
+}
+
+body.stills-clean.stills-portrait .facility-stage {
+  min-height: min(940px, calc(100vh - 140px));
+  height: auto;
+}
+
+body.stills-clean.stills-portrait .board-shell,
+body.stills-clean.stills-portrait .counter-set {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.stills-clean.stills-portrait .toast-stack {
+  top: 10px;
+  right: 10px;
+  width: min(260px, calc(100vw - 20px));
+  gap: 8px;
+  transform: scale(0.88);
+  transform-origin: top right;
 }
 
 .facility-stage {
