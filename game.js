@@ -740,7 +740,11 @@ const platformState = {
   pauseReasons: new Set(),
   isYandexEnvironment: FORCE_YANDEX_MODE,
   orientationBlocked: false,
+  lastInterstitialAt: -Infinity,
 };
+
+const YANDEX_INTERSTITIAL_MIN_SESSION_MS = 60_000;
+const YANDEX_INTERSTITIAL_COOLDOWN_MS = 120_000;
 
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
@@ -1254,7 +1258,7 @@ function endGame() {
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
   syncPlatformGameplayState();
-  showPlatformInterstitialAd("game-over");
+  maybeShowGameOverInterstitial();
 }
 
 function createClient(type) {
@@ -2891,29 +2895,70 @@ function markPlatformReady() {
   platformState.loadingReadySent = true;
 }
 
-function showPlatformInterstitialAd(reason = "transition") {
-  const adv = platformState.sdk?.adv;
-  if (!adv?.showFullscreenAdv) {
+function shouldShowGameOverInterstitial(now = performance.now()) {
+  if (!platformState.sdk?.adv?.showFullscreenAdv) {
+    return false;
+  }
+
+  if (state.sessionMs < YANDEX_INTERSTITIAL_MIN_SESSION_MS) {
+    return false;
+  }
+
+  if (now - platformState.lastInterstitialAt < YANDEX_INTERSTITIAL_COOLDOWN_MS) {
+    return false;
+  }
+
+  return true;
+}
+
+function maybeShowGameOverInterstitial() {
+  const now = performance.now();
+  if (!shouldShowGameOverInterstitial(now)) {
     return;
   }
 
+  showPlatformInterstitialAd("game-over", {
+    onShown: () => {
+      platformState.lastInterstitialAt = now;
+    },
+    onFinished: () => {
+      if (!state.running && !state.awaitingStart) {
+        setStandby();
+      }
+    },
+  });
+}
+
+function showPlatformInterstitialAd(reason = "transition", options = {}) {
+  const adv = platformState.sdk?.adv;
+  if (!adv?.showFullscreenAdv) {
+    options.onFinished?.(false);
+    return;
+  }
+
+  let wasShown = false;
   try {
     adv.showFullscreenAdv({
       callbacks: {
         onOpen: () => {
+          wasShown = true;
           addPauseReason(`ad:${reason}`);
+          options.onShown?.();
         },
         onClose: () => {
           removePauseReason(`ad:${reason}`);
+          options.onFinished?.(wasShown);
         },
         onError: () => {
           removePauseReason(`ad:${reason}`);
+          options.onFinished?.(false);
         },
       },
     });
   } catch (error) {
     console.warn("Could not show Yandex fullscreen ad.", error);
     removePauseReason(`ad:${reason}`);
+    options.onFinished?.(false);
   }
 }
 
