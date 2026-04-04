@@ -1,4 +1,10 @@
 const BALANCE = globalThis.OSOME_BALANCE;
+const I18N = globalThis.OSOME_I18N || {
+  ui: {},
+  orderLabels: {},
+  customerQuotes: {},
+  catQuotes: {},
+};
 
 const ORDER_TYPES = {
   red: {
@@ -607,6 +613,11 @@ const FX_ASSETS = Object.freeze({
   fail: "./assets/audio/fail_gameover.mp3",
 });
 
+const MUSIC_TRACKS = Object.freeze([
+  "./assets/audio/osome_bureaucratic_noir_a.mp3",
+  "./assets/audio/osome_bureaucratic_noir_b.mp3",
+]);
+
 const FX_GAIN = Object.freeze({
   success: 0.48,
   miss: 0.45,
@@ -620,7 +631,19 @@ const DOM = {
   gameScreen: document.querySelector("#game-screen"),
   stageSurface: document.querySelector("#stage-surface"),
   rotateOverlay: document.querySelector("#rotate-overlay"),
+  gameTitle: document.querySelector("#ui-game-title"),
+  rotateTitle: document.querySelector("#ui-rotate-title"),
+  rotateBody: document.querySelector("#ui-rotate-body"),
   introOverlay: document.querySelector("#intro-overlay"),
+  introTitle: document.querySelector("#ui-intro-title"),
+  introCopy: document.querySelector("#ui-intro-copy"),
+  authorPlaque: document.querySelector("#ui-author-plaque"),
+  authorLabel: document.querySelector("#ui-author-label"),
+  authorTitle: document.querySelector("#ui-author-title"),
+  authorRole: document.querySelector("#ui-author-role"),
+  authorLicense: document.querySelector("#ui-author-license"),
+  authorAiNote: document.querySelector("#ui-author-ai-note"),
+  authorSummary: document.querySelector("#ui-author-summary"),
   restartButton: document.querySelector("#restart-button"),
   menuButton: document.querySelector("#menu-button"),
   board: document.querySelector("#board"),
@@ -636,6 +659,12 @@ const DOM = {
   activeOrderBadge: document.querySelector("#active-order-badge"),
   activeOrderIcon: document.querySelector("#active-order-icon"),
   overlay: document.querySelector("#game-over-overlay"),
+  overlayEyebrow: document.querySelector("#ui-overlay-eyebrow"),
+  overlayTitle: document.querySelector("#ui-overlay-title"),
+  resultScoreLabel: document.querySelector("#ui-result-score-label"),
+  resultServedLabel: document.querySelector("#ui-result-served-label"),
+  resultComboLabel: document.querySelector("#ui-result-combo-label"),
+  resultTimeLabel: document.querySelector("#ui-result-time-label"),
   resultScore: document.querySelector("#result-score"),
   resultServed: document.querySelector("#result-served"),
   resultMaxCombo: document.querySelector("#result-max-combo"),
@@ -659,6 +688,7 @@ const state = {
   tutorialHintUntil: 0,
   tutorialNudgeUntil: 0,
   tutorialReadyToResume: false,
+  backgroundMusicUnlocked: false,
   board: createEmptyBoard(),
   score: 0,
   served: 0,
@@ -717,14 +747,18 @@ const state = {
 const audioState = {
   ctx: null,
   enabled: true,
-  musicTimer: 0,
-  musicStep: 0,
   unlocked: false,
   mediaReady: false,
   mediaElements: new Map(),
   activeMediaFx: new Set(),
   soundBuffers: new Map(),
   loadingPromise: null,
+  backgroundTracks: [],
+  backgroundLoadStarted: false,
+  backgroundReadyCount: 0,
+  backgroundCurrentIndex: -1,
+  backgroundCurrentTrack: null,
+  backgroundStartTimer: 0,
 };
 
 const GOLD_CHEAT_KEYS = new Set(["g", "o", "l", "d"]);
@@ -732,6 +766,9 @@ const pressedKeys = new Set();
 let goldCheatLatched = false;
 let boardBurstResetTimer = 0;
 let playerProfile = null;
+let activeLocale = resolveLocale(
+  globalThis.OSOME_PREFERRED_LOCALE || navigator.language || navigator.languages?.[0]
+);
 const platformState = {
   sdk: null,
   initStarted: false,
@@ -746,6 +783,114 @@ const platformState = {
 
 const YANDEX_INTERSTITIAL_MIN_SESSION_MS = 60_000;
 const YANDEX_INTERSTITIAL_COOLDOWN_MS = 120_000;
+
+function resolveLocale(value) {
+  const candidate = String(value || "ru")
+    .toLowerCase()
+    .split(/[-_]/)[0];
+  return I18N.ui?.[candidate] ? candidate : "ru";
+}
+
+function formatLocalizedText(template, values = {}) {
+  return String(template).replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? `{${key}}`));
+}
+
+function t(key, values) {
+  const fallback = I18N.ui?.ru?.[key] ?? key;
+  const template = I18N.ui?.[activeLocale]?.[key] ?? fallback;
+  return formatLocalizedText(template, values);
+}
+
+function getOrderLabel(type) {
+  return I18N.orderLabels?.[activeLocale]?.[type] || ORDER_TYPES[type].label;
+}
+
+function getCustomerQuotesBucket(name) {
+  return I18N.customerQuotes?.[activeLocale]?.[name] || CUSTOMER_QUOTES[name];
+}
+
+function getCatQuotesBucket(name) {
+  return I18N.catQuotes?.[activeLocale]?.[name] || CAT_QUOTES[name];
+}
+
+function applyStaticLocaleText() {
+  document.title = t("documentTitle");
+  if (DOM.gameTitle) {
+    DOM.gameTitle.textContent = t("gameTitle");
+  }
+  if (DOM.rotateTitle) {
+    DOM.rotateTitle.textContent = t("rotateTitle");
+  }
+  if (DOM.rotateBody) {
+    DOM.rotateBody.textContent = t("rotateBody");
+  }
+  if (DOM.introTitle) {
+    DOM.introTitle.textContent = t("introTitle");
+  }
+  if (DOM.introCopy) {
+    DOM.introCopy.textContent = t("introCopy");
+  }
+  if (DOM.authorPlaque) {
+    DOM.authorPlaque.setAttribute("aria-label", t("authorAria"));
+  }
+  if (DOM.authorLabel) {
+    DOM.authorLabel.textContent = t("authorLabel");
+  }
+  if (DOM.authorTitle) {
+    DOM.authorTitle.textContent = t("authorTitle");
+  }
+  if (DOM.authorRole) {
+    DOM.authorRole.textContent = t("authorRole");
+  }
+  if (DOM.authorLicense) {
+    DOM.authorLicense.textContent = t("authorLicense");
+  }
+  if (DOM.authorAiNote) {
+    DOM.authorAiNote.textContent = t("authorAiNote");
+  }
+  if (DOM.authorSummary) {
+    DOM.authorSummary.textContent = t("authorSummary");
+  }
+  if (DOM.overlayEyebrow) {
+    DOM.overlayEyebrow.textContent = t("overlayEyebrow");
+  }
+  if (DOM.overlayTitle) {
+    DOM.overlayTitle.textContent = t("overlayTitle");
+  }
+  if (DOM.resultScoreLabel) {
+    DOM.resultScoreLabel.textContent = t("resultScoreLabel");
+  }
+  if (DOM.resultServedLabel) {
+    DOM.resultServedLabel.textContent = t("resultServedLabel");
+  }
+  if (DOM.resultComboLabel) {
+    DOM.resultComboLabel.textContent = t("resultComboLabel");
+  }
+  if (DOM.resultTimeLabel) {
+    DOM.resultTimeLabel.textContent = t("resultTimeLabel");
+  }
+  if (DOM.restartButton) {
+    DOM.restartButton.textContent = t("restartButton");
+  }
+  if (DOM.menuButton) {
+    DOM.menuButton.textContent = t("menuButton");
+  }
+}
+
+function setLocale(value) {
+  const nextLocale = resolveLocale(value);
+  activeLocale = nextLocale;
+  document.documentElement.lang = activeLocale;
+  applyStaticLocaleText();
+  syncMusicToggle();
+  renderBestScore();
+  if (state.awaitingStart && !state.running) {
+    state.activeSpeechText = t("sceneStart");
+    if (DOM.sceneDialogueText) {
+      DOM.sceneDialogueText.textContent = state.activeSpeechText;
+    }
+  }
+}
 
 function createEmptyBoard() {
   return Array.from({ length: 5 }, () => Array(4).fill(null));
@@ -898,6 +1043,7 @@ function serializeRunSnapshot(now = performance.now()) {
       tutorialHintRemainingMs: getRemainingMs(state.tutorialHintUntil, now),
       tutorialNudgeRemainingMs: getRemainingMs(state.tutorialNudgeUntil, now),
       tutorialReadyToResume: state.tutorialReadyToResume,
+      backgroundMusicUnlocked: state.backgroundMusicUnlocked,
       board: serializeBoard(now),
       score: state.score,
       served: state.served,
@@ -1017,7 +1163,9 @@ function renderBestScore() {
     return;
   }
 
-  DOM.introBestScore.textContent = `Лучший результат: ${formatNumber(playerProfile?.bestScore || 0)}`;
+  DOM.introBestScore.textContent = t("introBestScore", {
+    score: formatNumber(playerProfile?.bestScore || 0),
+  });
 }
 
 function initBoardMarkup() {
@@ -1043,6 +1191,7 @@ function resetRoundState() {
   state.tutorialHintUntil = 0;
   state.tutorialNudgeUntil = 0;
   state.tutorialReadyToResume = false;
+  state.backgroundMusicUnlocked = false;
   state.board = createEmptyBoard();
   state.score = 0;
   state.served = 0;
@@ -1107,6 +1256,7 @@ function setStandby() {
   state.tutorialHintUntil = 0;
   state.tutorialNudgeUntil = 0;
   state.tutorialReadyToResume = false;
+  state.backgroundMusicUnlocked = false;
   state.board = createEmptyBoard();
   state.score = 0;
   state.served = 0;
@@ -1134,7 +1284,7 @@ function setStandby() {
   state.rushUntil = 0;
   state.currentOrder = null;
   state.activeSpeakerId = null;
-  state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
+  state.activeSpeechText = t("sceneStart");
   state.activeSpeechPlacement = null;
   state.speechSwitchAt = 0;
   state.catPressureTier = 0;
@@ -1154,6 +1304,7 @@ function setStandby() {
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.remove("hidden");
+  stopBackgroundMusic();
   clearSavedRun();
   speakCat("standby", { priority: 2, bypassCooldown: true, durationMs: 2600 });
   syncPlatformGameplayState();
@@ -1196,6 +1347,7 @@ function startTutorialGame() {
   state.tutorialStep = "match";
   state.tutorialType = tutorial.tutorialType;
   state.tutorialTargetIds = new Set(tutorial.targetIds);
+  state.backgroundMusicUnlocked = true;
   state.lastPlayerActionAt = performance.now();
 
   render();
@@ -1267,9 +1419,10 @@ function endGame() {
   DOM.resultTime.textContent = formatTime(state.sessionMs);
   DOM.overlay.classList.remove("hidden");
   document.body.classList.add("overlay-open");
+  stopBackgroundMusic();
   clearSavedRun();
   speakCat("game_over", { priority: 6, bypassCooldown: true, durationMs: 2800 });
-  pushToast("Смена окончена. Очередь уперлась в стойку.");
+  pushToast(t("toastGameOver"));
   playFx("fail");
   syncPlatformGameplayState();
   maybeShowGameOverInterstitial();
@@ -1282,7 +1435,7 @@ function createClient(type) {
   return {
     id: state.lastId++,
     type,
-    quote: sample(CUSTOMER_QUOTES.generic),
+    quote: sample(getCustomerQuotesBucket("generic")),
     enteredAccessAt: null,
     angryUntil: 0,
     skin: special?.skin || sample(SKIN_TONES),
@@ -1392,6 +1545,7 @@ function spawnClient() {
 
   const targetCol = sample(freeColumns);
   state.board[4][targetCol] = createClient(getRandomOrder());
+  state.backgroundMusicUnlocked = true;
   collapseColumn(targetCol);
   updateAccessTimers();
   syncCurrentOrder();
@@ -1575,7 +1729,7 @@ function registerMiss(targetClient, row, col) {
   if (selected) {
     selected.client.angryUntil = now + 900;
     state.activeSpeakerId = selected.client.id;
-    state.activeSpeechText = sample(CUSTOMER_QUOTES.angry);
+    state.activeSpeechText = sample(getCustomerQuotesBucket("angry"));
     state.speechSwitchAt = now + 2_000;
   }
 
@@ -1602,7 +1756,7 @@ function registerMiss(targetClient, row, col) {
     speakCat("miss", { priority: 4, bypassCooldown: true, durationMs: 2200 });
   }
 
-  pushToast("Ошибка выдачи. Комбо сброшено.");
+  pushToast(t("toastMiss"));
   playFx("miss");
   vibrate([30]);
   render();
@@ -1647,13 +1801,13 @@ function serveClient(row, col, fromQuarrel) {
     points += 15;
     state.antiStressReady = false;
     speakCat("anti_stress_spent", { priority: 4, durationMs: 2400 });
-    pushToast("Антистресс сработал: +15");
+    pushToast(t("toastAntiStress"));
   }
   if (clearsQuarrel) {
     points += 10;
     clearQuarrel();
     speakCat("quarrel_cleared", { priority: 4, durationMs: 2400 });
-    pushToast("Ссора погашена.");
+    pushToast(t("toastQuarrelCleared"));
   }
 
   state.score += points;
@@ -1662,13 +1816,13 @@ function serveClient(row, col, fromQuarrel) {
   if (state.combo >= 5 && now >= state.flowUntil) {
     state.flowUntil = now + 10_000;
     speakCat("flow_start", { priority: 4, durationMs: 2400 });
-    pushToast("Режим потока: +50% к очкам на 10 секунд.");
+    pushToast(t("toastFlowStart"));
   }
 
   if (state.firstFivePerfect && state.served >= 5 && state.totalErrors === 0) {
     state.fastAccessUntil = now + 20_000;
     speakCat("fast_access", { priority: 4, durationMs: 2400 });
-    pushToast("Быстрый старт: зона доступа расширена до 2 рядов.");
+    pushToast(t("toastFastAccess"));
   }
 
   if (state.combo === 3) {
@@ -1709,7 +1863,7 @@ function serveClient(row, col, fromQuarrel) {
     } else {
       speakCat("group_3", { priority: 5, bypassCooldown: true, durationMs: 2200 });
     }
-    pushToast(`Связка x${servedCount}: бонус за группу.`);
+    pushToast(t("toastGroupBonus", { count: servedCount }));
     triggerBoardBurst();
     playFx("bonus");
     vibrate([18, 28, 18]);
@@ -1727,7 +1881,7 @@ function trackPerfectRow(servedType) {
     if (sameType) {
       state.perfectRow = { type: bottomRow[0].type, remaining: 4 };
       speakCat("perfect_row_spotted", { priority: 3, durationMs: 2400 });
-      pushToast("Идеальный ряд обнаружен.");
+      pushToast(t("toastPerfectRowSpotted"));
     }
   }
 
@@ -1744,7 +1898,7 @@ function trackPerfectRow(servedType) {
   if (state.perfectRow.remaining <= 0) {
     state.score += 20;
     speakCat("perfect_row_done", { priority: 4, durationMs: 2400 });
-    pushToast("Идеальный ряд: +20");
+    pushToast(t("toastPerfectRowDone"));
     playFx("bonus");
     state.perfectRow = null;
   }
@@ -1815,18 +1969,18 @@ function triggerGimmick(now) {
       state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
       state.rushUntil = state.gimmickUntil;
       speakCat("rush", { priority: 5, bypassCooldown: true, durationMs: 2400 });
-      pushToast("Час пик: поток клиентов ускорился.");
+      pushToast(t("toastRush"));
     } else {
       state.gimmickUntil = now + BALANCE.gimmicks.quarrel.durationMs;
       state.quarrelSpreadAt = now + BALANCE.gimmicks.quarrel.spreadDelayMs;
       speakCat("quarrel", { priority: 5, bypassCooldown: true, durationMs: 2400 });
-      pushToast("Ссора: заблокированные клетки можно снять любой выдачей.");
+      pushToast(t("toastQuarrel"));
     }
   } else {
     state.gimmickUntil = now + BALANCE.gimmicks.rush.durationMs;
     state.rushUntil = state.gimmickUntil;
     speakCat("rush", { priority: 5, bypassCooldown: true, durationMs: 2400 });
-    pushToast("Час пик: поток клиентов ускорился.");
+    pushToast(t("toastRush"));
   }
 
   playFx("alert");
@@ -1934,6 +2088,11 @@ function restoreRunSnapshot(snapshot) {
   state.tutorialHintUntil = restoreUntil(restored.tutorialHintRemainingMs, now);
   state.tutorialNudgeUntil = restoreUntil(restored.tutorialNudgeRemainingMs, now);
   state.tutorialReadyToResume = Boolean(restored.tutorialReadyToResume);
+  state.backgroundMusicUnlocked = Boolean(
+    restored.backgroundMusicUnlocked ||
+    restored.served > 0 ||
+    (restored.board || []).flat().some(Boolean)
+  );
   state.board = restoreBoard(restored.board, now);
   state.score = restored.score || 0;
   state.served = restored.served || 0;
@@ -2226,7 +2385,7 @@ function getIntroCategory() {
 function speakCat(category, options = {}) {
   const now = performance.now();
   const { priority = 1, durationMs = 2200, cooldownMs = 5200, bypassCooldown = false } = options;
-  const pool = CAT_QUOTES[category];
+  const pool = getCatQuotesBucket(category);
   if (!pool || pool.length === 0) {
     return false;
   }
@@ -2361,7 +2520,7 @@ function applyGoldCheat() {
   }
   state.score += 10_000;
   speakCat("gold", { priority: 5, bypassCooldown: true, durationMs: 2400 });
-  pushToast("GOLD: +10 000 очков.");
+  pushToast(t("toastGold"));
   playFx("bonus");
   render();
 }
@@ -2616,7 +2775,7 @@ function positionSceneDialogueDefault() {
 function updateActiveSpeech(now) {
   if (state.awaitingStart) {
     state.activeSpeakerId = null;
-    state.activeSpeechText = "Тапни по сцене, чтобы открыть смену.";
+    state.activeSpeechText = t("sceneStart");
     state.activeSpeechPlacement = null;
     return;
   }
@@ -2626,10 +2785,7 @@ function updateActiveSpeech(now) {
       const targetCandidate = getAccessibleClients().find((candidate) =>
         state.tutorialTargetIds.has(candidate.client.id)
       );
-      const text =
-        now < state.tutorialNudgeUntil
-          ? "Не этот. Ищи клиента цвета коробки."
-          : "Смотри на цвет коробки. Нажми на такого же клиента.";
+      const text = now < state.tutorialNudgeUntil ? t("tutorialWrong") : t("tutorialMatch");
 
       state.activeSpeakerId = targetCandidate?.client.id || null;
       state.activeSpeechText = text;
@@ -2641,7 +2797,7 @@ function updateActiveSpeech(now) {
 
     if (state.tutorialStep === "group_tip") {
       state.activeSpeakerId = null;
-      state.activeSpeechText = "Если рядом трое одного цвета, они уйдут все.";
+      state.activeSpeechText = t("tutorialGroup");
       state.activeSpeechPlacement = null;
       return;
     }
@@ -2714,12 +2870,12 @@ function getSpeechCandidates() {
 
 function getSpeechText(client, angry, quarrel) {
   if (angry) {
-    return sample(CUSTOMER_QUOTES.angry);
+    return sample(getCustomerQuotesBucket("angry"));
   }
   if (quarrel) {
-    return sample(CUSTOMER_QUOTES.quarrel);
+    return sample(getCustomerQuotesBucket("quarrel"));
   }
-  return Math.random() < 0.46 ? sample(CUSTOMER_QUOTES.queue) : client.quote;
+  return Math.random() < 0.46 ? sample(getCustomerQuotesBucket("queue")) : client.quote;
 }
 
 function pushToast(text) {
@@ -2757,13 +2913,14 @@ function renderActiveOrder() {
   const order = ORDER_TYPES[state.currentOrder];
   DOM.activeOrder.dataset.order = state.currentOrder;
   DOM.activeOrderBadge.className = `active-order-badge ${order.className} ${state.tutorialActive ? "is-tutorial" : ""}`;
-  DOM.activeOrderBadge.setAttribute("aria-label", order.label);
+  DOM.activeOrderBadge.setAttribute("aria-label", getOrderLabel(state.currentOrder));
   DOM.activeOrderBadge.style.setProperty("--box-color", order.color);
   DOM.activeOrderIcon.innerHTML = renderOrderBox(order, "active-order-symbol");
 }
 
 function formatNumber(value) {
-  return new Intl.NumberFormat("ru-RU").format(value);
+  const locale = { ru: "ru-RU", en: "en-US", tr: "tr-TR" }[activeLocale] || "ru-RU";
+  return new Intl.NumberFormat(locale).format(value);
 }
 
 function formatTime(ms) {
@@ -2802,6 +2959,7 @@ function applyPlatformMode() {
 }
 
 function pauseAllAudioPlayback() {
+  stopBackgroundMusic();
   for (const media of audioState.activeMediaFx) {
     media.pause();
     media.currentTime = 0;
@@ -2816,6 +2974,7 @@ function resumeAudioPlayback() {
   if (audioState.enabled && audioState.ctx && audioState.ctx.state === "suspended") {
     void audioState.ctx.resume().catch(() => {});
   }
+  maybeStartBackgroundMusic();
 }
 
 function syncPlatformGameplayState() {
@@ -2875,7 +3034,7 @@ function applyPlatformLanguage(ysdk) {
     return;
   }
 
-  document.documentElement.lang = String(lang).slice(0, 2);
+  setLocale(String(lang).slice(0, 2));
 }
 
 function requestFullscreenIfPossible() {
@@ -3090,6 +3249,7 @@ function unlockAudio() {
     if (!audioState.loadingPromise) {
       audioState.loadingPromise = loadAudioAssets();
     }
+    scheduleBackgroundMusicLoad();
     return;
   }
 
@@ -3104,6 +3264,7 @@ function unlockAudio() {
   if (!audioState.loadingPromise) {
     audioState.loadingPromise = loadAudioAssets();
   }
+  scheduleBackgroundMusicLoad();
 }
 
 async function loadAudioAssets() {
@@ -3140,6 +3301,140 @@ async function loadAudioAssets() {
   );
 }
 
+function isBackgroundMusicAllowed() {
+  return (
+    audioState.enabled &&
+    state.running &&
+    !state.awaitingStart &&
+    state.backgroundMusicUnlocked &&
+    !platformState.orientationBlocked &&
+    !isRuntimePaused()
+  );
+}
+
+function getBackgroundMusicVolume() {
+  return isMobileAudioContext() ? 0.11 : 0.075;
+}
+
+function stopBackgroundMusic() {
+  if (!audioState.backgroundCurrentTrack) {
+    return;
+  }
+
+  audioState.backgroundCurrentTrack.pause();
+  audioState.backgroundCurrentTrack.currentTime = 0;
+  audioState.backgroundCurrentTrack = null;
+}
+
+function playBackgroundTrack(index) {
+  const track = audioState.backgroundTracks[index];
+  if (!track || !track.ready) {
+    return false;
+  }
+
+  if (audioState.backgroundCurrentTrack === track.audio) {
+    track.audio.volume = getBackgroundMusicVolume();
+    return true;
+  }
+
+  stopBackgroundMusic();
+  audioState.backgroundCurrentIndex = index;
+  audioState.backgroundCurrentTrack = track.audio;
+  track.audio.volume = getBackgroundMusicVolume();
+  track.audio.currentTime = 0;
+  const playPromise = track.audio.play();
+  if (playPromise?.catch) {
+    playPromise.catch((error) => {
+      console.warn("Could not start background music.", error);
+      if (audioState.backgroundCurrentTrack === track.audio) {
+        audioState.backgroundCurrentTrack = null;
+      }
+    });
+  }
+  return true;
+}
+
+function playNextBackgroundTrack() {
+  if (audioState.backgroundTracks.length === 0) {
+    return false;
+  }
+
+  for (let offset = 1; offset <= audioState.backgroundTracks.length; offset += 1) {
+    const index = (audioState.backgroundCurrentIndex + offset) % audioState.backgroundTracks.length;
+    if (playBackgroundTrack(index)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function maybeStartBackgroundMusic() {
+  if (!isBackgroundMusicAllowed()) {
+    stopBackgroundMusic();
+    return false;
+  }
+
+  if (audioState.backgroundCurrentTrack) {
+    audioState.backgroundCurrentTrack.volume = getBackgroundMusicVolume();
+    return true;
+  }
+
+  return playNextBackgroundTrack();
+}
+
+function scheduleBackgroundMusicLoad() {
+  if (audioState.backgroundLoadStarted || typeof Audio === "undefined") {
+    return;
+  }
+
+  audioState.backgroundLoadStarted = true;
+  const startLoad = () => {
+    MUSIC_TRACKS.forEach((url, index) => {
+      const audio = new Audio(url);
+      audio.preload = "auto";
+      audio.loop = false;
+      audio.playsInline = true;
+
+      const track = {
+        url,
+        audio,
+        ready: false,
+      };
+
+      const handleReady = () => {
+        if (!track.ready) {
+          track.ready = true;
+          audioState.backgroundReadyCount += 1;
+        }
+        maybeStartBackgroundMusic();
+      };
+
+      audio.addEventListener("canplaythrough", handleReady, { once: true });
+      audio.addEventListener("loadeddata", handleReady, { once: true });
+      audio.addEventListener("ended", () => {
+        if (audioState.backgroundCurrentTrack === audio) {
+          audioState.backgroundCurrentTrack = null;
+          audioState.backgroundCurrentIndex = index;
+          maybeStartBackgroundMusic();
+        }
+      });
+      audio.addEventListener("error", () => {
+        console.warn(`Could not load background track ${url}.`);
+      });
+
+      audioState.backgroundTracks.push(track);
+      audio.load();
+    });
+  };
+
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(startLoad, { timeout: 1200 });
+  } else {
+    audioState.backgroundStartTimer = window.setTimeout(startLoad, 420);
+  }
+}
+
 function decodeAudioBuffer(ctx, arrayBuffer) {
   const copy = arrayBuffer.slice(0);
   if (ctx.decodeAudioData.length === 1) {
@@ -3157,10 +3452,6 @@ function isMobileAudioContext() {
 
 function getFxGainMultiplier() {
   return isMobileAudioContext() ? 1.85 : 1;
-}
-
-function getMusicGainValue() {
-  return isMobileAudioContext() ? 0.04 : 0.015;
 }
 
 function shouldUseMediaAudio() {
@@ -3269,33 +3560,18 @@ function playSynthFx(kind) {
 }
 
 function updateMusic(now) {
-  if (!audioState.enabled || !audioState.ctx || !state.running) {
-    return;
-  }
-  if (now < audioState.musicTimer) {
-    return;
-  }
-
-  const notes = [220, 246.94, 293.66, 246.94, 329.63, 293.66, 246.94, 220];
-  const ctx = audioState.ctx;
-  const frequency = notes[audioState.musicStep % notes.length];
-  const start = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = "sine";
-  osc.frequency.value = frequency;
-  gain.gain.setValueAtTime(getMusicGainValue(), start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(start);
-  osc.stop(start + 0.24);
-  audioState.musicStep += 1;
-  audioState.musicTimer = now + 320;
+  void now;
+  maybeStartBackgroundMusic();
 }
 
 function toggleMusic() {
   unlockAudio();
   audioState.enabled = !audioState.enabled;
+  if (!audioState.enabled) {
+    stopBackgroundMusic();
+  } else {
+    maybeStartBackgroundMusic();
+  }
   if (playerProfile) {
     playerProfile.soundEnabled = audioState.enabled;
     saveProfile();
@@ -3307,10 +3583,7 @@ function syncMusicToggle() {
   DOM.musicToggle.classList.toggle("is-on", audioState.enabled);
   DOM.musicToggle.classList.toggle("is-off", !audioState.enabled);
   DOM.musicToggle.setAttribute("aria-pressed", String(audioState.enabled));
-  DOM.musicToggle.setAttribute(
-    "aria-label",
-    audioState.enabled ? "Музыка включена" : "Музыка выключена"
-  );
+  DOM.musicToggle.setAttribute("aria-label", audioState.enabled ? t("musicOn") : t("musicOff"));
 }
 
 function handleSceneTap(event) {
@@ -3382,7 +3655,7 @@ function resetPressedKeys() {
 initBoardMarkup();
 playerProfile = loadProfile();
 audioState.enabled = playerProfile.soundEnabled !== false;
-syncMusicToggle();
+setLocale(activeLocale);
 applyPlatformMode();
 syncOrientationGuard();
 void initYandexPlatform();

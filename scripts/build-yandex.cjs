@@ -20,6 +20,8 @@ const runtimeFiles = [
   "assets/audio/error_005.mp3",
   "assets/audio/fail_gameover.mp3",
   "assets/audio/open_001.mp3",
+  "assets/audio/osome_bureaucratic_noir_a.mp3",
+  "assets/audio/osome_bureaucratic_noir_b.mp3",
   "assets/audio/question_002.mp3",
 ];
 
