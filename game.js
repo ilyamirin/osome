@@ -4,44 +4,44 @@ const ORDER_TYPES = {
   red: {
     label: "Красная коробка",
     className: "red",
-    color: "#df554f",
-    shirtTones: ["#c84842", "#db5a53", "#e46c66"],
+    color: "#d95c52",
+    shirtTones: ["#c74c43", "#d95c52", "#e57368"],
   },
   orange: {
     label: "Оранжевая коробка",
     className: "orange",
-    color: "#e88f36",
-    shirtTones: ["#d17e2b", "#e59139", "#f0a655"],
+    color: "#e28f38",
+    shirtTones: ["#ca7c2f", "#e28f38", "#efab5f"],
   },
   yellow: {
     label: "Жёлтая коробка",
     className: "yellow",
-    color: "#e3c643",
-    shirtTones: ["#ccb238", "#dec24b", "#edd56c"],
+    color: "#d8bd47",
+    shirtTones: ["#c2aa3d", "#d8bd47", "#e7d170"],
   },
   green: {
     label: "Зелёная коробка",
     className: "green",
-    color: "#54b864",
-    shirtTones: ["#469f55", "#56b866", "#71c77f"],
+    color: "#4eaf66",
+    shirtTones: ["#43985a", "#4eaf66", "#6bc181"],
   },
   cyan: {
     label: "Бирюзовая коробка",
     className: "cyan",
-    color: "#39b9c5",
-    shirtTones: ["#2fa2ad", "#3bb9c5", "#59c8d2"],
+    color: "#37b1bf",
+    shirtTones: ["#3099a6", "#37b1bf", "#58c3cf"],
   },
   blue: {
     label: "Синяя коробка",
     className: "blue",
-    color: "#4d7be0",
-    shirtTones: ["#4069c5", "#507ce0", "#6a92ea"],
+    color: "#5277d4",
+    shirtTones: ["#4465bb", "#5277d4", "#7092e2"],
   },
   violet: {
     label: "Фиолетовая коробка",
     className: "violet",
-    color: "#9357d6",
-    shirtTones: ["#8148c4", "#9357d6", "#a973e3"],
+    color: "#8e5ccf",
+    shirtTones: ["#7b4dbc", "#8e5ccf", "#a478dc"],
   },
 };
 
@@ -1254,6 +1254,7 @@ function endGame() {
   pushToast("Смена окончена. Очередь уперлась в стойку.");
   playFx("fail");
   syncPlatformGameplayState();
+  showPlatformInterstitialAd("game-over");
 }
 
 function createClient(type) {
@@ -2888,6 +2889,32 @@ function markPlatformReady() {
     platformState.sdk.features.LoadingAPI.ready();
   }
   platformState.loadingReadySent = true;
+}
+
+function showPlatformInterstitialAd(reason = "transition") {
+  const adv = platformState.sdk?.adv;
+  if (!adv?.showFullscreenAdv) {
+    return;
+  }
+
+  try {
+    adv.showFullscreenAdv({
+      callbacks: {
+        onOpen: () => {
+          addPauseReason(`ad:${reason}`);
+        },
+        onClose: () => {
+          removePauseReason(`ad:${reason}`);
+        },
+        onError: () => {
+          removePauseReason(`ad:${reason}`);
+        },
+      },
+    });
+  } catch (error) {
+    console.warn("Could not show Yandex fullscreen ad.", error);
+    removePauseReason(`ad:${reason}`);
+  }
 }
 
 async function loadYandexSDKScript() {
