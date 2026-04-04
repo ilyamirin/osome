@@ -6,6 +6,26 @@
 
 Игрок видит поле `4x5` с очередью клиентов и текущую цветную коробку на стойке. Нужно тапать по клиенту того же цветового типа. Если от выбранного клиента есть ортогонально связная группа `3+` того же цвета, она исчезает целиком. Ошибка сбрасывает комбо и ускоряет рост напряжения. Правильные действия приносят очки, комбо, временные бонусы и усиливают темп игры. По мере сессии растут базовая сложность, частота гиммиков и адаптивная скорость спавна.
 
+## Скриншоты
+
+### English
+
+![Cluster Burst EN Landscape](marketing/screens-clean/en/landscape/cluster_burst.png)
+
+![Shift Over EN Portrait](marketing/screens-clean/en/portrait/shift_over.png)
+
+### Русский
+
+![Rush Crush RU Landscape](marketing/screens-clean/ru/landscape/rush_crush.png)
+
+![Shift Over RU Portrait](marketing/screens-clean/ru/portrait/shift_over.png)
+
+### Türkçe
+
+![Quarrel Lock TR Landscape](marketing/screens-clean/tr/landscape/quarrel_lock.png)
+
+![Perfect Row TR Portrait](marketing/screens-clean/tr/portrait/perfect_row.png)
+
 ## Автор
 
 - Автор: [Ilya Mirin](https://www.linkedin.com/in/ilyamirin)
@@ -48,9 +68,11 @@
   - `quarrel`
   - `rush`
 - Аудио через Web Audio + локальные ассеты
+- Полная локализация `ru / en / tr`
 - Кот-комментатор событий, бонусов и темпа смены
 - Баланс с длинной сессией и нарастанием сложности по фазам
 - Симулятор баланса для подбора темпа
+- Инструменты для постановочных локализованных скриншотов
 
 ## Как Играть
 
@@ -122,9 +144,15 @@ index.html              Статическая разметка сцены и UI
 styles.css              Весь визуальный слой и адаптивность
 game.js                 Игровая логика, рендер, аудио, ввод
 balance-config.js       Конфиг фаз сложности, давления и adaptive spawn
+locales.js              Локализация UI, клиента и кота на ru/en/tr
 assets/audio/           Звуки интерфейса и игры
 assets/icons/           SVG-иконки типов товаров
 assets/brand/           Текущий логомарк и брендовые черновики
+marketing/screens-clean/ Локализованные still-скриншоты
+tools/stills.html       Viewer для постановочных скриншотов
+tools/stills-data.js    Драматические still-сцены
+scripts/capture-stills.cjs
+scripts/build-yandex.cjs
 scripts/check-secrets.mjs
 scripts/pre-commit.mjs
 scripts/simulate-balance.cjs
@@ -201,6 +229,8 @@ npm run secrets:check
 npm run hooks:install
 npm run balance:simulate
 npm run balance:search
+npm run build:yandex
+npm run stills:capture
 ```
 
 ### Полезные примеры
@@ -222,6 +252,18 @@ npm run balance:simulate -- --runs 180 --spawnScale 1.04 --lateSpawnScale 1.06 -
 
 ```bash
 npm run balance:search -- --runs 180
+```
+
+Переснять все локализованные скриншоты:
+
+```bash
+npm run stills:capture
+```
+
+Снять одну конкретную сцену:
+
+```bash
+node ./scripts/capture-stills.cjs --scene cluster_burst --locale en --orientation landscape
 ```
 
 ## Качество Кода
