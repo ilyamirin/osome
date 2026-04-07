@@ -724,6 +724,7 @@ const state = {
   activeSpeechPlacement: null,
   speechSwitchAt: 0,
   catSpeechText: "",
+  catSpeechCategory: null,
   catSpeechUntil: 0,
   catSpeechCooldownUntil: 0,
   catSpeechPriority: 0,
@@ -890,12 +891,28 @@ function setLocale(value) {
   activeLocale = nextLocale;
   document.documentElement.lang = activeLocale;
   applyStaticLocaleText();
+  state.catLastLineByCategory = {};
+  state.catLineDecks = {};
   syncMusicToggle();
   renderBestScore();
   if (state.awaitingStart && !state.running) {
     state.activeSpeechText = t("sceneStart");
     if (DOM.sceneDialogueText) {
       DOM.sceneDialogueText.textContent = state.activeSpeechText;
+    }
+  }
+  if (
+    !state.stillsMode &&
+    state.catSpeechCategory &&
+    state.catSpeechText &&
+    performance.now() < state.catSpeechUntil
+  ) {
+    state.catSpeechText = sampleCatLine(
+      state.catSpeechCategory,
+      getCatQuotesBucket(state.catSpeechCategory)
+    );
+    if (DOM.catDialogueText) {
+      DOM.catDialogueText.textContent = state.catSpeechText;
     }
   }
 }
@@ -1081,6 +1098,7 @@ function serializeRunSnapshot(now = performance.now()) {
       activeSpeechText: state.activeSpeechText,
       speechRemainingMs: getRemainingMs(state.speechSwitchAt, now),
       catSpeechText: state.catSpeechText,
+      catSpeechCategory: state.catSpeechCategory,
       catSpeechRemainingMs: getRemainingMs(state.catSpeechUntil, now),
       catSpeechCooldownRemainingMs: getRemainingMs(state.catSpeechCooldownUntil, now),
       catSpeechPriority: state.catSpeechPriority,
@@ -1268,6 +1286,7 @@ function applyStillScene(sceneName) {
   state.activeSpeechText = "";
   state.activeSpeechPlacement = null;
   state.catSpeechText = getStillLocaleText(scene.catSpeech);
+  state.catSpeechCategory = null;
   state.catSpeechUntil = Infinity;
   state.catSpeechCooldownUntil = Infinity;
   state.catSpeechPriority = state.catSpeechText ? 99 : 0;
@@ -1350,6 +1369,7 @@ function resetRoundState() {
   state.activeSpeechPlacement = null;
   state.speechSwitchAt = 0;
   state.catSpeechText = "";
+  state.catSpeechCategory = null;
   state.catSpeechUntil = 0;
   state.catSpeechCooldownUntil = 0;
   state.catSpeechPriority = 0;
@@ -2247,6 +2267,7 @@ function restoreRunSnapshot(snapshot) {
   state.activeSpeechPlacement = null;
   state.speechSwitchAt = restoreUntil(restored.speechRemainingMs, now);
   state.catSpeechText = restored.catSpeechText || "";
+  state.catSpeechCategory = restored.catSpeechCategory || null;
   state.catSpeechUntil = restoreUntil(restored.catSpeechRemainingMs, now);
   state.catSpeechCooldownUntil = restoreUntil(restored.catSpeechCooldownRemainingMs, now);
   state.catSpeechPriority = restored.catSpeechPriority || 0;
@@ -2525,6 +2546,7 @@ function speakCat(category, options = {}) {
   }
 
   state.catSpeechText = sampleCatLine(category, pool);
+  state.catSpeechCategory = category;
   state.catSpeechUntil = now + durationMs;
   state.catSpeechCooldownUntil = now + cooldownMs;
   state.catSpeechPriority = priority;
