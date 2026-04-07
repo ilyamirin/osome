@@ -9,7 +9,6 @@ const runtimeFiles = [
   "balance-config.js",
   "favicon.svg",
   "game.js",
-  "locales.js",
   "styles.css",
   "tools/stills-data.js",
   "assets/brand/osome-mark-o-horns.svg",
@@ -38,23 +37,63 @@ function copyFile(relativePath) {
   fs.copyFileSync(source, target);
 }
 
+function escapeNonAsciiForHtml(source) {
+  return Array.from(source, (char) => {
+    const code = char.codePointAt(0);
+    if (code <= 0x7f) {
+      return char;
+    }
+    return `&#x${code.toString(16).toUpperCase()};`;
+  }).join("");
+}
+
+function escapeNonAsciiForJs(source) {
+  return Array.from(source, (char) => {
+    const code = char.codePointAt(0);
+    if (code <= 0x7f) {
+      return char;
+    }
+    if (code <= 0xffff) {
+      return `\\u${code.toString(16).toUpperCase().padStart(4, "0")}`;
+    }
+    const adjusted = code - 0x10000;
+    const high = 0xd800 + (adjusted >> 10);
+    const low = 0xdc00 + (adjusted & 0x3ff);
+    return `\\u${high.toString(16).toUpperCase().padStart(4, "0")}\\u${low
+      .toString(16)
+      .toUpperCase()
+      .padStart(4, "0")}`;
+  }).join("");
+}
+
 function buildIndexHtml() {
   const sourcePath = path.join(projectRoot, "index.html");
   let html = fs.readFileSync(sourcePath, "utf8");
 
   html = html.replace('<html lang="ru">', '<html lang="ru" data-platform="yandex">');
   html = html.replace(/[\t ]*<link rel="canonical"[^>]*\/>\n/g, "");
-  html = html.replace(/[\t ]*<meta[\s\S]*?property="og:[^"]+"[\s\S]*?\/>\n/g, "");
-  html = html.replace(/[\t ]*<meta[\s\S]*?name="twitter:[^"]+"[\s\S]*?\/>\n/g, "");
+  html = html.replace(
+    /[\t ]*<meta property="og:type"[\s\S]*?<meta[\t ]+name="twitter:image"[\s\S]*?\/>\n/g,
+    ""
+  );
   html = html.replace(
     '<link rel="stylesheet" href="./styles.css?v=20260401b" />',
     '<link rel="stylesheet" href="./styles.css?v=20260401b" />\n    <script src="/sdk.js"></script>\n    <!-- YaGames.init() LoadingAPI.ready() GameplayAPI.start() GameplayAPI.stop() -->'
   );
   html = html.replace(/[\t ]*<section class="author-plaque"[\s\S]*?<\/section>\n/g, "");
+  html = escapeNonAsciiForHtml(html);
 
   const target = path.join(outDir, "index.html");
   ensureDir(target);
   fs.writeFileSync(target, html);
+}
+
+function buildLocalesJs() {
+  const sourcePath = path.join(projectRoot, "locales.js");
+  const target = path.join(outDir, "locales.js");
+  const source = fs.readFileSync(sourcePath, "utf8");
+  ensureDir(target);
+  fs.writeFileSync(target, escapeNonAsciiForJs(source));
 }
 
 function main() {
@@ -62,6 +101,7 @@ function main() {
   fs.mkdirSync(outDir, { recursive: true });
 
   buildIndexHtml();
+  buildLocalesJs();
   runtimeFiles.forEach(copyFile);
 
   process.stdout.write(`${outDir}\n`);
