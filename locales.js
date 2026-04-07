@@ -1,7 +1,7 @@
 globalThis.OSOME_I18N = {
   ui: {
     ru: {
-      documentTitle: "Osome: ПВЗ Очередь",
+      documentTitle: "ПВЗ: Очередь",
       gameTitle: "ПВЗ: Очередь",
       rotateTitle: "Поверни устройство",
       rotateBody: "Для этой версии игры нужен портретный режим.",
@@ -11,7 +11,7 @@ globalThis.OSOME_I18N = {
       introBestScore: "Лучший результат: {score}",
       authorAria: "Информация о проекте",
       authorLabel: "Проект",
-      authorTitle: "Osome: ПВЗ Очередь",
+      authorTitle: "ПВЗ: Очередь",
       authorRole: "Автор: Ilya Mirin",
       authorLicense: "Лицензия: MIT",
       authorAiNote:
@@ -44,8 +44,8 @@ globalThis.OSOME_I18N = {
       toastGold: "GOLD: +10 000 очков.",
     },
     en: {
-      documentTitle: "Osome: Pickup Queue",
-      gameTitle: "Pickup Queue",
+      documentTitle: "Parcel Queue",
+      gameTitle: "Parcel Queue",
       rotateTitle: "Turn your device",
       rotateBody: "This version of the game works in portrait mode.",
       sceneStart: "Tap anywhere to start your shift.",
@@ -54,7 +54,7 @@ globalThis.OSOME_I18N = {
       introBestScore: "Best score: {score}",
       authorAria: "Project info",
       authorLabel: "Project",
-      authorTitle: "Osome: Pickup Queue",
+      authorTitle: "Parcel Queue",
       authorRole: "Created by Ilya Mirin",
       authorLicense: "License: MIT",
       authorAiNote:
@@ -87,7 +87,7 @@ globalThis.OSOME_I18N = {
       toastGold: "GOLD: +10,000 points.",
     },
     tr: {
-      documentTitle: "Osome: Teslimat Kuyruğu",
+      documentTitle: "Teslimat Kuyruğu",
       gameTitle: "Teslimat Kuyruğu",
       rotateTitle: "Cihazı çevir",
       rotateBody: "Oyunun bu sürümü dikey modda oynanır.",
@@ -97,7 +97,7 @@ globalThis.OSOME_I18N = {
       introBestScore: "En iyi skor: {score}",
       authorAria: "Proje bilgisi",
       authorLabel: "Proje",
-      authorTitle: "Osome: Teslimat Kuyruğu",
+      authorTitle: "Teslimat Kuyruğu",
       authorRole: "Hazırlayan: Ilya Mirin",
       authorLicense: "Lisans: MIT",
       authorAiNote:

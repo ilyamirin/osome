@@ -1,4 +1,4 @@
-(function initOsomeStills(globalScope) {
+(function initQueueStills(globalScope) {
   const avatar = (overrides) => ({
     skin: "#ddb08a",
     hair: "#2d2320",
@@ -131,7 +131,7 @@
       subtitle: "A five-cell color group is one tap away from blowing a hole through the crowd.",
       badge: "Scene 01",
       footer:
-        "This is the new hero frame for Osome: the player instantly sees the active parcel color, the connected match, and the payoff for reading the board correctly.",
+        "This is the new hero frame for the game: the player instantly sees the active parcel color, the connected match, and the payoff for reading the board correctly.",
       board: [
         row(null, client("shopper", "yellow"), client("hoodie", "cyan"), client("punk", "violet")),
         row(

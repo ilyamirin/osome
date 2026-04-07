@@ -1,7 +1,7 @@
 {
   "name": "osome",
   "version": "1.0.0",
-  "description": "Browser game prototype for the Osome pickup point queue.",
+  "description": "Browser game prototype about a chaotic pickup point queue.",
   "main": "game.js",
   "scripts": {
     "format": "prettier --write .",
