@@ -153,43 +153,43 @@ globalThis.OSOME_I18N = {
   customerQuotes: {
     en: {
       generic: [
-        "Just give me my parcel and I’ll disappear.",
-        "As long as it’s mine, we’re all fine.",
-        "I’m here for one box and a clean escape.",
+        "Just give me my parcel and I'll disappear.",
+        "As long as it's mine, we're all fine.",
+        "I'm here for one box and a clean escape.",
         "Please let this be quick and correctly labeled.",
         "If that parcel has my name on it, my evening survives.",
-        "I’d love one handoff, zero surprises.",
+        "I'd love one handoff, zero surprises.",
       ],
       queue: [
         "I came for a parcel and accidentally joined a social experiment.",
-        "This line moves like it’s on the free plan.",
-        "I’m calm. The queue is the dramatic one.",
+        "This line moves like it's on the free plan.",
+        "I'm calm. The queue is the dramatic one.",
         "My order has probably matured while I was standing here.",
         "I only need one box, not a character-building exercise.",
         "Is there a fast lane for people who already regret coming?",
-        "I’ve mentally collected this parcel twice already.",
-        "I’m not complaining. I’m just narrating the obvious.",
+        "I've mentally collected this parcel twice already.",
+        "I'm not complaining. I'm just narrating the obvious.",
         "I thought this would take a minute. Cute, I know.",
         "At this point the parcel and I are both older.",
       ],
       angry: [
-        "That’s definitely not my parcel.",
-        "I’ve been waiting long enough to earn a sequel.",
+        "That's definitely not my parcel.",
+        "I've been waiting long enough to earn a sequel.",
         "Please, no mix-ups this time.",
         "Can we move at normal human speed?",
-        "I’m here for one pickup, not a side quest.",
+        "I'm here for one pickup, not a side quest.",
         "Why does it feel like the line is happening specifically at me?",
-        "I’d prefer results over process, thanks.",
-        "I’m trying very hard to stay polite here.",
+        "I'd prefer results over process, thanks.",
+        "I'm trying very hard to stay polite here.",
         "I only need my parcel. Not the full experience.",
         "I was told this would be simple. That was optimistic.",
       ],
       quarrel: [
         "Easy. We all want our parcels.",
         "The line is right here, not wherever your mood says.",
-        "No cutting. We’re suffering in order.",
+        "No cutting. We're suffering in order.",
         "I was here first and my memory is excellent.",
-        "Let’s keep the drama below customer-service volume.",
+        "Let's keep the drama below customer-service volume.",
       ],
     },
     tr: {
@@ -237,7 +237,7 @@ globalThis.OSOME_I18N = {
   catQuotes: {
     en: {
       standby: [
-        "Tap in. The city won’t queue itself.",
+        "Tap in. The city won't queue itself.",
         "Open the shift. The line is already awake.",
         "Go on. Good news left before we got here.",
       ],
@@ -249,7 +249,7 @@ globalThis.OSOME_I18N = {
       intro_hard: [
         "Try again. Maybe with your eyes this time.",
         "Same colors, fewer mistakes. Modest goal.",
-        "The answer is still on the counter. Don’t argue with it.",
+        "The answer is still on the counter. Don't argue with it.",
       ],
       pressure_rising: [
         "The room is starting to tighten.",
@@ -257,19 +257,19 @@ globalThis.OSOME_I18N = {
         "The line just remembered how to be stressful.",
       ],
       pressure_high: [
-        "Everyone is about to panic. Don’t join them.",
-        "Pressure’s up. Try bringing your brain along.",
+        "Everyone is about to panic. Don't join them.",
+        "Pressure's up. Try bringing your brain along.",
         "One more bad move and the room gets loud.",
       ],
       pressure_critical: [
         "No room for style now.",
-        "You’re close to the edge. Blink later.",
+        "You're close to the edge. Blink later.",
         "This shift is balancing on a paper clip.",
       ],
       calm: [
         "A rare breather.",
         "Quiet. Suspicious, as ever.",
-        "It eased up. Don’t get sentimental.",
+        "It eased up. Don't get sentimental.",
       ],
       pressure_recovery: [
         "You pulled it back.",
@@ -278,16 +278,16 @@ globalThis.OSOME_I18N = {
       ],
       combo_3: [
         "Now it looks intentional.",
-        "There’s a rhythm in there.",
+        "There's a rhythm in there.",
         "Better. Less panic, more work.",
       ],
       combo_5: [
-        "Good. Don’t ruin it.",
+        "Good. Don't ruin it.",
         "You caught the rhythm. Hold it.",
         "Nice. The line finally took you seriously.",
       ],
       combo_8: [
-        "Too clean. I don’t trust it.",
+        "Too clean. I don't trust it.",
         "That was sharp.",
         "Even chaos misses once in a while.",
       ],
@@ -298,7 +298,7 @@ globalThis.OSOME_I18N = {
       ],
       group_3: [
         "Triple pickup. Better.",
-        "Three at once. That’s efficient.",
+        "Three at once. That's efficient.",
         "The line will remember that.",
       ],
       group_4: [
@@ -322,12 +322,12 @@ globalThis.OSOME_I18N = {
         "Nice error. The queue loves those.",
       ],
       error_streak_2: [
-        "Twice in a row. That’s becoming a style.",
+        "Twice in a row. That's becoming a style.",
         "Another one and the room starts judging.",
-        "You’re arguing with colors now.",
+        "You're arguing with colors now.",
       ],
       error_streak_3: [
-        "Three misses. That’s a theme now.",
+        "Three misses. That's a theme now.",
         "You built this mess yourself.",
         "At least the pattern is clear.",
       ],
@@ -338,7 +338,7 @@ globalThis.OSOME_I18N = {
       ],
       fast_access: [
         "More reach, same risk.",
-        "Two rows at hand. Don’t waste it.",
+        "Two rows at hand. Don't waste it.",
         "Extra space. Extra ways to mess up.",
       ],
       bonus_chain: [
@@ -347,13 +347,13 @@ globalThis.OSOME_I18N = {
         "Nice little streak of good luck.",
       ],
       anti_stress_ready: [
-        "You’ve been granted one soft landing.",
-        "One free mistake buffer. Don’t celebrate.",
-        "There’s a cushion now. The floor still exists.",
+        "You've been granted one soft landing.",
+        "One free mistake buffer. Don't celebrate.",
+        "There's a cushion now. The floor still exists.",
       ],
       anti_stress_spent: [
         "That was the cushion.",
-        "Safety net’s gone.",
+        "Safety net's gone.",
         "Back to regular consequences.",
       ],
       perfect_row_spotted: [
@@ -363,7 +363,7 @@ globalThis.OSOME_I18N = {
       ],
       perfect_row_done: [
         "Clean work. Annoyingly good.",
-        "That’s actual craft.",
+        "That's actual craft.",
         "For a second, you outranked the shift.",
       ],
       rush: [
@@ -373,16 +373,16 @@ globalThis.OSOME_I18N = {
       ],
       rush_end: [
         "The wave passed. The mess stayed.",
-        "Rush hour’s gone. The job isn’t.",
-        "Crowd’s thinner. Chaos isn’t.",
+        "Rush hour's gone. The job isn't.",
+        "Crowd's thinner. Chaos isn't.",
       ],
       quarrel: [
-        "Of course. Now they’re doing drama.",
+        "Of course. Now they're doing drama.",
         "The line needed a subplot.",
-        "They’re arguing. Naturally.",
+        "They're arguing. Naturally.",
       ],
       quarrel_spread: [
-        "Now it’s spreading.",
+        "Now it's spreading.",
         "The drama found neighbors.",
         "Excellent. The fuss learned to travel.",
       ],
@@ -397,17 +397,17 @@ globalThis.OSOME_I18N = {
         "Too many bodies, not enough calm.",
       ],
       queue_thin: [
-        "A rare gap. Don’t trust it.",
+        "A rare gap. Don't trust it.",
         "The line thinned out. Temporarily.",
         "More space. Same pressure.",
       ],
       slow_player: [
-        "Move. They won’t sort themselves.",
-        "You paused. The line didn’t.",
+        "Move. They won't sort themselves.",
+        "You paused. The line didn't.",
         "Thinking is great. Acting is better.",
       ],
       long_silence: [
-        "Too quiet. That’s never good.",
+        "Too quiet. That's never good.",
         "Silence here usually means trouble is loading.",
         "The room is holding its breath.",
       ],
@@ -422,7 +422,7 @@ globalThis.OSOME_I18N = {
         "The line got exactly what it came for: your attention.",
       ],
       gold: [
-        "Oh. So we’re rich now.",
+        "Oh. So we're rich now.",
         "Gold from the ceiling. Efficient.",
         "Unfair. Stylish, though.",
       ],
