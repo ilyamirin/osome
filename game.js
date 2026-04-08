@@ -2268,16 +2268,21 @@ function restoreRunSnapshot(snapshot) {
   state.rushUntil = restoreUntil(restored.rushRemainingMs, now);
   state.currentOrder = restored.currentOrder || null;
   state.activeSpeakerId = restored.activeSpeakerId || null;
-  state.activeSpeechText = restored.activeSpeechText || "";
+  // Do not restore persisted dialogue text verbatim: old snapshots may contain
+  // mojibake from previous builds, and these lines are short-lived UI anyway.
+  state.activeSpeechText = "";
   state.activeSpeechPlacement = null;
   state.speechSwitchAt = restoreUntil(restored.speechRemainingMs, now);
-  state.catSpeechText = restored.catSpeechText || "";
   state.catSpeechCategory = restored.catSpeechCategory || null;
   state.catSpeechUntil = restoreUntil(restored.catSpeechRemainingMs, now);
   state.catSpeechCooldownUntil = restoreUntil(restored.catSpeechCooldownRemainingMs, now);
   state.catSpeechPriority = restored.catSpeechPriority || 0;
-  state.catLastLineByCategory = restored.catLastLineByCategory || {};
-  state.catLineDecks = restored.catLineDecks || {};
+  state.catLastLineByCategory = {};
+  state.catLineDecks = {};
+  state.catSpeechText =
+    state.catSpeechCategory && now < state.catSpeechUntil
+      ? sampleCatLine(state.catSpeechCategory, getCatQuotesBucket(state.catSpeechCategory))
+      : "";
   state.catPressureTier = restored.catPressureTier || 0;
   state.catLastSpokeAt = now - (restored.catLastSpokeAgeMs || 0);
   state.catLastAmbientAt = now - (restored.catLastAmbientAgeMs || 0);
