@@ -72,11 +72,12 @@ function buildIndexHtml() {
 
   html = html.replace('<html lang="ru">', '<html lang="ru" data-platform="yandex">');
   html = html.replace(/[\t ]*<link rel="canonical"[^>]*\/>\n?/g, "");
-  html = html.replace(/[\t ]*<meta[\s\S]*?property="og:[^"]+"[\s\S]*?\/>\n?/g, "");
-  html = html.replace(/[\t ]*<meta[\s\S]*?name="twitter:[^"]+"[\s\S]*?\/>\n?/g, "");
+  html = html.replace(/[\t ]*<meta\b[\s\S]*?\bproperty="og:[^"]+"[\s\S]*?\/>\n?/g, "");
+  html = html.replace(/[\t ]*<meta\b[\s\S]*?\bname="twitter:[^"]+"[\s\S]*?\/>\n?/g, "");
   html = html.replace(
-    '<link rel="stylesheet" href="./styles.css?v=20260401b" />',
-    '<link rel="stylesheet" href="./styles.css?v=20260401b" />\n    <script src="/sdk.js"></script>\n    <!-- YaGames.init() LoadingAPI.ready() GameplayAPI.start() GameplayAPI.stop() -->'
+    /<link rel="stylesheet" href="\.\/styles\.css\?v=[^"]+" \/>/,
+    (match) =>
+      `${match}\n    <script src="/sdk.js"></script>\n    <!-- YaGames.init() LoadingAPI.ready() GameplayAPI.start() GameplayAPI.stop() -->`
   );
   html = html.replace(/[\t ]*<section class="author-plaque"[\s\S]*?<\/section>\n/g, "");
   html = escapeNonAsciiForHtml(html);
