@@ -2824,9 +2824,9 @@ body.platform-yandex .cat-dialogue {
     --shell-pad-y: 10px;
     --panel-pad: 6px;
     --panel-radius: 24px;
-    --stage-min-h: calc(100dvh - 116px);
+    --stage-min-h: 520px;
     --queue-gap: 6px;
-    --queue-pad-top: 18px;
+    --queue-pad-top: 24px;
     --queue-pad-x: 4px;
     --queue-pad-bottom: 10px;
     --board-max-w: 100%;
@@ -2835,34 +2835,50 @@ body.platform-yandex .cat-dialogue {
     --board-gap: 4px;
     --board-lane-offset: 5px;
     --board-lane-width: 5px;
-    --scene-dialogue-max-w: min(252px, calc(100vw - 28px));
+    --scene-dialogue-max-w: 252px;
     --scene-dialogue-gap: 8px;
     --scene-dialogue-font: 0.94rem;
-    --cat-dialogue-width: 124px;
-    --cat-dialogue-top: -10px;
-    --counter-top-pad: 14px;
-    --counter-max-w: 100%;
-    --counter-left-col: 72px;
-    --counter-center-min: 130px;
-    --counter-right-col: 56px;
-    --counter-gap: 8px;
-    --counter-min-h: 128px;
+    --cat-dialogue-width: 132px;
+    --cat-dialogue-top: -12px;
+    --counter-top-pad: 16px;
+    --counter-max-w: 320px;
+    --counter-left-col: 68px;
+    --counter-center-min: 122px;
+    --counter-right-col: 54px;
+    --counter-gap: 7px;
+    --counter-min-h: 124px;
     --counter-pad-top: 12px;
     --counter-pad-x: 8px;
     --counter-pad-bottom: 10px;
-    --speaker-min-h: 74px;
-    --active-order-min-h: 94px;
+    --speaker-min-h: 72px;
+    --active-order-min-h: 92px;
     --active-order-pad-top: 6px;
     --active-order-pad-bottom: 12px;
     --active-order-badge-w: 88px;
     --active-order-badge-h: 72px;
     --active-order-symbol-size: 74px;
-    --score-clock-min-h: 92px;
-    --score-clock-case-min-h: 72px;
-    --score-clock-font: 1.12rem;
-    --score-clock-font-compact: 0.92rem;
-    --score-clock-font-tight: 0.8rem;
-    --score-clock-font-ultra: 0.7rem;
+    --score-clock-min-h: 90px;
+    --score-clock-case-min-h: 70px;
+    --score-clock-font: 1.1rem;
+    --score-clock-font-compact: 0.9rem;
+    --score-clock-font-tight: 0.78rem;
+    --score-clock-font-ultra: 0.68rem;
+  }
+
+  body.platform-yandex .queue-zone {
+    grid-auto-rows: max-content;
+    align-content: start;
+    justify-items: stretch;
+  }
+
+  body.platform-yandex .board-shell,
+  body.platform-yandex .counter-set {
+    width: 100%;
+    max-width: none;
+  }
+
+  body.platform-yandex .counter-set {
+    width: 100%;
   }
 
   :root {
@@ -2966,38 +2982,70 @@ body.platform-yandex .cat-dialogue {
     margin-top: 6px;
   }
 
+  body.platform-yandex .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+
   body.platform-yandex .game-layout {
-    width: 100%;
+    width: min(100%, 1320px);
+    height: auto;
   }
 
   body.platform-yandex .game-panel {
-    height: calc(
-      100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
-        max(var(--shell-pad-y), env(safe-area-inset-bottom))
-    );
-    min-height: calc(
-      100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
-        max(var(--shell-pad-y), env(safe-area-inset-bottom))
-    );
+    display: block;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+    padding: var(--panel-pad);
+    border-radius: var(--panel-radius);
+  }
+
+  body.platform-yandex .hud {
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  body.platform-yandex .brand-card {
+    gap: 6px;
+  }
+
+  body.platform-yandex .brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  body.platform-yandex .brand-mark img {
+    width: 28px;
+    height: 28px;
+  }
+
+  body.platform-yandex .brand-card h1 {
+    font-size: 1.26rem;
+    line-height: 0.9;
   }
 
   body.platform-yandex .play-area {
-    display: flex;
-    flex: 1;
-    min-height: 0;
+    display: block;
+    flex: none;
+    min-height: auto;
     margin-top: 6px;
   }
 
   body.platform-yandex .scene-panel {
-    display: flex;
-    flex: 1;
-    min-height: 0;
+    display: grid;
+    gap: 16px;
+    min-height: auto;
+    height: auto;
   }
 
   body.platform-yandex .facility-stage {
-    flex: 1;
+    flex: none;
     min-height: var(--stage-min-h);
-    height: 100%;
+    height: auto;
+    border-radius: 24px;
   }
 
   .facility-stage {
@@ -3005,11 +3053,6 @@ body.platform-yandex .cat-dialogue {
   }
 
   .queue-zone {
-    justify-items: stretch;
-  }
-
-  body.platform-yandex .queue-zone {
-    align-content: start;
     justify-items: stretch;
   }
 
@@ -3027,6 +3070,7 @@ body.platform-yandex .cat-dialogue {
 
   body.platform-yandex .counter-set {
     width: 100%;
+    padding-top: var(--counter-top-pad);
   }
 
   .speaker-toggle {
@@ -3070,10 +3114,10 @@ body.platform-yandex .cat-dialogue {
   }
 
   body.platform-yandex .frontal-counter .cat-mascot {
-    left: 6px;
-    top: -16px;
-    width: 82px;
-    height: 64px;
+    left: 4px;
+    top: -14px;
+    width: 78px;
+    height: 62px;
     transform: scale(0.84);
   }
 
@@ -3468,8 +3512,8 @@ body.platform-yandex .cat-dialogue {
   }
 
   body.platform-yandex .cat-dialogue {
-    left: calc(100% - 10px);
-    top: -6px;
+    left: calc(100% - 12px);
+    top: -8px;
     width: 122px;
   }
 
