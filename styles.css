@@ -116,6 +116,46 @@ body.platform-yandex {
   position: fixed;
   inset: 0;
   width: 100%;
+  --shell-pad-x: clamp(8px, 1.2vw, 12px);
+  --shell-pad-y: clamp(8px, 1.2vw, 12px);
+  --panel-pad: clamp(10px, 1.4vw, 14px);
+  --panel-radius: clamp(20px, 2.2vw, 24px);
+  --stage-min-h: clamp(480px, calc(100dvh - 128px), 660px);
+  --queue-gap: clamp(6px, 0.8vw, 10px);
+  --queue-pad-top: clamp(24px, 3.6dvh, 36px);
+  --queue-pad-x: clamp(8px, 1vw, 14px);
+  --queue-pad-bottom: clamp(8px, 1.2dvh, 14px);
+  --board-max-w: clamp(296px, min(42dvh, 34vw), 396px);
+  --board-pad: clamp(8px, 0.9vw, 12px);
+  --board-gap: clamp(5px, 0.65vw, 8px);
+  --board-lane-offset: clamp(8px, 0.9vw, 10px);
+  --board-lane-width: clamp(6px, 0.65vw, 8px);
+  --scene-dialogue-max-w: clamp(300px, 28vw, 340px);
+  --scene-dialogue-gap: 14px;
+  --scene-dialogue-font: clamp(0.94rem, 1.2vw, 1.18rem);
+  --counter-max-w: clamp(360px, min(56dvh, 46vw), 520px);
+  --counter-top-pad: clamp(14px, 1.8dvh, 20px);
+  --counter-left-col: clamp(64px, 7.5dvh, 84px);
+  --counter-center-min: clamp(156px, 22dvh, 232px);
+  --counter-right-col: clamp(54px, 6dvh, 72px);
+  --counter-gap: clamp(6px, 0.8vw, 10px);
+  --counter-min-h: clamp(122px, 16.5dvh, 176px);
+  --counter-pad-top: clamp(12px, 1.2dvh, 16px);
+  --counter-pad-x: clamp(8px, 0.9vw, 12px);
+  --counter-pad-bottom: clamp(10px, 1.2dvh, 14px);
+  --active-order-min-h: clamp(92px, 12dvh, 126px);
+  --active-order-pad-top: clamp(4px, 0.5dvh, 6px);
+  --active-order-pad-bottom: clamp(8px, 1dvh, 12px);
+  --active-order-badge-w: clamp(84px, 10.5dvh, 110px);
+  --active-order-badge-h: clamp(70px, 8.8dvh, 92px);
+  --active-order-symbol-size: clamp(74px, 9.5dvh, 98px);
+  --score-clock-min-h: clamp(76px, 9.5dvh, 102px);
+  --score-clock-case-min-h: clamp(62px, 7.5dvh, 82px);
+  --score-clock-font: clamp(1.08rem, 1.35vw, 1.52rem);
+  --score-clock-font-compact: clamp(0.88rem, 1.05vw, 1.1rem);
+  --score-clock-font-tight: clamp(0.76rem, 0.92vw, 0.96rem);
+  --score-clock-font-ultra: clamp(0.66rem, 0.8vw, 0.82rem);
+  --speaker-min-h: clamp(72px, 8.5dvh, 96px);
 }
 
 body.overlay-open {
@@ -196,6 +236,34 @@ body.platform-yandex .game-panel {
   );
   flex-direction: column;
   overflow: hidden;
+}
+
+body.platform-yandex .game-layout {
+  width: min(100%, 1080px);
+  height: 100%;
+}
+
+body.platform-yandex .hud {
+  gap: 10px;
+}
+
+body.platform-yandex .brand-card {
+  gap: 8px;
+}
+
+body.platform-yandex .brand-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+}
+
+body.platform-yandex .brand-mark img {
+  width: 40px;
+  height: 40px;
+}
+
+body.platform-yandex .brand-card h1 {
+  font-size: clamp(1.36rem, 2vw, 2rem);
 }
 
 .eyebrow,
@@ -366,6 +434,7 @@ body.platform-yandex .game-panel {
 body.platform-yandex .play-area {
   flex: 1;
   min-height: 0;
+  margin-top: 8px;
 }
 
 .scene-panel {
@@ -374,7 +443,9 @@ body.platform-yandex .play-area {
 }
 
 body.platform-yandex .scene-panel {
+  gap: 10px;
   min-height: 100%;
+  height: 100%;
 }
 
 .author-plaque {
@@ -634,6 +705,8 @@ body.platform-yandex .facility-stage * {
 
 body.platform-yandex .facility-stage {
   touch-action: manipulation;
+  min-height: 0;
+  height: 100%;
 }
 
 body.platform-yandex .overlay,
@@ -676,7 +749,35 @@ body.platform-yandex .overlay-card {
 }
 
 body.platform-yandex .queue-zone {
+  align-content: space-between;
+  justify-items: center;
   min-height: 100%;
+}
+
+body.platform-yandex .intro-card {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px 18px;
+}
+
+body.platform-yandex .intro-copy {
+  max-width: 19rem;
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+body.platform-yandex .intro-best-score {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+body.platform-yandex .board-shell,
+body.platform-yandex .counter-set {
+  width: min(100%, var(--board-max-w));
+}
+
+body.platform-yandex .counter-set {
+  width: min(100%, var(--counter-max-w));
 }
 
 .board-shell {
@@ -3317,5 +3418,40 @@ body.platform-yandex .queue-zone {
   .secondary-action {
     width: 100%;
     padding: 14px 16px;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 760px) {
+  body.platform-yandex {
+    --shell-pad-y: 6px;
+    --panel-pad: 8px;
+    --stage-min-h: clamp(430px, calc(100dvh - 112px), 580px);
+    --queue-pad-top: clamp(18px, 2.8dvh, 28px);
+    --queue-pad-bottom: clamp(6px, 0.9dvh, 10px);
+    --board-max-w: clamp(280px, min(38dvh, 31vw), 352px);
+    --board-pad: clamp(6px, 0.7vw, 10px);
+    --board-gap: clamp(4px, 0.55vw, 6px);
+    --scene-dialogue-max-w: clamp(260px, 24vw, 320px);
+    --counter-max-w: clamp(340px, min(48dvh, 42vw), 460px);
+    --counter-top-pad: clamp(12px, 1.4dvh, 16px);
+    --counter-min-h: clamp(112px, 14dvh, 154px);
+    --counter-pad-top: clamp(10px, 1dvh, 14px);
+    --counter-pad-bottom: clamp(8px, 0.9dvh, 12px);
+    --active-order-min-h: clamp(84px, 10.5dvh, 110px);
+    --active-order-badge-w: clamp(78px, 9.4dvh, 100px);
+    --active-order-badge-h: clamp(64px, 7.8dvh, 84px);
+    --active-order-symbol-size: clamp(68px, 8.5dvh, 88px);
+    --score-clock-min-h: clamp(68px, 8dvh, 90px);
+    --score-clock-case-min-h: clamp(56px, 6.6dvh, 74px);
+    --score-clock-font: clamp(0.96rem, 1.15vw, 1.32rem);
+    --speaker-min-h: clamp(64px, 7.2dvh, 84px);
+  }
+
+  body.platform-yandex .brand-card h1 {
+    font-size: clamp(1.18rem, 1.5vw, 1.66rem);
+  }
+
+  body.platform-yandex .play-area {
+    margin-top: 6px;
   }
 }

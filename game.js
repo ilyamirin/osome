@@ -3602,12 +3602,17 @@ function playBackgroundTrack(index) {
 }
 
 function playNextBackgroundTrack() {
-  if (audioState.backgroundTracks.length === 0) {
+  const trackCount = shouldUseWebAudioBackground()
+    ? audioState.backgroundBuffers.length
+    : audioState.backgroundTracks.length;
+
+  if (trackCount === 0) {
     return false;
   }
 
-  for (let offset = 1; offset <= audioState.backgroundTracks.length; offset += 1) {
-    const index = (audioState.backgroundCurrentIndex + offset) % audioState.backgroundTracks.length;
+  const startOffset = audioState.backgroundCurrentIndex < 0 ? 0 : 1;
+  for (let offset = startOffset; offset < trackCount + startOffset; offset += 1) {
+    const index = (audioState.backgroundCurrentIndex + offset) % trackCount;
     if (playBackgroundTrack(index)) {
       return true;
     }
@@ -3620,6 +3625,13 @@ function maybeStartBackgroundMusic() {
   if (!isBackgroundMusicAllowed()) {
     stopBackgroundMusic();
     return false;
+  }
+
+  if (audioState.backgroundCurrentSource) {
+    if (audioState.backgroundCurrentGain) {
+      audioState.backgroundCurrentGain.gain.value = getBackgroundMusicVolume();
+    }
+    return true;
   }
 
   if (audioState.backgroundCurrentTrack) {
