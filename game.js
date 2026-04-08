@@ -1235,9 +1235,11 @@ function applyStillScene(sceneName) {
 
   const stillsLayout = URL_PARAMS.get("stillsLayout") || "clean";
   const stillsOrientation = URL_PARAMS.get("stillsOrientation") || "landscape";
+  const stillsUsesCleanLayout = stillsLayout === "clean" || stillsLayout === "video";
 
   document.body.classList.add("stills-mode");
-  document.body.classList.toggle("stills-clean", stillsLayout === "clean");
+  document.body.classList.toggle("stills-clean", stillsUsesCleanLayout);
+  document.body.classList.toggle("stills-video", stillsLayout === "video");
   document.body.classList.toggle("stills-portrait", stillsOrientation === "portrait");
 
   resetRoundState();

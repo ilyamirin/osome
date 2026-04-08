@@ -12,7 +12,8 @@
     "balance:simulate": "node ./scripts/simulate-balance.cjs",
     "balance:search": "node ./scripts/simulate-balance.cjs search",
     "build:yandex": "node ./scripts/build-yandex.cjs",
-    "stills:capture": "node ./scripts/capture-stills.cjs"
+    "stills:capture": "node ./scripts/capture-stills.cjs",
+    "videos:capture": "node ./scripts/capture-videos.cjs"
   },
   "keywords": [
     "game",

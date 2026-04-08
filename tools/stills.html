@@ -244,10 +244,14 @@
       const locale = params.get("locale") || "ru";
       const orientation = params.get("orientation") || "landscape";
       const layout = params.get("layout") || "promo";
+      const isCleanLayout = layout === "clean" || layout === "video";
       const scene = globalThis.OSOME_STILLS?.scenes?.[sceneName];
 
-      if (layout === "clean") {
+      if (isCleanLayout) {
         document.body.classList.add("clean");
+      }
+      if (layout === "video") {
+        document.body.classList.add("video");
       }
       document.body.classList.add(`orientation-${orientation}`);
 
@@ -278,7 +282,7 @@
         const src = new URL("../index.html", window.location.href);
         src.searchParams.set("stillsScene", sceneName);
         src.searchParams.set("locale", locale);
-        src.searchParams.set("stillsLayout", "clean");
+        src.searchParams.set("stillsLayout", isCleanLayout ? layout : "clean");
         src.searchParams.set("stillsOrientation", orientation);
         iframe.src = src.toString();
 
