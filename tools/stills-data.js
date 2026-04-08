@@ -128,10 +128,11 @@
   const scenes = {
     cluster_burst: {
       title: "Cluster Burst",
-      subtitle: "A five-cell color group is one tap away from blowing a hole through the crowd.",
+      subtitle:
+        "A huge green cluster is one tap away from tearing a clean opening through the queue.",
       badge: "Scene 01",
       footer:
-        "This is the new hero frame for the game: the player instantly sees the active parcel color, the connected match, and the payoff for reading the board correctly.",
+        "This should be the hero storefront frame: one glance tells the player what the parcel color is, where the cluster is, and why clearing groups feels powerful.",
       board: [
         row(null, client("shopper", "yellow"), client("hoodie", "cyan"), client("punk", "violet")),
         row(
@@ -149,90 +150,92 @@
         row(
           client("clerk", "orange"),
           client("hoodie", "green"),
-          client("punk", "blue"),
+          client("punk", "green"),
           client("shopper", "cyan")
         ),
         row(
           client("neo", "red"),
           client("aunt", "orange"),
-          client("runner", "violet"),
+          client("runner", "green"),
           client("cap", "green")
         ),
       ],
-      score: 15640,
-      served: 48,
-      combo: 7,
-      maxCombo: 11,
-      sessionMs: 173000,
-      tension: 0.44,
+      score: 18620,
+      served: 53,
+      combo: 8,
+      maxCombo: 12,
+      sessionMs: 188000,
+      tension: 0.58,
       currentOrder: "green",
       flow: true,
-      notifications: ["toastFlowStart", { key: "toastGroupBonus", params: { count: 5 } }],
+      notifications: ["toastFlowStart", { key: "toastGroupBonus", params: { count: 6 } }],
       catSpeech: {
-        ru: "Вот это уже работа. Забирай всю связку.",
-        en: "That’s the move. Take the whole cluster.",
-        tr: "İşte hamle bu. Tüm grubu tekte al.",
+        ru: "Вот это ход. Забирай всю зелёную связку.",
+        en: "That’s the move. Take the whole green cluster.",
+        tr: "İşte hamle bu. Tüm yeşil grubu tekte al.",
       },
     },
-    perfect_row: {
-      title: "Perfect Row",
-      subtitle: "A full bottom line of one color sits ready for a clean, greedy pickup streak.",
+    anti_stress_save: {
+      title: "Anti-Stress Save",
+      subtitle:
+        "The safety net just fired, the combo is gone, and one tight red clear keeps the shift alive.",
       badge: "Scene 02",
       footer:
-        "The perfect-row still should feel tempting: orderly, readable, and just disciplined enough to promise a huge reward if the player does not flinch.",
+        "This frame sells recovery under pressure: a recent mistake, a visible anti-stress bounce, and one obvious follow-up move before the board collapses.",
       board: [
         row(
           client("runner", "orange"),
           client("aunt", "yellow"),
-          client("hoodie", "red"),
-          client("shopper", "cyan")
+          client("hoodie", "cyan"),
+          client("shopper", "green")
         ),
         row(
           client("punk", "violet"),
-          client("runner", "blue"),
+          client("runner", "red"),
           client("clerk", "green"),
           client("neo", "orange")
         ),
         row(
           client("shopper", "yellow"),
-          client("aunt", "orange"),
+          client("aunt", "red"),
           client("runner", "blue"),
           client("hoodie", "cyan")
         ),
         row(
           client("clerk", "green"),
-          client("punk", "blue"),
+          client("punk", "red"),
           client("neo", "violet"),
-          client("shopper", "red")
+          client("shopper", "orange")
         ),
         row(
           client("runner", "blue"),
-          client("aunt", "blue"),
-          client("hoodie", "blue"),
-          client("cap", "blue")
+          client("aunt", "yellow"),
+          client("hoodie", "red", { angry: true }),
+          client("cap", "orange")
         ),
       ],
-      score: 18320,
-      served: 57,
-      combo: 5,
+      score: 20510,
+      served: 61,
+      combo: 0,
       maxCombo: 10,
-      sessionMs: 221000,
-      tension: 0.57,
-      currentOrder: "blue",
-      notifications: ["toastPerfectRowSpotted"],
+      sessionMs: 244000,
+      tension: 0.79,
+      currentOrder: "red",
+      antiStressReady: true,
+      notifications: ["toastAntiStress", { key: "toastGroupBonus", params: { count: 3 } }],
       catSpeech: {
-        ru: "Редкая роскошь. Чистый ряд. Не испорть.",
-        en: "A rare luxury. Clean row. Don’t waste it.",
-        tr: "Nadir bir lüks. Tertemiz sıra. Bozma.",
+        ru: "Один срыв тебе простили. Дальше без подарков.",
+        en: "One collapse got forgiven. No more gifts after this.",
+        tr: "Bir çöküş affedildi. Bundan sonrası hediyesiz.",
       },
     },
     rush_crush: {
       title: "Rush Crush",
       subtitle:
-        "The board is jammed, rush hour is live, and the orange match is still barely reachable.",
+        "Rush hour is live, the board is crammed, and the orange clear is barely still reachable.",
       badge: "Scene 03",
       footer:
-        "This is the pressure shot for the new balance: dense board, active rush, and just enough matching structure to keep the player hopeful instead of lost.",
+        "This is the pressure shot: dense board, active rush, a live customer quote, and just enough structure to promise a way out if the player reacts fast.",
       board: [
         row(
           client("aunt", "orange", { angry: true }),
@@ -265,31 +268,37 @@
           client("aunt", "red")
         ),
       ],
-      score: 21490,
-      served: 66,
+      score: 23140,
+      served: 71,
       combo: 4,
       maxCombo: 12,
-      sessionMs: 298000,
-      tension: 0.86,
+      sessionMs: 327000,
+      tension: 0.9,
       currentOrder: "orange",
       rush: true,
-      notifications: ["toastRush"],
+      notifications: ["toastRush", "toastFastAccess"],
       speaker: {
         row: 0,
         col: 0,
         text: {
-          ru: "Если это снова не мой заказ, я начну светиться от злости.",
-          en: "If this still isn’t mine, I’m going incandescent.",
-          tr: "Bu yine benim değilse artık sinirden parlayacağım.",
+          ru: "Если это опять не мой заказ, я начну выдавать жалобы сериями.",
+          en: "If this still isn't mine, I'm filing complaints in batches.",
+          tr: "Bu yine benim değilse şikâyetleri seri üretime alacağım.",
         },
+      },
+      catSpeech: {
+        ru: "Час пик. Или берёшь оранжевую связку, или тонешь красиво.",
+        en: "Rush hour. Either you take the orange cluster, or you drown elegantly.",
+        tr: "Yoğun saat. Ya turuncu kümeyi alırsın ya da zarifçe batarsın.",
       },
     },
     quarrel_lock: {
       title: "Quarrel Lock",
-      subtitle: "Two blocked cells cut through a live blue setup and force a risky recovery.",
+      subtitle:
+        "Two blocked cells slice through the blue setup and force a risky cleanup under noise.",
       badge: "Scene 04",
       footer:
-        "The quarrel frame should read immediately even without motion: locked cells, visible argument, and the active parcel color still leading the eye.",
+        "The quarrel frame should read instantly even without motion: locked cells, visible argument, and the active parcel color still pushing the eye toward the answer.",
       board: [
         row(
           client("runner", "green"),
@@ -322,12 +331,12 @@
           client("punk", "violet")
         ),
       ],
-      score: 11980,
-      served: 34,
+      score: 14260,
+      served: 39,
       combo: 3,
       maxCombo: 8,
-      sessionMs: 157000,
-      tension: 0.72,
+      sessionMs: 201000,
+      tension: 0.78,
       currentOrder: "blue",
       gimmick: "quarrel",
       quarrelCells: [
@@ -339,9 +348,9 @@
         row: 2,
         col: 1,
         text: {
-          ru: "Я за коробкой пришёл, а не в театр у стойки.",
-          en: "I came for a box, not ringside seats to this drama.",
-          tr: "Ben kutu almaya geldim, tezgâh başı tiyatrosuna değil.",
+          ru: "Я за коробкой пришёл, а не на премьеру ссор у стойки.",
+          en: "I came for a box, not opening night at the counter.",
+          tr: "Ben kutu almaya geldim, tezgâh başı prömiyere değil.",
         },
       },
     },
@@ -406,7 +415,7 @@
       landscape: { width: 1920, height: 1080 },
       portrait: { width: 1080, height: 1920 },
     },
-    sceneOrder: ["cluster_burst", "perfect_row", "rush_crush", "quarrel_lock", "shift_over"],
+    sceneOrder: ["cluster_burst", "anti_stress_save", "rush_crush", "quarrel_lock", "shift_over"],
     avatars: AVATARS,
     scenes,
   };

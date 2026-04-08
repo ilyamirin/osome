@@ -133,13 +133,15 @@ body.platform-yandex {
   --scene-dialogue-max-w: clamp(300px, 28vw, 340px);
   --scene-dialogue-gap: 14px;
   --scene-dialogue-font: clamp(0.94rem, 1.2vw, 1.18rem);
+  --cat-dialogue-width: clamp(150px, 16vw, 182px);
+  --cat-dialogue-top: -26px;
   --counter-max-w: clamp(360px, min(56dvh, 46vw), 520px);
   --counter-top-pad: clamp(14px, 1.8dvh, 20px);
-  --counter-left-col: clamp(64px, 7.5dvh, 84px);
+  --counter-left-col: clamp(82px, 10dvh, 104px);
   --counter-center-min: clamp(156px, 22dvh, 232px);
-  --counter-right-col: clamp(54px, 6dvh, 72px);
+  --counter-right-col: clamp(64px, 7.5dvh, 84px);
   --counter-gap: clamp(6px, 0.8vw, 10px);
-  --counter-min-h: clamp(122px, 16.5dvh, 176px);
+  --counter-min-h: clamp(134px, 17.5dvh, 184px);
   --counter-pad-top: clamp(12px, 1.2dvh, 16px);
   --counter-pad-x: clamp(8px, 0.9vw, 12px);
   --counter-pad-bottom: clamp(10px, 1.2dvh, 14px);
@@ -149,13 +151,13 @@ body.platform-yandex {
   --active-order-badge-w: clamp(84px, 10.5dvh, 110px);
   --active-order-badge-h: clamp(70px, 8.8dvh, 92px);
   --active-order-symbol-size: clamp(74px, 9.5dvh, 98px);
-  --score-clock-min-h: clamp(76px, 9.5dvh, 102px);
-  --score-clock-case-min-h: clamp(62px, 7.5dvh, 82px);
-  --score-clock-font: clamp(1.08rem, 1.35vw, 1.52rem);
-  --score-clock-font-compact: clamp(0.88rem, 1.05vw, 1.1rem);
-  --score-clock-font-tight: clamp(0.76rem, 0.92vw, 0.96rem);
-  --score-clock-font-ultra: clamp(0.66rem, 0.8vw, 0.82rem);
-  --speaker-min-h: clamp(72px, 8.5dvh, 96px);
+  --score-clock-min-h: clamp(94px, 11dvh, 118px);
+  --score-clock-case-min-h: clamp(74px, 8.6dvh, 96px);
+  --score-clock-font: clamp(1.18rem, 1.5vw, 1.66rem);
+  --score-clock-font-compact: clamp(0.96rem, 1.15vw, 1.22rem);
+  --score-clock-font-tight: clamp(0.82rem, 0.98vw, 1.04rem);
+  --score-clock-font-ultra: clamp(0.72rem, 0.86vw, 0.9rem);
+  --speaker-min-h: clamp(84px, 9.8dvh, 104px);
 }
 
 body.overlay-open {
@@ -230,6 +232,10 @@ body.platform-yandex .app-shell {
 
 body.platform-yandex .game-panel {
   display: flex;
+  height: calc(
+    100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
+      max(var(--shell-pad-y), env(safe-area-inset-bottom))
+  );
   min-height: calc(
     100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
       max(var(--shell-pad-y), env(safe-area-inset-bottom))
@@ -778,6 +784,35 @@ body.platform-yandex .counter-set {
 
 body.platform-yandex .counter-set {
   width: min(100%, var(--counter-max-w));
+}
+
+body.platform-yandex .frontal-counter .cat-mascot {
+  left: 10px;
+  top: -34px;
+  width: 100px;
+  height: 80px;
+}
+
+body.platform-yandex .frontal-counter .cat-tail {
+  right: 24px;
+  top: 44px;
+}
+
+body.platform-yandex .frontal-counter .score-clock-case {
+  padding: 12px 10px 10px;
+}
+
+body.platform-yandex .frontal-counter .score-clock-display {
+  padding-top: 28px;
+}
+
+body.platform-yandex .frontal-counter .speaker-toggle {
+  border-radius: 24px;
+}
+
+body.platform-yandex .cat-dialogue {
+  left: calc(100% - 6px);
+  top: -18px;
 }
 
 .board-shell {
@@ -2784,6 +2819,52 @@ body.platform-yandex .counter-set {
 }
 
 @media (max-width: 760px) {
+  body.platform-yandex {
+    --shell-pad-x: 8px;
+    --shell-pad-y: 10px;
+    --panel-pad: 6px;
+    --panel-radius: 24px;
+    --stage-min-h: calc(100dvh - 116px);
+    --queue-gap: 6px;
+    --queue-pad-top: 18px;
+    --queue-pad-x: 4px;
+    --queue-pad-bottom: 10px;
+    --board-max-w: 100%;
+    --board-pad: 6px;
+    --board-radius: 18px;
+    --board-gap: 4px;
+    --board-lane-offset: 5px;
+    --board-lane-width: 5px;
+    --scene-dialogue-max-w: min(252px, calc(100vw - 28px));
+    --scene-dialogue-gap: 8px;
+    --scene-dialogue-font: 0.94rem;
+    --cat-dialogue-width: 124px;
+    --cat-dialogue-top: -10px;
+    --counter-top-pad: 14px;
+    --counter-max-w: 100%;
+    --counter-left-col: 72px;
+    --counter-center-min: 130px;
+    --counter-right-col: 56px;
+    --counter-gap: 8px;
+    --counter-min-h: 128px;
+    --counter-pad-top: 12px;
+    --counter-pad-x: 8px;
+    --counter-pad-bottom: 10px;
+    --speaker-min-h: 74px;
+    --active-order-min-h: 94px;
+    --active-order-pad-top: 6px;
+    --active-order-pad-bottom: 12px;
+    --active-order-badge-w: 88px;
+    --active-order-badge-h: 72px;
+    --active-order-symbol-size: 74px;
+    --score-clock-min-h: 92px;
+    --score-clock-case-min-h: 72px;
+    --score-clock-font: 1.12rem;
+    --score-clock-font-compact: 0.92rem;
+    --score-clock-font-tight: 0.8rem;
+    --score-clock-font-ultra: 0.7rem;
+  }
+
   :root {
     --shell-pad-x: 8px;
     --shell-pad-y: 10px;
@@ -2885,6 +2966,40 @@ body.platform-yandex .counter-set {
     margin-top: 6px;
   }
 
+  body.platform-yandex .game-layout {
+    width: 100%;
+  }
+
+  body.platform-yandex .game-panel {
+    height: calc(
+      100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
+        max(var(--shell-pad-y), env(safe-area-inset-bottom))
+    );
+    min-height: calc(
+      100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
+        max(var(--shell-pad-y), env(safe-area-inset-bottom))
+    );
+  }
+
+  body.platform-yandex .play-area {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    margin-top: 6px;
+  }
+
+  body.platform-yandex .scene-panel {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  body.platform-yandex .facility-stage {
+    flex: 1;
+    min-height: var(--stage-min-h);
+    height: 100%;
+  }
+
   .facility-stage {
     border-radius: 24px;
   }
@@ -2893,10 +3008,25 @@ body.platform-yandex .counter-set {
     justify-items: stretch;
   }
 
+  body.platform-yandex .queue-zone {
+    align-content: start;
+    justify-items: stretch;
+  }
+
   .board-shell,
   .counter-set {
     width: 100%;
     max-width: none;
+  }
+
+  body.platform-yandex .board-shell,
+  body.platform-yandex .counter-set {
+    width: 100%;
+    max-width: none;
+  }
+
+  body.platform-yandex .counter-set {
+    width: 100%;
   }
 
   .speaker-toggle {
@@ -2936,6 +3066,14 @@ body.platform-yandex .counter-set {
     top: -14px;
     width: 78px;
     height: 62px;
+    transform: scale(0.84);
+  }
+
+  body.platform-yandex .frontal-counter .cat-mascot {
+    left: 6px;
+    top: -16px;
+    width: 82px;
+    height: 64px;
     transform: scale(0.84);
   }
 
@@ -3329,6 +3467,12 @@ body.platform-yandex .counter-set {
     width: 122px;
   }
 
+  body.platform-yandex .cat-dialogue {
+    left: calc(100% - 10px);
+    top: -6px;
+    width: 122px;
+  }
+
   .author-plaque {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -3432,19 +3576,22 @@ body.platform-yandex .counter-set {
     --board-pad: clamp(6px, 0.7vw, 10px);
     --board-gap: clamp(4px, 0.55vw, 6px);
     --scene-dialogue-max-w: clamp(260px, 24vw, 320px);
-    --counter-max-w: clamp(340px, min(48dvh, 42vw), 460px);
+    --cat-dialogue-width: clamp(136px, 14vw, 160px);
+    --counter-max-w: clamp(360px, min(50dvh, 44vw), 490px);
     --counter-top-pad: clamp(12px, 1.4dvh, 16px);
-    --counter-min-h: clamp(112px, 14dvh, 154px);
+    --counter-left-col: clamp(76px, 8.8dvh, 94px);
+    --counter-right-col: clamp(58px, 6.8dvh, 74px);
+    --counter-min-h: clamp(122px, 15dvh, 164px);
     --counter-pad-top: clamp(10px, 1dvh, 14px);
     --counter-pad-bottom: clamp(8px, 0.9dvh, 12px);
     --active-order-min-h: clamp(84px, 10.5dvh, 110px);
     --active-order-badge-w: clamp(78px, 9.4dvh, 100px);
     --active-order-badge-h: clamp(64px, 7.8dvh, 84px);
     --active-order-symbol-size: clamp(68px, 8.5dvh, 88px);
-    --score-clock-min-h: clamp(68px, 8dvh, 90px);
-    --score-clock-case-min-h: clamp(56px, 6.6dvh, 74px);
-    --score-clock-font: clamp(0.96rem, 1.15vw, 1.32rem);
-    --speaker-min-h: clamp(64px, 7.2dvh, 84px);
+    --score-clock-min-h: clamp(82px, 9.2dvh, 102px);
+    --score-clock-case-min-h: clamp(66px, 7.3dvh, 84px);
+    --score-clock-font: clamp(1.04rem, 1.24vw, 1.42rem);
+    --speaker-min-h: clamp(76px, 8.4dvh, 92px);
   }
 
   body.platform-yandex .brand-card h1 {
@@ -3453,5 +3600,15 @@ body.platform-yandex .counter-set {
 
   body.platform-yandex .play-area {
     margin-top: 6px;
+  }
+
+  body.platform-yandex .frontal-counter .cat-mascot {
+    top: -28px;
+    width: 92px;
+    height: 74px;
+  }
+
+  body.platform-yandex .cat-dialogue {
+    top: -14px;
   }
 }
