@@ -71,11 +71,9 @@ function buildIndexHtml() {
   let html = fs.readFileSync(sourcePath, "utf8");
 
   html = html.replace('<html lang="ru">', '<html lang="ru" data-platform="yandex">');
-  html = html.replace(/[\t ]*<link rel="canonical"[^>]*\/>\n/g, "");
-  html = html.replace(
-    /[\t ]*<meta property="og:type"[\s\S]*?<meta[\t ]+name="twitter:image"[\s\S]*?\/>\n/g,
-    ""
-  );
+  html = html.replace(/[\t ]*<link rel="canonical"[^>]*\/>\n?/g, "");
+  html = html.replace(/[\t ]*<meta[\s\S]*?property="og:[^"]+"[\s\S]*?\/>\n?/g, "");
+  html = html.replace(/[\t ]*<meta[\s\S]*?name="twitter:[^"]+"[\s\S]*?\/>\n?/g, "");
   html = html.replace(
     '<link rel="stylesheet" href="./styles.css?v=20260401b" />',
     '<link rel="stylesheet" href="./styles.css?v=20260401b" />\n    <script src="/sdk.js"></script>\n    <!-- YaGames.init() LoadingAPI.ready() GameplayAPI.start() GameplayAPI.stop() -->'

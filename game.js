@@ -759,10 +759,13 @@ const audioState = {
   activeMediaFx: new Set(),
   soundBuffers: new Map(),
   loadingPromise: null,
+  backgroundBuffers: [],
   backgroundTracks: [],
   backgroundLoadStarted: false,
   backgroundReadyCount: 0,
   backgroundCurrentIndex: -1,
+  backgroundCurrentSource: null,
+  backgroundCurrentGain: null,
   backgroundCurrentTrack: null,
   backgroundStartTimer: 0,
 };
@@ -3462,6 +3465,25 @@ async function loadAudioAssets() {
       }
     })
   );
+
+  await Promise.all(
+    MUSIC_TRACKS.map(async (url, index) => {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await decodeAudioBuffer(ctx, arrayBuffer);
+        audioState.backgroundBuffers[index] = audioBuffer;
+        audioState.backgroundReadyCount += 1;
+      } catch (error) {
+        console.warn(`Could not load background track "${url}".`, error);
+      }
+    })
+  );
+
+  maybeStartBackgroundMusic();
 }
 
 function isBackgroundMusicAllowed() {
@@ -3480,6 +3502,22 @@ function getBackgroundMusicVolume() {
 }
 
 function stopBackgroundMusic() {
+  if (audioState.backgroundCurrentSource) {
+    audioState.backgroundCurrentSource.onended = null;
+    try {
+      audioState.backgroundCurrentSource.stop();
+    } catch (error) {
+      void error;
+    }
+    audioState.backgroundCurrentSource.disconnect();
+    audioState.backgroundCurrentSource = null;
+  }
+
+  if (audioState.backgroundCurrentGain) {
+    audioState.backgroundCurrentGain.disconnect();
+    audioState.backgroundCurrentGain = null;
+  }
+
   if (!audioState.backgroundCurrentTrack) {
     return;
   }
@@ -3489,7 +3527,53 @@ function stopBackgroundMusic() {
   audioState.backgroundCurrentTrack = null;
 }
 
+function shouldUseWebAudioBackground() {
+  return platformState.isYandexEnvironment && Boolean(audioState.ctx);
+}
+
+function playBackgroundBuffer(index) {
+  const ctx = audioState.ctx;
+  const buffer = audioState.backgroundBuffers[index];
+  if (!ctx || !buffer) {
+    return false;
+  }
+
+  if (audioState.backgroundCurrentSource && audioState.backgroundCurrentIndex === index) {
+    if (audioState.backgroundCurrentGain) {
+      audioState.backgroundCurrentGain.gain.value = getBackgroundMusicVolume();
+    }
+    return true;
+  }
+
+  stopBackgroundMusic();
+
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  gain.gain.value = getBackgroundMusicVolume();
+  source.connect(gain).connect(ctx.destination);
+  source.onended = () => {
+    if (audioState.backgroundCurrentSource !== source) {
+      return;
+    }
+    audioState.backgroundCurrentSource = null;
+    audioState.backgroundCurrentGain = null;
+    audioState.backgroundCurrentIndex = index;
+    maybeStartBackgroundMusic();
+  };
+
+  audioState.backgroundCurrentIndex = index;
+  audioState.backgroundCurrentSource = source;
+  audioState.backgroundCurrentGain = gain;
+  source.start();
+  return true;
+}
+
 function playBackgroundTrack(index) {
+  if (shouldUseWebAudioBackground()) {
+    return playBackgroundBuffer(index);
+  }
+
   const track = audioState.backgroundTracks[index];
   if (!track || !track.ready) {
     return false;
@@ -3547,7 +3631,11 @@ function maybeStartBackgroundMusic() {
 }
 
 function scheduleBackgroundMusicLoad() {
-  if (audioState.backgroundLoadStarted || typeof Audio === "undefined") {
+  if (
+    audioState.backgroundLoadStarted ||
+    typeof Audio === "undefined" ||
+    platformState.isYandexEnvironment
+  ) {
     return;
   }
 
@@ -3766,6 +3854,20 @@ function handleSceneTap(event) {
   }
 }
 
+function suppressPlatformContextMenu(event) {
+  if (!platformState.isYandexEnvironment) {
+    return;
+  }
+  event.preventDefault();
+}
+
+function suppressPlatformSelection(event) {
+  if (!platformState.isYandexEnvironment) {
+    return;
+  }
+  event.preventDefault();
+}
+
 function onBoardPointerDown(event) {
   unlockAudio();
   if (platformState.orientationBlocked) {
@@ -3867,6 +3969,9 @@ DOM.board.addEventListener("pointerdown", onBoardPointerDown);
 DOM.stageSurface.addEventListener("contextmenu", (event) => event.preventDefault());
 DOM.board.addEventListener("contextmenu", (event) => event.preventDefault());
 DOM.stageSurface.addEventListener("selectstart", (event) => event.preventDefault());
+document.addEventListener("contextmenu", suppressPlatformContextMenu);
+document.addEventListener("selectstart", suppressPlatformSelection);
+document.addEventListener("dragstart", suppressPlatformSelection);
 window.addEventListener("touchstart", unlockAudio, { passive: true });
 window.addEventListener("pointerdown", unlockAudio, { passive: true });
 window.addEventListener("keydown", handleKeyDown);

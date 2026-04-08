@@ -94,6 +94,13 @@ body {
   min-height: 100%;
 }
 
+html[data-platform="yandex"],
+html[data-platform="yandex"] body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   background:
     radial-gradient(circle at top left, rgba(78, 175, 102, 0.12), transparent 20%),
@@ -106,6 +113,9 @@ body {
 body.platform-yandex {
   overflow: hidden;
   overscroll-behavior: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
 }
 
 body.overlay-open {
@@ -457,6 +467,13 @@ body.platform-yandex .author-plaque {
   display: none;
 }
 
+body.platform-yandex,
+body.platform-yandex * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 body.stills-mode {
   overflow: hidden;
   overscroll-behavior: none;
@@ -617,6 +634,12 @@ body.platform-yandex .facility-stage * {
 
 body.platform-yandex .facility-stage {
   touch-action: manipulation;
+}
+
+body.platform-yandex .overlay,
+body.platform-yandex .overlay-card {
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .facility-stage::before {
