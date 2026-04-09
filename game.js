@@ -647,7 +647,7 @@ const DOM = {
   authorRole: document.querySelector("#ui-author-role"),
   authorLicense: document.querySelector("#ui-author-license"),
   authorAiNote: document.querySelector("#ui-author-ai-note"),
-  authorSummary: document.querySelector("#ui-author-summary"),
+  authorLink: document.querySelector("#ui-author-link"),
   restartButton: document.querySelector("#restart-button"),
   menuButton: document.querySelector("#menu-button"),
   board: document.querySelector("#board"),
@@ -860,8 +860,8 @@ function applyStaticLocaleText() {
   if (DOM.authorAiNote) {
     DOM.authorAiNote.textContent = t("authorAiNote");
   }
-  if (DOM.authorSummary) {
-    DOM.authorSummary.textContent = t("authorSummary");
+  if (DOM.authorLink) {
+    DOM.authorLink.textContent = t("authorLink");
   }
   if (DOM.overlayEyebrow) {
     DOM.overlayEyebrow.textContent = t("overlayEyebrow");
