@@ -28,6 +28,7 @@
   --shell-pad-y: clamp(14px, 2.6vw, 18px);
   --panel-pad: clamp(16px, 2.4vw, 28px);
   --panel-radius: clamp(28px, 3vw, 40px);
+  --available-height: 100dvh;
   --stage-min-h: clamp(640px, 82svh, 780px);
   --stage-radius: clamp(28px, 2.8vw, 34px);
   --queue-gap: clamp(10px, 1.4vw, 14px);
@@ -116,6 +117,10 @@ body.platform-yandex {
   position: fixed;
   inset: 0;
   width: 100%;
+  --available-height: calc(
+    100dvh - max(var(--shell-pad-y), env(safe-area-inset-top)) -
+      max(var(--shell-pad-y), env(safe-area-inset-bottom))
+  );
   --shell-pad-x: clamp(8px, 1.2vw, 12px);
   --shell-pad-y: clamp(8px, 1.2vw, 12px);
   --panel-pad: clamp(10px, 1.4vw, 14px);
@@ -563,6 +568,11 @@ body.platform-yandex * {
   -webkit-touch-callout: none;
 }
 
+body.platform-booting .facility-stage,
+body.platform-booting .overlay {
+  pointer-events: none;
+}
+
 body.stills-mode {
   overflow: hidden;
   overscroll-behavior: none;
@@ -770,6 +780,11 @@ body.platform-yandex .queue-zone {
   align-content: space-between;
   justify-items: center;
   min-height: 100%;
+}
+
+body.platform-yandex.orientation-blocked .scene-dialogue,
+body.platform-yandex.orientation-blocked .queue-zone {
+  display: none;
 }
 
 body.platform-yandex .intro-card {
@@ -2836,12 +2851,12 @@ body.platform-yandex .cat-dialogue {
     --shell-pad-y: 10px;
     --panel-pad: 6px;
     --panel-radius: 24px;
-    --stage-min-h: 520px;
+    --stage-min-h: calc(var(--available-height) - 56px);
     --queue-gap: 6px;
     --queue-pad-top: 24px;
     --queue-pad-x: 4px;
     --queue-pad-bottom: 10px;
-    --board-max-w: 100%;
+    --board-max-w: clamp(236px, min(100%, 44dvh), 320px);
     --board-pad: 6px;
     --board-radius: 18px;
     --board-gap: 4px;
@@ -2853,7 +2868,7 @@ body.platform-yandex .cat-dialogue {
     --cat-dialogue-width: 132px;
     --cat-dialogue-top: -12px;
     --counter-top-pad: 16px;
-    --counter-max-w: 320px;
+    --counter-max-w: min(100%, 320px);
     --counter-left-col: 68px;
     --counter-center-min: 122px;
     --counter-right-col: 54px;
@@ -2883,14 +2898,14 @@ body.platform-yandex .cat-dialogue {
     justify-items: stretch;
   }
 
-  body.platform-yandex .board-shell,
-  body.platform-yandex .counter-set {
-    width: 100%;
-    max-width: none;
+  body.platform-yandex .board-shell {
+    width: min(100%, var(--board-max-w));
+    max-width: var(--board-max-w);
   }
 
   body.platform-yandex .counter-set {
-    width: 100%;
+    width: min(100%, var(--counter-max-w));
+    max-width: var(--counter-max-w);
   }
 
   :root {
@@ -2995,21 +3010,21 @@ body.platform-yandex .cat-dialogue {
   }
 
   body.platform-yandex .app-shell {
-    height: auto;
+    height: 100dvh;
     min-height: 100dvh;
     padding-top: max(14px, env(safe-area-inset-top));
   }
 
   body.platform-yandex .game-layout {
-    width: min(100%, 1320px);
-    height: auto;
+    width: 100%;
+    height: 100%;
   }
 
   body.platform-yandex .game-panel {
-    display: block;
-    min-height: 0;
-    height: auto;
-    overflow: visible;
+    display: flex;
+    height: var(--available-height);
+    min-height: var(--available-height);
+    overflow: hidden;
     padding: var(--panel-pad);
     border-radius: var(--panel-radius);
   }
@@ -3040,23 +3055,23 @@ body.platform-yandex .cat-dialogue {
   }
 
   body.platform-yandex .play-area {
-    display: block;
-    flex: none;
-    min-height: auto;
+    display: flex;
+    flex: 1;
+    min-height: 0;
     margin-top: 6px;
   }
 
   body.platform-yandex .scene-panel {
-    display: grid;
-    gap: 16px;
-    min-height: auto;
-    height: auto;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
   }
 
   body.platform-yandex .facility-stage {
-    flex: none;
-    min-height: var(--stage-min-h);
-    height: auto;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
     border-radius: 24px;
   }
 
@@ -3074,14 +3089,14 @@ body.platform-yandex .cat-dialogue {
     max-width: none;
   }
 
-  body.platform-yandex .board-shell,
-  body.platform-yandex .counter-set {
-    width: 100%;
-    max-width: none;
+  body.platform-yandex .board-shell {
+    width: min(100%, var(--board-max-w));
+    max-width: var(--board-max-w);
   }
 
   body.platform-yandex .counter-set {
-    width: 100%;
+    width: min(100%, var(--counter-max-w));
+    max-width: var(--counter-max-w);
     padding-top: var(--counter-top-pad);
   }
 

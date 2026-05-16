@@ -72,8 +72,8 @@ function buildIndexHtml() {
 
   html = html.replace('<html lang="ru">', '<html lang="ru" data-platform="yandex">');
   html = html.replace(/[\t ]*<link rel="canonical"[^>]*\/>\n?/g, "");
-  html = html.replace(/^[\t ]*<meta[^>\n]*property="og:[^"]+"[^>]*\/>\n?/gm, "");
-  html = html.replace(/^[\t ]*<meta[^>\n]*name="twitter:[^"]+"[^>]*\/>\n?/gm, "");
+  html = html.replace(/[\t ]*<meta\s+[^>]*property="og:[^"]+"[\s\S]*?\/>\n?/g, "");
+  html = html.replace(/[\t ]*<meta\s+[^>]*name="twitter:[^"]+"[\s\S]*?\/>\n?/g, "");
   html = html.replace(
     /<link rel="stylesheet" href="\.\/styles\.css\?v=[^"]+" \/>/,
     (match) =>

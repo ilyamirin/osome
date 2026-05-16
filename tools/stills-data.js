@@ -409,119 +409,163 @@
     },
   };
 
-  const videoManifests = {
-    cluster_power: {
-      title: "Cluster Power",
-      locale: "ru",
-      orientation: "portrait",
+  function makeVideoManifest(locale, orientation, fileName, options) {
+    return {
+      locale,
+      orientation,
+      fileName,
       fps: 24,
-      musicTrack: "osome_bureaucratic_noir_a.mp3",
-      musicStartSec: 7,
-      musicVolume: 0.08,
-      sfxVolume: 0.78,
       transitionSec: 0.35,
-      shots: [
-        {
-          scene: "cluster_burst",
-          duration: 5.8,
-          move: "board-push",
-          sfx: [{ file: "confirmation_002.mp3", at: 2.6, volume: 0.72 }],
-        },
-        {
-          scene: "cluster_burst",
-          duration: 4.8,
-          move: "hero-hold",
-          sfx: [{ file: "bonus_levelup.mp3", at: 1.4, volume: 0.82 }],
-        },
-        {
-          scene: "cluster_burst",
-          duration: 5.2,
-          move: "counter-push",
-          sfx: [{ file: "confirmation_002.mp3", at: 2.7, volume: 0.74 }],
-        },
-        {
-          scene: "cluster_burst",
-          duration: 6.1,
-          move: "board-rise",
-          sfx: [{ file: "bonus_levelup.mp3", at: 2.1, volume: 0.86 }],
-        },
-      ],
+      ...options,
+    };
+  }
+
+  function addLocalizedVideoManifests(target, key, fileName, options) {
+    for (const locale of ["ru", "en"]) {
+      target[`${key}_${locale}`] = makeVideoManifest(locale, options.orientation, fileName, {
+        ...options,
+      });
+    }
+  }
+
+  const clusterPowerShots = [
+    {
+      scene: "cluster_burst",
+      duration: 5.8,
+      move: "board-push",
+      sfx: [{ file: "confirmation_002.mp3", at: 2.6, volume: 0.72 }],
     },
-    pressure_save: {
-      title: "Pressure Save",
-      locale: "ru",
-      orientation: "portrait",
-      fps: 24,
-      musicTrack: "osome_bureaucratic_noir_b.mp3",
-      musicStartSec: 4,
-      musicVolume: 0.082,
-      sfxVolume: 0.8,
-      transitionSec: 0.35,
-      shots: [
-        {
-          scene: "rush_crush",
-          duration: 5.8,
-          move: "board-rise",
-          sfx: [{ file: "question_002.mp3", at: 1.3, volume: 0.52 }],
-        },
-        {
-          scene: "rush_crush",
-          duration: 5.0,
-          move: "counter-push",
-          sfx: [{ file: "error_005.mp3", at: 2.0, volume: 0.72 }],
-        },
-        {
-          scene: "anti_stress_save",
-          duration: 5.2,
-          move: "hero-hold",
-          sfx: [{ file: "bonus_levelup.mp3", at: 1.1, volume: 0.88 }],
-        },
-        {
-          scene: "anti_stress_save",
-          duration: 5.6,
-          move: "board-push",
-          sfx: [{ file: "confirmation_002.mp3", at: 2.5, volume: 0.76 }],
-        },
-      ],
+    {
+      scene: "cluster_burst",
+      duration: 4.8,
+      move: "hero-hold",
+      sfx: [{ file: "bonus_levelup.mp3", at: 1.4, volume: 0.82 }],
     },
-    queue_collapse: {
+    {
+      scene: "cluster_burst",
+      duration: 5.2,
+      move: "counter-push",
+      sfx: [{ file: "confirmation_002.mp3", at: 2.7, volume: 0.74 }],
+    },
+    {
+      scene: "cluster_burst",
+      duration: 6.1,
+      move: "board-rise",
+      sfx: [{ file: "bonus_levelup.mp3", at: 2.1, volume: 0.86 }],
+    },
+  ];
+
+  const pressureSaveShots = [
+    {
+      scene: "rush_crush",
+      duration: 5.8,
+      move: "board-rise",
+      sfx: [{ file: "question_002.mp3", at: 1.3, volume: 0.52 }],
+    },
+    {
+      scene: "rush_crush",
+      duration: 5.0,
+      move: "counter-push",
+      sfx: [{ file: "error_005.mp3", at: 2.0, volume: 0.72 }],
+    },
+    {
+      scene: "anti_stress_save",
+      duration: 5.2,
+      move: "hero-hold",
+      sfx: [{ file: "bonus_levelup.mp3", at: 1.1, volume: 0.88 }],
+    },
+    {
+      scene: "anti_stress_save",
+      duration: 5.6,
+      move: "board-push",
+      sfx: [{ file: "confirmation_002.mp3", at: 2.5, volume: 0.76 }],
+    },
+  ];
+
+  const queueCollapseShots = [
+    {
+      scene: "quarrel_lock",
+      duration: 5.6,
+      move: "board-push",
+      sfx: [{ file: "question_002.mp3", at: 1.5, volume: 0.5 }],
+    },
+    {
+      scene: "rush_crush",
+      duration: 4.8,
+      move: "board-rise",
+      sfx: [{ file: "error_005.mp3", at: 2.3, volume: 0.72 }],
+    },
+    {
+      scene: "quarrel_lock",
+      duration: 5.1,
+      move: "counter-push",
+      sfx: [{ file: "confirmation_002.mp3", at: 2.0, volume: 0.64 }],
+    },
+    {
+      scene: "shift_over",
+      duration: 6.2,
+      move: "hero-hold",
+      sfx: [{ file: "fail_gameover.mp3", at: 1.7, volume: 0.92 }],
+    },
+  ];
+
+  const videoManifests = {};
+
+  addLocalizedVideoManifests(videoManifests, "vertical_puzzle", "parcel-queue-puzzle-cut", {
+    title: "Cluster Power",
+    orientation: "portrait",
+    musicTrack: "osome_bureaucratic_noir_a.mp3",
+    musicStartSec: 7,
+    musicVolume: 0.08,
+    sfxVolume: 0.78,
+    shots: clusterPowerShots,
+  });
+
+  addLocalizedVideoManifests(videoManifests, "vertical_pressure", "parcel-queue-pressure-cut", {
+    title: "Pressure Save",
+    orientation: "portrait",
+    musicTrack: "osome_bureaucratic_noir_b.mp3",
+    musicStartSec: 4,
+    musicVolume: 0.082,
+    sfxVolume: 0.8,
+    shots: pressureSaveShots,
+  });
+
+  addLocalizedVideoManifests(videoManifests, "landscape_gameplay", "parcel-queue-gameplay-cut", {
+    title: "Cluster Gameplay",
+    orientation: "landscape",
+    musicTrack: "osome_bureaucratic_noir_a.mp3",
+    musicStartSec: 7,
+    musicVolume: 0.08,
+    sfxVolume: 0.78,
+    shots: clusterPowerShots.slice(0, 3),
+  });
+
+  addLocalizedVideoManifests(videoManifests, "landscape_puzzle", "parcel-queue-promo-puzzle", {
+    title: "Cluster Power",
+    orientation: "landscape",
+    musicTrack: "osome_bureaucratic_noir_a.mp3",
+    musicStartSec: 7,
+    musicVolume: 0.08,
+    sfxVolume: 0.78,
+    shots: clusterPowerShots,
+  });
+
+  addLocalizedVideoManifests(
+    videoManifests,
+    "landscape_escalation",
+    "parcel-queue-promo-escalation",
+    {
       title: "Queue Collapse",
-      locale: "ru",
-      orientation: "portrait",
-      fps: 24,
+      orientation: "landscape",
       musicTrack: "osome_bureaucratic_noir_b.mp3",
       musicStartSec: 16,
       musicVolume: 0.084,
       sfxVolume: 0.82,
       transitionSec: 0.42,
-      shots: [
-        {
-          scene: "quarrel_lock",
-          duration: 5.6,
-          move: "board-push",
-          sfx: [{ file: "question_002.mp3", at: 1.5, volume: 0.5 }],
-        },
-        {
-          scene: "rush_crush",
-          duration: 4.8,
-          move: "board-rise",
-          sfx: [{ file: "error_005.mp3", at: 2.3, volume: 0.72 }],
-        },
-        {
-          scene: "quarrel_lock",
-          duration: 5.1,
-          move: "counter-push",
-          sfx: [{ file: "confirmation_002.mp3", at: 2.0, volume: 0.64 }],
-        },
-        {
-          scene: "shift_over",
-          duration: 6.2,
-          move: "hero-hold",
-          sfx: [{ file: "fail_gameover.mp3", at: 1.7, volume: 0.92 }],
-        },
-      ],
-    },
-  };
+      shots: queueCollapseShots,
+    }
+  );
 
   const payload = {
     locales: ["ru", "en", "tr"],

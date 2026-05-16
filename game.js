@@ -1538,6 +1538,10 @@ function finishTutorialOnboarding(now) {
 }
 
 function startGame() {
+  if (isPlatformInteractionLocked()) {
+    return;
+  }
+
   if (shouldShowFirstTapTutorial()) {
     startTutorialGame();
     return;
@@ -1578,7 +1582,6 @@ function endGame() {
   pushToast(t("toastGameOver"));
   playFx("fail");
   syncPlatformGameplayState();
-  maybeShowGameOverInterstitial();
 }
 
 function createClient(type) {
@@ -3127,8 +3130,13 @@ function isRuntimePaused() {
   return platformState.pauseReasons.size > 0;
 }
 
+function isPlatformInteractionLocked() {
+  return platformState.isYandexEnvironment && !platformState.loadingReadySent;
+}
+
 function applyPlatformMode() {
   document.body.classList.toggle("platform-yandex", platformState.isYandexEnvironment);
+  document.body.classList.toggle("platform-booting", isPlatformInteractionLocked());
 }
 
 function pauseAllAudioPlayback() {
@@ -3194,6 +3202,7 @@ function removePauseReason(reason) {
 function syncOrientationGuard() {
   platformState.orientationBlocked = isOrientationBlocked();
   DOM.rotateOverlay.classList.toggle("hidden", !platformState.orientationBlocked);
+  document.body.classList.toggle("orientation-blocked", platformState.orientationBlocked);
   if (platformState.orientationBlocked) {
     addPauseReason("orientation");
   } else {
@@ -3232,17 +3241,19 @@ function requestFullscreenIfPossible() {
 }
 
 function markPlatformReady() {
-  if (!platformState.sdk || platformState.loadingReadySent) {
+  if (platformState.loadingReadySent) {
     return;
   }
 
-  if (platformState.sdk.features?.LoadingAPI?.ready) {
+  if (platformState.sdk?.features?.LoadingAPI?.ready) {
     platformState.sdk.features.LoadingAPI.ready();
   }
   platformState.loadingReadySent = true;
+  applyPlatformMode();
+  syncOrientationGuard();
 }
 
-function shouldShowGameOverInterstitial(now = performance.now()) {
+function shouldShowInterstitial(now = performance.now()) {
   if (!platformState.sdk?.adv?.showFullscreenAdv) {
     return false;
   }
@@ -3258,22 +3269,21 @@ function shouldShowGameOverInterstitial(now = performance.now()) {
   return true;
 }
 
-function maybeShowGameOverInterstitial() {
+function maybeShowRestartInterstitial(reason, onFinished) {
   const now = performance.now();
-  if (!shouldShowGameOverInterstitial(now)) {
-    return;
+  if (!shouldShowInterstitial(now)) {
+    return false;
   }
 
-  showPlatformInterstitialAd("game-over", {
+  showPlatformInterstitialAd(reason, {
     onShown: () => {
       platformState.lastInterstitialAt = now;
     },
     onFinished: () => {
-      if (!state.running && !state.awaitingStart) {
-        setStandby();
-      }
+      onFinished();
     },
   });
+  return true;
 }
 
 function showPlatformInterstitialAd(reason = "transition", options = {}) {
@@ -3366,7 +3376,6 @@ async function initYandexPlatform() {
       applyPlatformLanguage(ysdk);
       attachYandexPauseHandlers(ysdk);
       syncOrientationGuard();
-      markPlatformReady();
       syncPlatformGameplayState();
       return ysdk;
     })
@@ -3376,6 +3385,22 @@ async function initYandexPlatform() {
     });
 
   return platformState.initPromise;
+}
+
+async function initializeYandexBoot() {
+  const restoredRun = loadRunSnapshot();
+  const ysdk = await initYandexPlatform();
+  if (!restoreRunSnapshot(restoredRun)) {
+    setStandby();
+  }
+  if (ysdk) {
+    markPlatformReady();
+  } else {
+    platformState.loadingReadySent = true;
+    applyPlatformMode();
+    syncOrientationGuard();
+  }
+  syncPlatformGameplayState();
 }
 
 function escapeHtml(value) {
@@ -3867,6 +3892,9 @@ function handleSceneTap(event) {
   if (platformState.orientationBlocked) {
     return;
   }
+  if (isPlatformInteractionLocked()) {
+    return;
+  }
   requestFullscreenIfPossible();
   if (state.awaitingStart && DOM.overlay.classList.contains("hidden")) {
     startGame();
@@ -3892,6 +3920,9 @@ function onBoardPointerDown(event) {
   if (platformState.orientationBlocked) {
     return;
   }
+  if (isPlatformInteractionLocked()) {
+    return;
+  }
   const cell = event.target.closest(".cell");
   if (!cell) {
     return;
@@ -3900,6 +3931,18 @@ function onBoardPointerDown(event) {
   const row = Number(cell.dataset.row);
   const col = Number(cell.dataset.col);
   handleCellTap(row, col);
+}
+
+function runAfterOptionalInterstitial(reason, action) {
+  if (isPlatformInteractionLocked()) {
+    return;
+  }
+
+  if (maybeShowRestartInterstitial(reason, action)) {
+    return;
+  }
+
+  action();
 }
 
 function handleKeyDown(event) {
@@ -3967,6 +4010,8 @@ applyPlatformMode();
 syncOrientationGuard();
 if (STILLS_SCENE_NAME) {
   applyStillScene(STILLS_SCENE_NAME);
+} else if (FORCE_YANDEX_MODE) {
+  void initializeYandexBoot();
 } else {
   void initYandexPlatform();
   const restoredRun = loadRunSnapshot();
@@ -3979,8 +4024,8 @@ if (!STILLS_SCENE_NAME && !state.running && !state.awaitingStart) {
   setStandby();
 }
 
-bindTapAction(DOM.restartButton, startGame);
-bindTapAction(DOM.menuButton, setStandby);
+bindTapAction(DOM.restartButton, () => runAfterOptionalInterstitial("restart", startGame));
+bindTapAction(DOM.menuButton, () => runAfterOptionalInterstitial("menu", setStandby));
 bindTapAction(DOM.musicToggle, toggleMusic);
 DOM.stageSurface.addEventListener("pointerdown", handleSceneTap);
 DOM.introOverlay.addEventListener("pointerdown", handleSceneTap);

@@ -12,8 +12,10 @@
     "balance:simulate": "node ./scripts/simulate-balance.cjs",
     "balance:search": "node ./scripts/simulate-balance.cjs search",
     "build:yandex": "node ./scripts/build-yandex.cjs",
+    "check:yandex-moderation": "node ./scripts/check-yandex-moderation.cjs",
     "stills:capture": "node ./scripts/capture-stills.cjs",
-    "videos:build": "node ./scripts/build-promo-videos.cjs"
+    "videos:build": "node ./scripts/build-promo-videos.cjs",
+    "videos:cuts": "node ./scripts/build-video-cuts.cjs"
   },
   "keywords": [
     "game",

@@ -167,10 +167,12 @@ function concatSegments({ manifestName, segmentFiles, width, height, fps }) {
 }
 
 function mixAudio({ manifestName, manifest, baseVideoPath, totalDuration, events }) {
-  const outputDir = path.join(outputRoot, manifest.locale, manifest.orientation);
+  const outputOrientation = manifest.orientation === "portrait" ? "vertical" : manifest.orientation;
+  const outputDir = path.join(outputRoot, manifest.locale, outputOrientation);
   ensureDir(outputDir);
-  const outFile = path.join(outputDir, `${manifestName}.mp4`);
-  const posterFile = path.join(outputDir, `${manifestName}-poster.png`);
+  const outputName = manifest.fileName || manifestName;
+  const outFile = path.join(outputDir, `${outputName}.mp4`);
+  const posterFile = path.join(outputDir, `${outputName}-poster.png`);
   const musicPath = path.join(root, "assets", "audio", manifest.musicTrack);
   const args = ["-y", "-i", baseVideoPath, "-stream_loop", "-1", "-i", musicPath];
   const filters = [
