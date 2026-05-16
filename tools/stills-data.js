@@ -409,6 +409,13 @@
     },
   };
 
+  function localizedValue(value, locale) {
+    if (!value || typeof value !== "object") {
+      return value;
+    }
+    return value[locale] || value.en || value.ru || "";
+  }
+
   function makeVideoManifest(locale, orientation, fileName, options) {
     return {
       locale,
@@ -417,6 +424,7 @@
       fps: 24,
       transitionSec: 0.35,
       ...options,
+      title: localizedValue(options.title, locale),
     };
   }
 
@@ -512,7 +520,10 @@
   const videoManifests = {};
 
   addLocalizedVideoManifests(videoManifests, "vertical_puzzle", "parcel-queue-puzzle-cut", {
-    title: "Cluster Power",
+    title: {
+      ru: "Сила связки",
+      en: "Cluster Power",
+    },
     orientation: "portrait",
     musicTrack: "osome_bureaucratic_noir_a.mp3",
     musicStartSec: 7,
@@ -522,7 +533,10 @@
   });
 
   addLocalizedVideoManifests(videoManifests, "vertical_pressure", "parcel-queue-pressure-cut", {
-    title: "Pressure Save",
+    title: {
+      ru: "Спасение под давлением",
+      en: "Pressure Save",
+    },
     orientation: "portrait",
     musicTrack: "osome_bureaucratic_noir_b.mp3",
     musicStartSec: 4,
@@ -532,7 +546,10 @@
   });
 
   addLocalizedVideoManifests(videoManifests, "landscape_gameplay", "parcel-queue-gameplay-cut", {
-    title: "Cluster Gameplay",
+    title: {
+      ru: "Связки в игре",
+      en: "Cluster Gameplay",
+    },
     orientation: "landscape",
     musicTrack: "osome_bureaucratic_noir_a.mp3",
     musicStartSec: 7,
@@ -542,7 +559,10 @@
   });
 
   addLocalizedVideoManifests(videoManifests, "landscape_puzzle", "parcel-queue-promo-puzzle", {
-    title: "Cluster Power",
+    title: {
+      ru: "Сила связки",
+      en: "Cluster Power",
+    },
     orientation: "landscape",
     musicTrack: "osome_bureaucratic_noir_a.mp3",
     musicStartSec: 7,
@@ -556,7 +576,10 @@
     "landscape_escalation",
     "parcel-queue-promo-escalation",
     {
-      title: "Queue Collapse",
+      title: {
+        ru: "Очередь давит",
+        en: "Queue Collapse",
+      },
       orientation: "landscape",
       musicTrack: "osome_bureaucratic_noir_b.mp3",
       musicStartSec: 16,

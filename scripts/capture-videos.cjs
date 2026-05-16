@@ -1,7 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { execFileSync } = require("child_process");
+const { execFileSync, spawn } = require("child_process");
 const stills = require("../tools/stills-data.js");
 
 const CHROME_BIN =
@@ -10,9 +10,10 @@ const FFMPEG_BIN = process.env.FFMPEG_BIN || "ffmpeg";
 const FFPROBE_BIN = process.env.FFPROBE_BIN || "ffprobe";
 
 const root = path.resolve(__dirname, "..");
-const viewerPath = path.join(root, "tools", "stills.html");
+const gamePath = path.join(root, "index.html");
 const outputRoot = path.join(root, "marketing", "videos");
 const buildRoot = path.join(os.tmpdir(), "osome-video-build");
+const captureFps = 12;
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
@@ -24,92 +25,257 @@ function safeUnlink(filePath) {
   }
 }
 
-function buildFileUrl(scene, locale, orientation) {
-  const url = new URL(`file://${viewerPath}`);
-  url.searchParams.set("scene", scene);
-  url.searchParams.set("locale", locale);
-  url.searchParams.set("orientation", orientation);
-  url.searchParams.set("layout", "video");
-  return url.toString();
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function captureSceneStill(scene, locale, orientation) {
-  const outDir = path.join(buildRoot, "stills", locale, orientation);
-  ensureDir(outDir);
-  const outFile = path.join(outDir, `${scene}.png`);
-  const targetUrl = buildFileUrl(scene, locale, orientation);
-  const viewport = stills.orientations[orientation];
-
-  if (fs.existsSync(outFile)) {
-    return outFile;
+class CdpClient {
+  constructor(url) {
+    this.url = url;
+    this.nextId = 1;
+    this.pending = new Map();
   }
 
-  execFileSync(
+  async connect() {
+    this.socket = new WebSocket(this.url);
+    this.socket.addEventListener("message", (event) => this.handleMessage(event));
+    await new Promise((resolve, reject) => {
+      this.socket.addEventListener("open", resolve, { once: true });
+      this.socket.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  handleMessage(event) {
+    const message = JSON.parse(event.data);
+    if (!message.id) {
+      return;
+    }
+    const pending = this.pending.get(message.id);
+    if (!pending) {
+      return;
+    }
+    this.pending.delete(message.id);
+    if (message.error) {
+      pending.reject(new Error(message.error.message || "CDP command failed"));
+    } else {
+      pending.resolve(message.result || {});
+    }
+  }
+
+  send(method, params = {}, sessionId = null) {
+    const id = this.nextId++;
+    const payload = { id, method, params };
+    if (sessionId) {
+      payload.sessionId = sessionId;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      this.socket.send(JSON.stringify(payload));
+    });
+  }
+
+  close() {
+    this.socket?.close();
+  }
+}
+
+async function launchChrome(width, height) {
+  const profileDir = fs.mkdtempSync(path.join(os.tmpdir(), "osome-promo-chrome-"));
+  let chromeExit = null;
+  const chrome = spawn(
     CHROME_BIN,
     [
       "--headless=new",
       "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-background-networking",
+      "--disable-component-update",
+      "--disable-sync",
+      "--disable-features=MediaRouter,Translate,OptimizationHints,HttpsUpgrades",
+      "--mute-audio",
+      "--hide-scrollbars",
       "--allow-file-access-from-files",
       "--disable-web-security",
-      "--hide-scrollbars",
-      `--window-size=${viewport.width},${viewport.height}`,
-      "--virtual-time-budget=5000",
-      "--run-all-compositor-stages-before-draw",
-      `--screenshot=${outFile}`,
-      targetUrl,
+      "--no-sandbox",
+      "--no-first-run",
+      "--no-default-browser-check",
+      `--window-size=${width},${height}`,
+      `--user-data-dir=${profileDir}`,
+      "--remote-debugging-port=0",
+      "about:blank",
     ],
-    { stdio: "inherit" }
+    { stdio: "ignore" }
   );
-
-  return outFile;
+  chrome.once("exit", (code, signal) => {
+    chromeExit = { code, signal };
+  });
+  const activePortFile = path.join(profileDir, "DevToolsActivePort");
+  const startedAt = Date.now();
+  while (!fs.existsSync(activePortFile)) {
+    if (chromeExit) {
+      throw new Error(
+        `Chrome exited before DevTools was ready: code=${chromeExit.code}, signal=${chromeExit.signal}`
+      );
+    }
+    if (Date.now() - startedAt > 20_000) {
+      throw new Error(`Timed out waiting for ${activePortFile}`);
+    }
+    await sleep(50);
+  }
+  const [port] = fs.readFileSync(activePortFile, "utf8").trim().split(/\r?\n/);
+  const metadata = await fetch(`http://127.0.0.1:${port}/json/version`).then((response) =>
+    response.json()
+  );
+  const cdp = new CdpClient(metadata.webSocketDebuggerUrl);
+  await cdp.connect();
+  return { chrome, cdp, profileDir };
 }
 
-function getMovePreset(name) {
-  const presets = {
-    "hero-hold": { focusX: 0.5, focusY: 0.52, maxZoom: 1.06, step: 0.00045 },
-    "board-push": { focusX: 0.5, focusY: 0.36, maxZoom: 1.1, step: 0.00072 },
-    "board-rise": { focusX: 0.5, focusY: 0.28, maxZoom: 1.11, step: 0.00078 },
-    "counter-push": { focusX: 0.5, focusY: 0.76, maxZoom: 1.1, step: 0.00076 },
-  };
-
-  return presets[name] || presets["hero-hold"];
+function buildGameUrl(locale) {
+  const url = new URL(`file://${gamePath}`);
+  url.searchParams.set("locale", locale);
+  url.searchParams.set("promoCapture", "1");
+  url.searchParams.set("qa", String(Date.now()));
+  return url.toString();
 }
 
-function renderShotSegment({ imagePath, manifestName, index, shot, width, height, fps }) {
-  const outDir = path.join(buildRoot, "segments", manifestName);
+function getPromoClickScript() {
+  return `(() => {
+    const order = document.querySelector("#active-order")?.dataset.order || "";
+    const all = [...document.querySelectorAll(".cell.accessible.has-customer")];
+    const matching = order && order !== "idle"
+      ? all.filter((cell) => cell.dataset.type === order)
+      : [];
+    const targets = matching.length > 0 ? matching : all;
+    const target = targets.sort((a, b) => {
+      const tutorialDelta = Number(b.classList.contains("tutorial-target")) - Number(a.classList.contains("tutorial-target"));
+      if (tutorialDelta) return tutorialDelta;
+      return Number(a.dataset.row || 0) - Number(b.dataset.row || 0);
+    })[0];
+    if (!target) {
+      return { clicked: false, order, cells: all.length };
+    }
+    const rect = target.getBoundingClientRect();
+    target.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      pointerId: 1,
+      pointerType: "mouse",
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    }));
+    return { clicked: true, order, type: target.dataset.type, row: target.dataset.row, col: target.dataset.col };
+  })()`;
+}
+
+async function recordLiveGameplay({ manifestName, manifest, width, height, durationSec }) {
+  const framesDir = path.join(buildRoot, "frames", manifestName);
+  const outDir = path.join(buildRoot, "live");
+  const outFile = path.join(outDir, `${manifestName}.mp4`);
+  ensureDir(framesDir);
   ensureDir(outDir);
-  const outFile = path.join(outDir, `${String(index + 1).padStart(2, "0")}-${shot.scene}.mp4`);
-  const frames = Math.max(1, Math.round(shot.duration * fps));
-  const fadeDuration = Math.min(0.28, Math.max(0.18, shot.duration * 0.05));
-  const preset = getMovePreset(shot.move);
-  const videoFilter = [
-    `zoompan=z='min(zoom+${preset.step},${preset.maxZoom})'` +
-      `:x='(iw-iw/zoom)*${preset.focusX}'` +
-      `:y='(ih-ih/zoom)*${preset.focusY}'` +
-      `:d=${frames}:s=${width}x${height}:fps=${fps}`,
-    `trim=duration=${shot.duration}`,
-    `fps=${fps}`,
-    `fade=t=in:st=0:d=${fadeDuration}`,
-    `fade=t=out:st=${Math.max(shot.duration - fadeDuration, 0).toFixed(3)}:d=${fadeDuration}`,
-    "format=yuv420p",
-  ].join(",");
+  fs.rmSync(framesDir, { recursive: true, force: true });
+  ensureDir(framesDir);
+
+  const { chrome, cdp, profileDir } = await launchChrome(width, height);
+  const chromeExitPromise = new Promise((resolve) => chrome.once("exit", resolve));
+  let sessionId;
+  try {
+    const target = await cdp.send("Target.createTarget", {
+      url: "about:blank",
+    });
+    const attached = await cdp.send("Target.attachToTarget", {
+      targetId: target.targetId,
+      flatten: true,
+    });
+    sessionId = attached.sessionId;
+    await cdp.send("Page.enable", {}, sessionId);
+    await cdp.send("Runtime.enable", {}, sessionId);
+    await cdp.send(
+      "Emulation.setDeviceMetricsOverride",
+      {
+        width,
+        height,
+        deviceScaleFactor: 1,
+        mobile: manifest.orientation === "portrait",
+        screenWidth: width,
+        screenHeight: height,
+      },
+      sessionId
+    );
+    await cdp.send("Page.navigate", { url: buildGameUrl(manifest.locale) }, sessionId);
+    await sleep(1_000);
+    await cdp.send(
+      "Runtime.evaluate",
+      {
+        expression: `(() => {
+          document.querySelector("#intro-overlay")?.dispatchEvent(new PointerEvent("pointerdown", {
+            bubbles: true,
+            pointerId: 1,
+            pointerType: "mouse",
+            clientX: innerWidth / 2,
+            clientY: innerHeight / 2,
+          }));
+          return document.title;
+        })()`,
+        awaitPromise: true,
+      },
+      sessionId
+    );
+    await sleep(550);
+
+    const frameCount = Math.max(1, Math.round(durationSec * captureFps));
+    const startedAt = Date.now();
+    let nextClickAt = 350;
+    for (let frame = 0; frame < frameCount; frame += 1) {
+      const elapsedTarget = (frame / captureFps) * 1_000;
+      const delay = startedAt + elapsedTarget - Date.now();
+      if (delay > 0) {
+        await sleep(delay);
+      }
+      if (elapsedTarget >= nextClickAt) {
+        await cdp
+          .send(
+            "Runtime.evaluate",
+            {
+              expression: getPromoClickScript(),
+              awaitPromise: true,
+              returnByValue: true,
+            },
+            sessionId
+          )
+          .catch(() => {});
+        nextClickAt += manifest.clickEveryMs || 480;
+      }
+      const screenshot = await cdp.send(
+        "Page.captureScreenshot",
+        { format: "jpeg", quality: 90, fromSurface: true },
+        sessionId
+      );
+      fs.writeFileSync(
+        path.join(framesDir, `${String(frame + 1).padStart(5, "0")}.jpg`),
+        Buffer.from(screenshot.data, "base64")
+      );
+    }
+  } finally {
+    await cdp.send("Browser.close").catch(() => {});
+    cdp.close();
+    chrome.kill("SIGTERM");
+    await Promise.race([chromeExitPromise, sleep(2_000)]);
+    fs.rmSync(profileDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  }
 
   safeUnlink(outFile);
   execFileSync(
     FFMPEG_BIN,
     [
       "-y",
-      "-loop",
-      "1",
       "-framerate",
-      String(fps),
+      String(captureFps),
       "-i",
-      imagePath,
-      "-vf",
-      videoFilter,
-      "-t",
-      String(shot.duration),
-      "-an",
+      path.join(framesDir, "%05d.jpg"),
+      "-r",
+      String(manifest.fps || 24),
       "-c:v",
       "libx264",
       "-preset",
@@ -125,44 +291,6 @@ function renderShotSegment({ imagePath, manifestName, index, shot, width, height
     { stdio: "inherit" }
   );
 
-  return outFile;
-}
-
-function concatSegments({ manifestName, segmentFiles, width, height, fps }) {
-  const outDir = path.join(buildRoot, "concat");
-  ensureDir(outDir);
-  const outFile = path.join(outDir, `${manifestName}.mp4`);
-  const filter = `${segmentFiles.map((_, index) => `[${index}:v]`).join("")}concat=n=${segmentFiles.length}:v=1:a=0[vout]`;
-  const args = ["-y"];
-
-  for (const segmentFile of segmentFiles) {
-    args.push("-i", segmentFile);
-  }
-
-  args.push(
-    "-filter_complex",
-    filter,
-    "-map",
-    "[vout]",
-    "-r",
-    String(fps),
-    "-c:v",
-    "libx264",
-    "-preset",
-    "medium",
-    "-crf",
-    "18",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    "-s",
-    `${width}x${height}`,
-    outFile
-  );
-
-  safeUnlink(outFile);
-  execFileSync(FFMPEG_BIN, args, { stdio: "inherit" });
   return outFile;
 }
 
@@ -259,34 +387,12 @@ function probeVideo(filePath) {
   return JSON.parse(output);
 }
 
-function renderManifest(manifestName, manifest) {
+async function renderManifest(manifestName, manifest) {
   const viewport = stills.orientations[manifest.orientation];
-  const fps = manifest.fps || 24;
-  const sceneCache = new Map();
-  const segmentFiles = [];
   const events = [];
   let cursor = 0;
 
-  for (const [index, shot] of manifest.shots.entries()) {
-    if (!sceneCache.has(shot.scene)) {
-      sceneCache.set(
-        shot.scene,
-        captureSceneStill(shot.scene, manifest.locale, manifest.orientation)
-      );
-    }
-
-    segmentFiles.push(
-      renderShotSegment({
-        imagePath: sceneCache.get(shot.scene),
-        manifestName,
-        index,
-        shot,
-        width: viewport.width,
-        height: viewport.height,
-        fps,
-      })
-    );
-
+  for (const shot of manifest.shots) {
     for (const event of shot.sfx || []) {
       events.push({
         ...event,
@@ -297,12 +403,12 @@ function renderManifest(manifestName, manifest) {
     cursor += shot.duration;
   }
 
-  const baseVideoPath = concatSegments({
+  const baseVideoPath = await recordLiveGameplay({
     manifestName,
-    segmentFiles,
+    manifest,
     width: viewport.width,
     height: viewport.height,
-    fps,
+    durationSec: cursor,
   });
   const result = mixAudio({
     manifestName,
@@ -323,7 +429,7 @@ function renderManifest(manifestName, manifest) {
   };
 }
 
-function main() {
+async function main() {
   const onlyVideo = process.argv.includes("--video")
     ? process.argv[process.argv.indexOf("--video") + 1]
     : null;
@@ -336,7 +442,11 @@ function main() {
     }
   }
 
-  const results = targetNames.map((name) => renderManifest(name, manifests[name]));
+  const results = [];
+  for (const name of targetNames) {
+    results.push(await renderManifest(name, manifests[name]));
+  }
+
   for (const result of results) {
     const videoStream = result.probe.streams.find((stream) => stream.width && stream.height);
     const duration = Number(result.probe.format?.duration || result.durationSec).toFixed(2);
@@ -346,4 +456,7 @@ function main() {
   }
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

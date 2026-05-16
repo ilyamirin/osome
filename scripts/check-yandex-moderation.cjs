@@ -87,6 +87,10 @@ function checkPromoGeneration() {
     !/\/Users\/|Downloads|Movies|Bandicam|sourceVideo/.test(`${cuts}\n${promo}`),
     "Promo video scripts should not depend on raw desktop/screen-recording files."
   );
+  assert(
+    !/fade=t=(?:in|out)/.test(read("scripts/capture-videos.cjs")),
+    "Promo videos should not use fade-to-black transitions."
+  );
 
   const stills = require("../tools/stills-data.js");
   const manifestLocales = new Set(
@@ -98,12 +102,86 @@ function checkPromoGeneration() {
   );
 }
 
+function collectStrings(value, prefix = "value", output = []) {
+  if (typeof value === "string") {
+    output.push({ path: prefix, value });
+    return output;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => collectStrings(item, `${prefix}[${index}]`, output));
+    return output;
+  }
+
+  if (value && typeof value === "object") {
+    for (const [key, item] of Object.entries(value)) {
+      collectStrings(item, `${prefix}.${key}`, output);
+    }
+  }
+
+  return output;
+}
+
+function normalizeForLanguageCheck(value) {
+  return value
+    .replace(/\{[A-Za-z0-9_]+\}/g, "")
+    .replace(/\bMIT\b/g, "")
+    .replace(/\bLinkedIn\b/g, "")
+    .replace(/\bYandex\b/g, "");
+}
+
+function assertLocaleText(locale, strings) {
+  for (const item of strings) {
+    const text = normalizeForLanguageCheck(item.value);
+    if (locale === "ru") {
+      assert(
+        !/[A-Za-z]/.test(text),
+        `Russian text contains Latin characters at ${item.path}: ${item.value}`
+      );
+    } else {
+      assert(
+        !/[А-Яа-яЁё]/.test(text),
+        `${locale} text contains Cyrillic characters at ${item.path}: ${item.value}`
+      );
+      if (locale !== "en") {
+        assert(
+          !/\b(?:AI-generated|GOLD|Yandex Games|Parcel Queue)\b/i.test(item.value),
+          `${locale} text contains an untranslated English phrase at ${item.path}: ${item.value}`
+        );
+      }
+    }
+  }
+}
+
+function checkLocalizedTextPurity() {
+  require("../locales.js");
+  const i18n = globalThis.OSOME_I18N || {};
+  for (const locale of Object.keys(i18n.ui || {})) {
+    assertLocaleText(locale, collectStrings(i18n.ui[locale], `I18N.ui.${locale}`));
+  }
+
+  const stills = require("../tools/stills-data.js");
+  for (const [name, manifest] of Object.entries(stills.videoManifests || {})) {
+    assertLocaleText(manifest.locale, [
+      { path: `videoManifests.${name}.title`, value: manifest.title },
+    ]);
+  }
+
+  const html = read("index.html");
+  assert(!html.includes("Yandex Games"), "Russian HTML fallback should not contain Yandex Games.");
+  assert(
+    !html.includes("AI-generated project"),
+    "Russian HTML fallback should not contain English AI-generated copy."
+  );
+}
+
 const checks = [
   checkYandexBuildMetadata,
   checkGameReadyBootOrder,
   checkInterstitialPlacement,
   checkPlatformMobileLayout,
   checkPromoGeneration,
+  checkLocalizedTextPurity,
 ];
 
 for (const check of checks) {

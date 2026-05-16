@@ -9,6 +9,7 @@ const URL_PARAMS = new URLSearchParams(window.location.search);
 const STILLS_DATA = globalThis.OSOME_STILLS || { scenes: {} };
 const STILLS_SCENE_NAME = URL_PARAMS.get("stillsScene");
 const QUERY_LOCALE = URL_PARAMS.get("locale");
+const PROMO_CAPTURE = URL_PARAMS.get("promoCapture") === "1";
 
 const ORDER_TYPES = {
   red: {
@@ -636,6 +637,7 @@ const DOM = {
   stageSurface: document.querySelector("#stage-surface"),
   rotateOverlay: document.querySelector("#rotate-overlay"),
   gameTitle: document.querySelector("#ui-game-title"),
+  platformLabel: document.querySelector("#ui-platform-label"),
   rotateTitle: document.querySelector("#ui-rotate-title"),
   rotateBody: document.querySelector("#ui-rotate-body"),
   introOverlay: document.querySelector("#intro-overlay"),
@@ -829,6 +831,9 @@ function applyStaticLocaleText() {
   document.title = t("documentTitle");
   if (DOM.gameTitle) {
     DOM.gameTitle.textContent = t("gameTitle");
+  }
+  if (DOM.platformLabel) {
+    DOM.platformLabel.textContent = t("platformLabel");
   }
   if (DOM.rotateTitle) {
     DOM.rotateTitle.textContent = t("rotateTitle");
@@ -1169,6 +1174,9 @@ function loadRunSnapshot() {
 }
 
 function shouldShowFirstTapTutorial() {
+  if (PROMO_CAPTURE) {
+    return false;
+  }
   return !playerProfile?.hasCompletedFirstTapTutorial;
 }
 
@@ -1552,7 +1560,14 @@ function startGame() {
   DOM.overlay.classList.add("hidden");
   document.body.classList.remove("overlay-open");
   DOM.introOverlay.classList.add("hidden");
-  spawnClient();
+  const openingSpawnCount = PROMO_CAPTURE ? 8 : 1;
+  for (let index = 0; index < openingSpawnCount; index += 1) {
+    spawnClient();
+  }
+  if (PROMO_CAPTURE) {
+    state.accessRows = 5;
+    updateAccessTimers();
+  }
   syncCurrentOrder(true);
   state.lastPlayerActionAt = performance.now();
   speakCat(getIntroCategory(), { priority: 4, bypassCooldown: true, durationMs: 2800 });
@@ -2057,7 +2072,7 @@ function trackPerfectRow(servedType) {
 }
 
 function updateBonuses(now) {
-  const nextAccessRows = now < state.fastAccessUntil ? 2 : 1;
+  const nextAccessRows = PROMO_CAPTURE ? 5 : now < state.fastAccessUntil ? 2 : 1;
   if (nextAccessRows !== state.accessRows) {
     state.accessRows = nextAccessRows;
     updateAccessTimers();
@@ -2319,9 +2334,10 @@ function updateSpawn(dt, now) {
   const activeRush = now < state.rushUntil;
   updateAdaptiveSpawn(dt, now);
   const adaptiveInterval = phase.spawn / state.adaptiveSpawnFactor;
-  const interval = activeRush
+  const gameplayInterval = activeRush
     ? adaptiveInterval / BALANCE.gimmicks.rush.spawnDivider
     : adaptiveInterval;
+  const interval = PROMO_CAPTURE ? Math.min(gameplayInterval, 720) : gameplayInterval;
 
   state.spawnAccumulator += dt * 1_000;
   while (state.spawnAccumulator >= interval && state.running) {
@@ -2419,6 +2435,9 @@ function render() {
     }
     if (client) {
       cell.classList.add("has-customer");
+      cell.dataset.type = client.type;
+    } else {
+      delete cell.dataset.type;
     }
     if (isQuarrelCell(row, col)) {
       cell.classList.add("quarrel");
